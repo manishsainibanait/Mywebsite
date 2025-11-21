@@ -316,25 +316,27 @@ function logoutNow(){
        style="display:none; font-size:16px;">
     कुल जमा: ₹0 | कुल निकासी: ₹0 | कुल ब्याज: ₹0 | कुल शेष: ₹0
   </div>
-
+<button class="btn btn-dark w-100 mb-3" onclick="openVillageManager()">
+🏡 गाँव प्रबंधन (Edit / Delete)
+</button>
   <div class="row mb-3">
-    <div class="col-6">
-      <input type="text" id="searchBox" class="form-control" placeholder="नाम से खोजें...">
-    </div>
-    <div class="col-6">
-      <select id="villageFilter" class="form-select">
-        <option value="">सभी गाँव</option>
-        <option>Sehzapur</option><option>Garhouli</option><option>Dhanani</option>
-        <option>Chatan</option><option>Saloula</option><option>Choti Basi</option>
-        <option>Malan</option><option>Kadashan</option><option>Habatpur</option>
-      </select>
-    </div>
-  </div>
 
-  <div class="d-flex gap-2 mb-3">
+    <div class="col-6">
+        <input type="text" id="searchBox" class="form-control" placeholder="नाम से खोजें...">
+    </div>
+
+    <div class="col-6">
+        <select id="villageFilter" class="form-select">
+            <option value="">सभी गाँव</option>
+        </select>
+    </div>
+
+</div>   <!-- ⭐ यह बंद करना भूल गए थे ⭐ -->
+
+<div class="d-flex gap-2 mb-3">
     <button class="btn btn-danger flex-fill" onclick="deleteSelectedCustomers()">🗑️ चुने हुए हटाएं</button>
     <button class="btn btn-danger flex-fill" onclick="deleteAllCustomers()">❌ सभी ग्राहक हटाएं</button>
-  </div>
+</div>
 
   <button class="btn btn-success w-100 mb-3" onclick="openAddCustomer()">+ नया ग्राहक जोड़ें</button>
   <button class="btn btn-secondary w-100 mb-3" onclick="printCustomers()">🖨️ ग्राहक सूची प्रिंट करें</button>
@@ -362,8 +364,30 @@ function logoutNow(){
 </div>
 </div>
 
+<!-- ⭐ Village Manager Popup -->
+<div id="villagePopup" style="display:none; position:fixed; top:0; left:0;
+width:100%; height:100%; background:rgba(0,0,0,0.5);
+justify-content:center; align-items:center; z-index:2000;">
+
+  <div style="background:white; padding:20px; width:90%;
+  max-width:400px; border-radius:10px;">
+
+    <h4 class="text-center mb-3">🏡 गाँव प्रबंधन</h4>
+
+    <ul id="villageList" class="list-group mb-3"></ul>
+
+    <button class="btn btn-success w-100 mb-2" onclick="addNewVillage()">+ नया गाँव जोड़ें</button>
+
+    <button class="btn btn-secondary w-100" onclick="closeVillageManager()">बंद करें</button>
+
+  </div>
+
+</div>
+<!-- ⭐ Village Popup End -->
+
+
 <!-- ✅ ADD CUSTOMER CARD -->
-<div id="addCustomerCard" class="card" style="display:none">>
+<div id="addCustomerCard" class="card" style="display:none">
   <div class="header" id="formHeader">नया ग्राहक जोड़ें</div>
   <div class="card-body">
 
@@ -372,11 +396,8 @@ function logoutNow(){
 
     <div class="input-group mb-2">
       <select id="cVillage" class="form-select">
-        <option value="">गाँव चुनें</option>
-        <option>Sehzapur</option><option>Garhouli</option><option>Dhanani</option>
-        <option>Chatan</option><option>Saloula</option><option>Choti Basi</option>
-        <option>Malan</option><option>Kadashan</option><option>Habatpur</option>
-      </select>
+  <option value="">गाँव चुनें</option>
+</select>
       <button class="btn btn-outline-secondary" onclick="addNewVillage()">+</button>
     </div>
 
@@ -1153,6 +1174,64 @@ function showCard(id){
 window.onload = function() {
     loadVillages();
 };;
-</script>
+
+// ⭐⭐⭐ यही नीचे Village Manager का JS paste करना है ⭐⭐⭐
+
+/* ============================
+   ⭐ Village Manager Functions
+============================ */
+
+function openVillageManager() {
+    document.getElementById("villagePopup").style.display = "flex";
+
+    const list = document.getElementById("villageList");
+    list.innerHTML = "";
+
+    db.ref("settings/villages").once("value").then(snap => {
+        snap.forEach(item => {
+            const key = item.key;
+            const name = item.val();
+
+            list.innerHTML += `
+                <li class='list-group-item d-flex justify-content-between align-items-center'>
+                    ${name}
+                    <div>
+                        <button class='btn btn-sm btn-primary me-2' onclick="editVillage('${key}', '${name}')">✏️</button>
+                        <button class='btn btn-sm btn-danger' onclick="deleteVillage('${key}')">🗑️</button>
+                    </div>
+                </li>
+            `;
+        });
+    });
+}
+
+function closeVillageManager() {
+    document.getElementById("villagePopup").style.display = "none";
+}
+
+function editVillage(key, oldName) {
+    const newName = prompt("नया नाम लिखें:", oldName);
+    if (!newName) return;
+
+    db.ref("settings/villages/" + key).set(newName);
+
+    alert("गाँव अपडेट हुआ ✔");
+
+    openVillageManager();
+    loadVillages();
+}
+
+function deleteVillage(key) {
+    if (!confirm("क्या गाँव हटाना है?")) return;
+
+    db.ref("settings/villages/" + key).remove();
+
+    alert("गाँव हटाया गया ✔");
+
+    openVillageManager();
+    loadVillages();
+}
+
+</script> 
 </body>
 </html>
