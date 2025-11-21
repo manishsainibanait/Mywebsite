@@ -300,6 +300,10 @@ function logoutNow(){
 </div>
 
 <div class="sub-header">ग्राहक सूची</div>
+<!-- ⭐ TOTAL CUSTOMER COUNT (RED) ⭐ -->
+<div id="customerCount" class="text-center fw-bold mb-2" style="font-size:16px; color:red;">
+  कुल ग्राहक: 0
+</div>
 
 <div class="card-body">
 
@@ -553,6 +557,8 @@ function loadCustomers(nameFilter = "", villageFilter = "") {
   ref.off("value");
 
   ref.on("value", snap => {
+document.getElementById("customerCount").innerText =
+  "कुल ग्राहक: " + snap.numChildren();
     const tbody = document.getElementById("customerTable");
     tbody.innerHTML = "";
 
