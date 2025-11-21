@@ -870,6 +870,12 @@ function addNewVillage(){
   const v = prompt("नया गाँव नाम लिखें:");
   if(!v) return;
 
+  // 👉 सही Firebase Path
+  db.ref("settings/villages").push(v);
+
+  alert("गाँव जोड़ दिया गया ✔");
+
+  // Dropdown में भी जोड़ें
   const s = cVillage;
   const vf = villageFilter;
 
@@ -883,8 +889,31 @@ function addNewVillage(){
 
   s.value = v;
 }
+function loadVillages() {
+  db.ref("settings/villages").on("value", snap => {
 
+    cVillage.innerHTML =
+      '<option value="">\u0917\u093E\u0901\u0935 \u091A\u0941\u0928\u0947\u0902</option>';
 
+    villageFilter.innerHTML =
+      '<option value="">\u0938\u092D\u0940 \u0917\u093E\u0901\u0935</option>';
+
+    snap.forEach(item => {
+      const name = item.val();  // ⭐⭐ FIXED ⭐⭐
+
+      let o1 = document.createElement("option");
+      o1.text = name;
+      o1.value = name;
+      cVillage.appendChild(o1);
+
+      let o2 = document.createElement("option");
+      o2.text = name;
+      o2.value = name;
+      villageFilter.appendChild(o2);
+    });
+
+  });
+}
 /* ============================================
       EXCEL IMPORT
 ============================================ */
@@ -1121,6 +1150,9 @@ function showCard(id){
 
     document.getElementById(id).style.display = "block";
 }
+window.onload = function() {
+    loadVillages();
+};;
 </script>
 </body>
 </html>
