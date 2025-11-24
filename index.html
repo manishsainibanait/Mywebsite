@@ -54,7 +54,18 @@ table { font-size:0.9rem; }
   button, .btn, select, input { display:none !important; }
   #popupOverlay { display:none !important; }
 }
-</style>
+/* 👉 Mobile पर Register No कॉलम छोटा */
+@media (max-width: 600px) {
+  th.reg-col, td.reg-col {
+      width: 45px !important;
+      max-width: 45px !important;
+      padding: 2px !important;
+      font-size: 12px !important;
+      text-align: center !important;
+      white-space: nowrap;
+  }
+}
+</style> 
 </head>
 
 <body>
@@ -350,10 +361,11 @@ function logoutNow(){
         <tr>
           <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
           <th>नाम</th>
-          <th>पुत्र</th>
-          <th>गाँव</th>
-          <th>मोबाइल</th>
-          <th>आधार</th>
+<th class="reg-col">रजिस्टर नं.</th>  <!-- ⭐ नया कॉलम -->
+<th>पुत्र</th>
+<th>गाँव</th>
+<th>मोबाइल</th>
+<th>आधार</th>
           <th>कार्य</th>
         </tr>
       </thead>
@@ -589,20 +601,34 @@ document.getElementById("customerCount").innerText =
       if (nameFilter && !d.name?.toLowerCase().includes(nameFilter.toLowerCase())) return;
       if (villageFilter && d.village !== villageFilter && villageFilter !== "") return;
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><input type="checkbox" class="customerCheckbox" value="${id}"></td>
-        <td><b style="cursor:pointer;color:blue" class="open-ledger" data-id="${id}">${escapeHtml(d.name)}</b></td>
-        <td>${escapeHtml(d.father||"")}</td>
-        <td>${escapeHtml(d.village||"")}</td>
-        <td>${escapeHtml(d.phone||"")}</td>
-        <td>${escapeHtml(d.aadhar||"")}</td>
-        <td>
-          <button class='btn btn-sm btn-primary' onclick="editCustomer('${id}')">✏️</button>
-          <button class='btn btn-sm btn-danger' onclick="deleteCustomer('${id}')">🗑️</button>
-        </td>`;
+   // 👉 नाम से Register No निकालना
+let fullName = d.name || "";
+let match = fullName.match(/\d+$/);
+let registerNo = match ? match[0] : "";
+let cleanName = fullName.replace(/\s\d+$/, "");;
+// 👉 नई row बनाएं
+const tr = document.createElement("tr");
+tr.innerHTML = `
+  <td><input type="checkbox" class="customerCheckbox" value="${id}"></td>
 
-      tbody.appendChild(tr);
+  <!-- साफ नाम -->
+  <td><b style="cursor:pointer;color:blue" class="open-ledger" data-id="${id}">
+      ${escapeHtml(cleanName)}
+  </b></td>
+
+  <!-- Register No कॉलम -->
+  <td class="reg-col">${registerNo}</td>
+
+  <td>${escapeHtml(d.father||"")}</td>
+  <td>${escapeHtml(d.village||"")}</td>
+  <td>${escapeHtml(d.phone||"")}</td>
+  <td>${escapeHtml(d.aadhar||"")}</td>
+
+  <td>
+    <button class='btn btn-sm btn-primary' onclick="editCustomer('${id}')">✏️</button>
+    <button class='btn btn-sm btn-danger' onclick="deleteCustomer('${id}')">🗑️</button>
+  </td>`;
+tbody.appendChild(tr);
     });
 
     document.querySelectorAll(".open-ledger").forEach(el => {
@@ -1234,4 +1260,4 @@ function deleteVillage(key) {
 
 </script> 
 </body>
-</html>
+<html>
