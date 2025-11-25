@@ -60,12 +60,48 @@ table { font-size:0.9rem; }
       width: 45px !important;
       max-width: 45px !important;
       padding: 2px !important;
-      font-size: 15px !important;
+      font-size: 12px !important;
       text-align: center !important;
       white-space: nowrap;
   }
 }
-</style> 
+/* ⭐ Freeze Column 1 (Checkbox) */
+th.check-col, td.check-col {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 30;
+    width: 35px !important;
+    min-width: 35px !important;
+    max-width: 35px !important;
+}
+
+/* ⭐ Freeze Column 2 (Name) */
+/* ⭐ Name Column – 2 लाइन में दिखे */
+th.name-col, td.name-col {
+    position: sticky;
+    left: 35px;
+    background: white;
+    z-index: 29;
+    min-width: 95px !important;
+    max-width: 95px !important;
+    white-space: normal !important;   /* ⭐ allow line break */
+    line-height: 1.1;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* ⭐ Register Number */
+th.reg-col, td.reg-col {
+    width: 55px !important;
+    min-width: 55px !important;
+    max-width: 55px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    white-space: nowrap;
+}
+</style>
 </head>
 
 <body>
@@ -358,17 +394,24 @@ function logoutNow(){
   <div id="customerTableContainer" class="table-responsive">
     <table class="table table-bordered text-center align-middle">
       <thead class="table-primary">
-        <tr>
-          <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
-          <th>नाम</th>
-<th class="reg-col">रजिस्टर नं.</th>  <!-- ⭐ नया कॉलम -->
-<th>पुत्र</th>
-<th>गाँव</th>
-<th>मोबाइल</th>
-<th>आधार</th>
-          <th>कार्य</th>
-        </tr>
-      </thead>
+<tr>
+
+  <th class="check-col">
+    <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+  </th>
+
+  <th class="name-col">नाम</th>
+
+  <th class="reg-col">र् न.</th>
+
+  <th>पुत्र</th>
+  <th>गाँव</th>
+  <th>मोबाइल</th>
+  <th>आधार</th>
+  <th>कार्य</th>
+
+</tr>
+</thead>
       <tbody id="customerTable"></tbody>
     </table>
   </div>
@@ -522,25 +565,35 @@ function escapeHtml(text){
    🔥 TOTAL SUMMARY FOR ALL CUSTOMERS
 ============================================ */
 function loadTotalSummary() {
+
   const ref = db.ref("ledgers");
 
   ref.once("value").then(snap => {
 
-    let totalC = 0, totalD = 0, totalI = 0;
+    let totalCredit = 0;
+    let totalDebit = 0;
+    let totalInterest = 0;
 
     snap.forEach(customer => {
       customer.forEach(entry => {
         const d = entry.val();
-        totalC += +d.credit || 0;
-        totalD += +d.debit || 0;
-        totalI += +d.interestAmount || 0;
+
+        totalCredit += Number(d.credit) || 0;
+        totalDebit  += Number(d.debit) || 0;
+        totalInterest += Number(d.interestAmount) || 0;
       });
     });
 
-    const bal = (totalD + totalI) - totalC;
+    let balance = (totalDebit + totalInterest) - totalCredit;
 
-    document.getElementById("totalSummary").innerHTML =
-      `कुल जमा: ₹${totalC} | कुल निकासी: ₹${totalD} | कुल ब्याज: ₹${totalI.toFixed(2)} | कुल शेष: ₹${bal.toFixed(2)}`;
+    document.getElementById("totalSummary").innerHTML = `
+      <div>
+        कुल जमा: ₹${totalCredit} |
+        कुल निकासी: ₹${totalDebit} |
+        कुल ब्याज: ₹${totalInterest.toFixed(2)} |
+        कुल शेष: ₹${balance.toFixed(2)}
+      </div>
+    `;
   });
 }
 
@@ -609,25 +662,28 @@ let cleanName = fullName.replace(/\s\d+$/, "");;
 // 👉 नई row बनाएं
 const tr = document.createElement("tr");
 tr.innerHTML = `
-  <td><input type="checkbox" class="customerCheckbox" value="${id}"></td>
+<td class="check-col">
+  <input type="checkbox" class="customerCheckbox" value="${id}">
+</td>
 
-  <!-- साफ नाम -->
-  <td><b style="cursor:pointer;color:blue" class="open-ledger" data-id="${id}">
-      ${escapeHtml(cleanName)}
-  </b></td>
+<td class="name-col">
+  <b style="cursor:pointer;color:blue" class="open-ledger" data-id="${id}">
+  ${escapeHtml(cleanName).replace(" ", "<br>")}
+  </b>
+</td>
 
-  <!-- Register No कॉलम -->
-  <td class="reg-col">${registerNo}</td>
+<td class="reg-col">${registerNo}</td>
 
-  <td>${escapeHtml(d.father||"")}</td>
-  <td>${escapeHtml(d.village||"")}</td>
-  <td>${escapeHtml(d.phone||"")}</td>
-  <td>${escapeHtml(d.aadhar||"")}</td>
+<td>${escapeHtml(d.father || "")}</td>
+<td>${escapeHtml(d.village || "")}</td>
+<td>${escapeHtml(d.phone || "")}</td>
+<td>${escapeHtml(d.aadhar || "")}</td>
 
-  <td>
-    <button class='btn btn-sm btn-primary' onclick="editCustomer('${id}')">✏️</button>
-    <button class='btn btn-sm btn-danger' onclick="deleteCustomer('${id}')">🗑️</button>
-  </td>`;
+<td>
+  <button class='btn btn-sm btn-primary' onclick="editCustomer('${id}')">✏️</button>
+  <button class='btn btn-sm btn-danger' onclick="deleteCustomer('${id}')">🗑️</button>
+</td>
+`;
 tbody.appendChild(tr);
     });
 
@@ -892,24 +948,92 @@ function closePopup() {
 /* ============================================
       PRINT LEDGER
 ============================================ */
-function printLedger(){
-  const data = document.getElementById("ledgerCard").innerHTML;
-  const w = window.open("","","width=900,height=700");
-  w.document.write(`
-  <html><head>
-  <title>Ledger Print</title>
-  <link rel='stylesheet' 
-        href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
-  </head>
-  <body>
-  <h4 class='text-center mb-3'>सैनी ट्रेडिंग कंपनी</h4>
-  ${data}
-  </body></html>`);
-  w.document.close();
-  w.print();
+function printLedger() {
+
+    let rawName = document.querySelector("#ledgerCustomerName").innerText.trim();
+
+// नाम के आखिर में जो नंबर है (register no) उसे हटाओ
+let cleanName = rawName.replace(/\s\d+$/, "").trim();
+
+const customerName = cleanName;
+    // Date
+    const d = new Date();
+    const days = ["रवि","सोम","मंगल","बुध","गुरु","शुक्र","शनि"];
+    const fullDate = `${days[d.getDay()]} | ${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`;
+
+    // ⭐ Clone Table
+    let tableClone = document.querySelector("#ledgerTable").cloneNode(true);
+
+    // ⭐ Remove last column (कार्य)
+    tableClone.querySelectorAll("tr").forEach(row => {
+        if (row.cells.length > 8) {     // 9th column हटाना
+            row.deleteCell(8);
+        }
+    });
+
+    // ⭐ Clone Footer
+    let footerClone = document.querySelector("#ledgerFooter").cloneNode(true);
+    footerClone.querySelectorAll("tr").forEach(row => {
+        if (row.cells.length > 8) {
+            row.deleteCell(8);
+        }
+    });
+
+    // Print window
+    const w = window.open("", "", "width=900,height=700");
+
+    w.document.write(`
+    <html>
+    <head>
+        <title>Ledger Print</title>
+        <style>
+            body { font-family: Poppins, sans-serif; padding:20px; }
+            table { width:100%; border-collapse: collapse; margin-top:10px; }
+            table, th, td { border:1px solid black; }
+            th, td { padding:6px; font-size:14px; text-align:center; }
+        </style>
+    </head>
+
+    <body>
+
+        <h3 class="text-center">सैनी ट्रेडिंग कंपनी</h3>
+
+        <div style="display:flex; justify-content:space-between; margin-top:10px;">
+            <b>ग्राहक: ${customerName}</b>
+            <b>तारीख: ${fullDate}</b>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>शुरू</th>
+                    <th>अंत</th>
+                    <th>जमा</th>
+                    <th>निकासी</th>
+                    <th>ब्याज (%)</th>
+                    <th>दिन</th>
+                    <th>ब्याज राशि</th>
+                    <th>नोट</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${tableClone.innerHTML}
+            </tbody>
+
+            <tfoot>
+                ${footerClone.innerHTML}
+            </tfoot>
+        </table>
+
+    </body>
+    </html>
+    `);
+
+    w.document.close();
+
+    setTimeout(() => w.print(), 300);
 }
-
-
 /* ============================================
       ADD NEW VILLAGE
 ============================================ */
@@ -1051,66 +1175,78 @@ function deleteAllCustomers(){
 /* ============================================
       PRINT CUSTOMER LIST
 ============================================ */
-function printCustomers(){
+function printCustomers() {
 
-  const rows = [...customerTable.querySelectorAll("tr")];
+    // पूरा customer table clone करो
+    let tableClone = document.querySelector("#customerTable").cloneNode(true);
 
-  let html = `
-  <table class='table table-bordered'>
-  <thead><tr>
-    <th>नाम</th>
-    <th>पुत्र</th>
-    <th>गाँव</th>
-    <th>मोबाइल</th>
-    <th>आधार</th>
-  </tr></thead><tbody>`;
+    // Checkbox हटाओ
+    tableClone.querySelectorAll(".check-col").forEach(col => col.remove());
 
-  rows.forEach(r => {
-    const td = r.querySelectorAll("td");
-    if(td.length < 7) return;
+    // Edit/Delete हटाओ
+    tableClone.querySelectorAll("td:last-child, th:last-child").forEach(col => col.remove());
 
-    html += `
-      <tr>
-        <td>${escapeHtml(td[1].innerText)}</td>
-        <td>${escapeHtml(td[2].innerText)}</td>
-        <td>${escapeHtml(td[3].innerText)}</td>
-        <td>${escapeHtml(td[4].innerText)}</td>
-        <td>${escapeHtml(td[5].innerText)}</td>
-      </tr>`;
-  });
+    // Date + Count
+    const d = new Date();
+    const days = ["रवि","सोम","मंगल","बुध","गुरु","शुक्र","शनि"];
+    const fullDate = `${days[d.getDay()]} | ${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`;
+    const count = document.getElementById("customerCount").innerText;
 
-  html += "</tbody></table>";
+    // Print Window
+    const w = window.open("", "", "width=900,height=700");
 
-  const w = window.open("","","width=900,height=700");
-  w.document.write(`
-  <html><head>
-  <title>Customer List</title>
-  <link rel='stylesheet' 
-        href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
-  </head><body>
-  <h4 class='text-center mb-3'>सैनी ट्रेडिंग कंपनी - ग्राहक सूची</h4>
-  ${html}
-  </body></html>`);
-  w.document.close();
-  w.print();
+    w.document.write(`
+    <html>
+    <head>
+        <title>Customer List</title>
+        <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+        <style>
+            body { font-family: Poppins, sans-serif; padding:20px; }
+            table, th, td { border:1px solid black !important; border-collapse: collapse; }
+            th, td { padding:6px; font-size:13px; text-align:center; }
+            table { width:100%; margin-top:10px; }
+        </style>
+    </head>
+
+    <body>
+
+        <h4 class="text-center mb-1">सैनी ट्रेडिंग कंपनी</h4>
+
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <b>ग्राहक सूची</b>
+            <b>तारीख: ${fullDate}</b>
+        </div>
+
+        <div class="text-center mb-2" style="color:red; font-weight:bold;">
+            ${count}
+        </div>
+
+        <table class="table table-bordered text-center">
+            <thead class="table-warning">
+                <tr>
+                    <th>नाम</th>
+                    <th>र.न.</th>
+                    <th>पुत्र</th>
+                    <th>गाँव</th>
+                    <th>मोबाइल</th>
+                    <th>आधार</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableClone.innerHTML}
+            </tbody>
+        </table>
+
+    </body>
+    </html>
+    `);
+
+    w.document.close();
+    setTimeout(() => { w.print(); }, 400);
 }
-
-
-/* ============================================
-      SUMMARY SHOW/HIDE
-============================================ */
-function toggleSummary() {
-    const box = document.getElementById("totalSummary");
-
-    if (box.style.display === "none" || box.style.display === "") {
-        loadTotalSummary();
-        box.style.display = "block";
-    } 
-    else {
-        box.style.display = "none";
-    }
-}
-
+    
 
 /* ============================================
       DATE SYSTEM (TOP + MAIN)
@@ -1257,7 +1393,18 @@ function deleteVillage(key) {
     openVillageManager();
     loadVillages();
 }
+/* 🔍 TOTAL SUMMARY TOGGLE SYSTEM */
 
+function toggleSummary() {
+    const box = document.getElementById("totalSummary");
+
+    if (box.style.display === "none" || box.style.display === "") {
+        loadTotalSummary();   // ⭐ सारांश डेटा लोड करो
+        box.style.display = "block";
+    } else {
+        box.style.display = "none";
+    }
+}
 </script> 
 </body>
 <html>
