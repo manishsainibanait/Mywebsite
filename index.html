@@ -597,14 +597,16 @@ function showCard(id){
 }
 
 function backToList(){
-  showCard("customerListCard");
-  loadCustomers();
+    showCard("customerListCard");
+    loadCustomers(() => {
+        filterCustomers();   // 🔥 search + village filter वापस apply
+    });
 }
 
 /* ======================================================
       LOAD CUSTOMERS
 ====================================================== */
-function loadCustomers(){
+function loadCustomers(callback){
   const ref = db.ref("customers");
 
   ref.once("value").then(snap=>{
@@ -641,6 +643,7 @@ function loadCustomers(){
       });
 
       customerCount.innerText = "कुल ग्राहक: " + snap.numChildren();
+if(callback) callback();
   });
 }
 
