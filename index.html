@@ -679,7 +679,11 @@ function loadLedger(){
 
         totalC += +d.credit || 0;
         totalD += +d.debit || 0;
-        totalI += +d.interestAmount || 0;
+        if(d.interestType === "debit"){
+    totalI += +d.interestAmount || 0;   // Debit interest add
+}else{
+    totalI -= +d.interestAmount || 0;   // Credit interest minus
+}
 
         if(d.isFasal) allFasal.push(d);
 
@@ -694,8 +698,7 @@ function loadLedger(){
     <td>₹${d.debit || 0}</td>
     <td>${d.interest || 0}</td>
     <td>${d.days || 0}</td>
-    <td>₹${d.interestAmount || 0}</td>
-
+  <td>${d.isFasal ? "" : "+₹" + (d.interestAmount || 0)}</td>
     <td>${d.isFasal ? "🌾" : ""}</td>
     <td>${d.note || ""}</td>
 
@@ -856,16 +859,16 @@ function saveTransaction(){
     }
 
     let data = {
-        startDate: start,
-        endDate: end,
-        credit: +tCredit.value || 0,
-        debit: +tDebit.value || 0,
-        interest: +tInterest.value || 0,
-        days: days,
-        interestAmount: totalInterest.toFixed(2),
-        note: tNote.value
-    };
-
+    startDate: start,
+    endDate: end,
+    credit: +tCredit.value || 0,
+    debit: +tDebit.value || 0,
+    interest: +tInterest.value || 0,
+    days: days,
+    interestAmount: +tInterestAmount.value || 0,
+    interestType: (+tDebit.value || 0) > 0 ? "debit" : "credit",
+    note: tNote.value
+};
     // ⭐ EDIT MODE
     if(window.editingTransactionId){
         db.ref("ledgers/" + currentCustomerId + "/" + window.editingTransactionId).update(data);
@@ -1390,6 +1393,7 @@ tDate.onchange = calcDays;
 tEndDate.onchange = calcDays;
 tInterest.oninput = calcInterest;
 tDebit.oninput = calcInterest;
+tCredit.oninput = calcInterest;   // ⭐⭐⭐ यही missing था
 tDays.oninput = calcInterest;
 function calcDays() {
     let start = tDate.value;
@@ -1418,7 +1422,9 @@ function calcDays() {
 }
 
 function calcInterest() {
-    let amount = (+tDebit.value || 0) + (+tCredit.value || 0);    // सिर्फ निकासी राशि
+    let amount = (+tDebit.value > 0)
+    ? +tDebit.value
+    : +tCredit.value;   // सिर्फ निकासी राशि
     let rate = +tInterest.value || 0;    // ब्याज %
     let days = +tDays.value || 0;        // दिन
 
