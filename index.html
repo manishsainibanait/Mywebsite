@@ -519,6 +519,7 @@ td.name-col span {
   <div id="popupBox">
 
     <h5 class="text-center mb-3">🌾 नई फसल जोड़ें</h5>
+<input id="fDate" type="date" class="form-control mb-2">
 
     <select id="fName" class="form-select mb-2">
       <option value="">फसल चुनें</option>
@@ -538,7 +539,7 @@ td.name-col span {
         <input id="fWeightPer" type="number" class="form-control mb-2" placeholder="1 बोरी KG">
       </div>
     </div>
-
+<input id="fExtraKG" type="number" class="form-control mb-2" placeholder="अतिरिक्त KG">
     <input id="fTotalQ" class="form-control mb-2" placeholder="कुल क्विंटल" readonly>
 
     <input id="fRate" type="number" class="form-control mb-2" placeholder="भाव ₹/Q">
@@ -691,7 +692,7 @@ function loadLedger(){
 <tr style="${d.isFasal ?
 'background:#fff7d1;color:#b8860b;font-weight:bold;' : ''}">
 
-    <td>${d.startDate || ""}</td>
+    <td>${d.startDate || d.date || ""}</td>
     <td>${d.endDate || ""}</td>
 
     <td>₹${d.credit || 0}</td>
@@ -699,7 +700,39 @@ function loadLedger(){
     <td>${d.interest || 0}</td>
     <td>${d.days || 0}</td>
   <td>${d.isFasal ? "" : "+₹" + (d.interestAmount || 0)}</td>
-    <td>${d.isFasal ? "🌾" : ""}</td>
+<td>
+${d.isFasal
+  ? (function(){
+      let q = +d.quintal || 0;
+      let totalKG = q * 100;
+
+      let mainQ = Math.floor(totalKG / 100);
+      let extraKG = Math.round(totalKG % 100);
+
+      let name = d.name || "";
+let firstChar = name.trim().charAt(0);
+
+// अगर नाम पहले से emoji से शुरू हो रहा है
+if (/\p{Emoji}/u.test(firstChar)) {
+    return name + " (" + mainQ + " Q " + extraKG + " KG)";
+} else {
+    let name = d.name || "";
+
+let hasIcon = name.trim().startsWith("🌱") ||
+              name.trim().startsWith("🌾") ||
+              name.trim().startsWith("🌻") ||
+              name.trim().startsWith("🌽") ||
+              name.trim().startsWith("🥜") ||
+              name.trim().startsWith("🌿");
+
+let finalName = hasIcon ? name : "🌾 " + name;
+
+return finalName + " (" + mainQ + " Q " + extraKG + " KG)";
+}
+    })()
+  : ""
+}
+</td>
     <td>${d.note || ""}</td>
 
     <td>
@@ -885,8 +918,7 @@ function saveTransaction(){
 /* ======================================================
       FASAL AUTO CALC
 ====================================================== */
-["fBori","fWeightPer","fRate","fMajduri","fCutOther"].forEach(id=>{
-  document.getElementById(id).addEventListener("input", calcFasal);
+["fBori","fWeightPer","fExtraKG","fRate","fMajduri","fCutOther"].forEach(id=>{ document.getElementById(id).addEventListener("input", calcFasal);
 });
 
 function calcFasal(){
@@ -896,7 +928,8 @@ function calcFasal(){
   let m = +fMajduri.value||0;
   let o = +fCutOther.value||0;
 
-  let totalKG = b * w;
+let extra = +fExtraKG.value || 0;
+let totalKG = (b * w) + extra;
   let q = totalKG / 100;
   fTotalQ.value = q.toFixed(2);
 
@@ -951,6 +984,7 @@ function saveFasal(){
   let data = {
     isFasal:true,
     name:fName.value,
+date: fDate.value || "",
     bori:b,
     weightPer:w,
     quintal:q,
@@ -1539,4 +1573,3 @@ function closeFasalPopup() {
 </script>
 </body>
 </html>
-
