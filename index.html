@@ -30,6 +30,47 @@ if ('serviceWorker' in navigator) {
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
 <style>
+/* ===== PROFESSIONAL COLOURFUL SEARCH + FILTER ===== */
+
+/* 🔵 नाम से खोजें */
+#searchBox{
+  border:2px solid #60a5fa;
+  border-radius:10px;
+  padding:10px;
+  font-weight:600;
+  background:#f0f7ff;
+}
+#searchBox:focus{
+  outline:none;
+  border-color:#2563eb;
+  box-shadow:0 0 0 3px rgba(37,99,235,.25);
+  background:white;
+}
+
+/* 🟡 गाँव filter */
+#villageFilter{
+  border:2px solid #facc15;
+  border-radius:10px;
+  padding:10px;
+  font-weight:600;
+  background:#fffbea;
+}
+#villageFilter:focus{
+  outline:none;
+  border-color:#eab308;
+  box-shadow:0 0 0 3px rgba(234,179,8,.25);
+  background:white;
+}
+
+/* ===== TABLE PROFESSIONAL LOOK ===== */
+thead th{
+  background:linear-gradient(180deg,#eaf2ff,#dbeafe);
+  color:#1e3a8a;
+  font-weight:700;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
 /* GLOBAL */
 body { background:#f8fafc; padding:20px; font-family:'Poppins',sans-serif; }
 .card { border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.12); margin-bottom:20px; }
@@ -201,7 +242,112 @@ td.name-col span {
 
 }
 /* ============================================= */
+.hide-duplicate{
+  display:none !important;
+}
+/* ☰ MENU click fix */
+.dropdown{
+  position: relative;
+  z-index: 9999;
+}
+#searchBox::placeholder{
+  color:#374151;
+}
+#customerTable tr:hover{
+  background:#f1f5ff;
+}
+#villageFilter option{
+  font-weight:600;
+}
+.customer-count-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin:12px;
+  padding:14px 18px;
+  background:linear-gradient(135deg,#e0f2ff,#f8fbff);
+  border-radius:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  border-left:6px solid #0d6efd;
+}
 
+.cc-icon{
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  background:#0d6efd;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  color:white;
+}
+
+.cc-label{
+  font-size:14px;
+  color:#1e3a8a;
+  font-weight:600;
+}
+
+.cc-number{
+  font-size:22px;
+  font-weight:800;
+  color:#0d6efd;
+}
+.count-header{
+  background:#eaf2ff;
+  color:#1e3a8a;
+  font-weight:700;
+  text-align:center;
+  padding:8px;
+  border-bottom:2px solid #0d6efd;
+  font-size:15px;
+}
+.count-sub{
+  background:#f1f5ff;     /* हल्का blue */
+  color:#1e3a8a;
+  font-size:14px;
+  font-weight:600;
+  border-top:1px solid #dbeafe;
+}
+/* ===== PROFESSIONAL MENU BUTTON ===== */
+.menu-btn{
+  background: linear-gradient(135deg,#1e88e5,#0d47a1);
+  color:white;
+  border:none;
+  border-radius:12px;
+  padding:8px 14px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.25);
+}
+
+.menu-btn:focus,
+.menu-btn:active{
+  box-shadow:0 0 0 3px rgba(30,136,229,.35);
+}
+
+.menu-btn i{
+  font-size:18px;
+}
+/* ❌ Popup ke andar main menu hide */
+#villagePopup .main-menu {
+  display: none !important;
+}
+/* ❌ गाँव प्रबंधन Popup में Menu hide */
+#villagePopup .dropdown,
+#villagePopup .menu-btn {
+  display: none !important;
+}
+#villagePopup{
+  z-index: 9999;
+}
+
+#villagePopupBox{
+  z-index: 10000;
+}
 </style>
 </head>
 
@@ -255,19 +401,45 @@ td.name-col span {
     <span id="mainDate" style="float:right; font-size:14px;"></span>
   </div>
 
-  <div class="sub-header">ग्राहक सूची</div>
+<div class="sub-header">
+  ग्राहक सूची
+  <span style="
+    font-weight:700;
+    font-size:16px;
+    color:#0d47a1;
+    margin-left:6px;
+  ">
+    (कुल ग्राहक :
+    <span id="customerCount" style="color:#c62828;font-weight:800;">
+      0
+    </span>)
+  </span>
+</div>
+
 
   <!-- कुल ग्राहक -->
-  <div id="customerCount"
-       class="text-center fw-bold my-2"
-       style="color:red;">
-    कुल ग्राहक: 0
+  
+  <!-- ☰ MENU -->
+<div class="d-flex justify-content-start px-3 mt-2 mb-4">
+  <div class="dropdown">
+    <button class="menu-btn dropdown-toggle"
+        type="button"
+        data-bs-toggle="dropdown">
+  <i class="bi bi-list"></i> मेन्यू
+</button>
+
+    <ul class="dropdown-menu">
+      <li><a class="dropdown-item" href="#" onclick="openVillageManager()">🏡 गाँव प्रबंधन</a></li>
+      <li><a class="dropdown-item" href="#" onclick="toggleSummary()">🔍 कुल सारांश</a></li>
+      <li><a class="dropdown-item" href="#" onclick="deleteSelectedCustomers()">🗑 चुने हुए ग्राहक हटाएं</a></li>
+      <li><a class="dropdown-item" href="#" onclick="openAddCustomer()">➕ नया ग्राहक जोड़ें</a></li>
+      <li><a class="dropdown-item" href="#" onclick="document.getElementById('excelUpload').click()">📤 Excel डेटा अपलोड</a></li>
+      <li><a class="dropdown-item" href="#" onclick="printCustomers()">🖨 ग्राहक सूची प्रिंट</a></li>
+    </ul>
   </div>
-
-  <div class="card-body">
-
+</div>
     <!-- कुल सारांश बटन -->
-    <button class="btn btn-info w-100 mb-2" onclick="toggleSummary()">
+    <button class="btn btn-info w-100 mb-2 hide-duplicate" onclick="toggleSummary()">
       🔍 कुल सारांश
     </button>
 
@@ -279,12 +451,12 @@ td.name-col span {
     </div>
 
     <!-- गाँव मैनेजर -->
-    <button class="btn btn-dark w-100 mb-3" onclick="openVillageManager()">
+   <button class="btn btn-dark w-100 mb-3 hide-duplicate" onclick="openVillageManager()">
       🏡 गाँव प्रबंधन (Edit / Delete)
     </button>
 
     <!-- सर्च + गाँव फिल्टर -->
-    <div class="row mb-3">
+  <div class="row mb-3 mt-2">
       <div class="col-6">
         <input id="searchBox"
                class="form-control"
@@ -299,18 +471,18 @@ td.name-col span {
 
     <!-- Delete buttons -->
     <div class="d-flex gap-2 mb-3">
-      <button class="btn btn-danger flex-fill" onclick="deleteSelectedCustomers()">
+    <button class="btn btn-danger flex-fill hide-duplicate" onclick="deleteSelectedCustomers()">
         🗑 चुने हुए हटाएं
       </button>
  
     </div>
 
     <!-- नया ग्राहक / प्रिंट / एक्सेल -->
-    <button class="btn btn-success w-100 mb-3" onclick="openAddCustomer()">
+    <button class="btn btn-success w-100 mb-3 hide-duplicate" onclick="openAddCustomer()">
       + नया ग्राहक जोड़ें
     </button>
 
-    <button class="btn btn-secondary w-100 mb-3" onclick="printCustomers()">
+  <button class="btn btn-secondary w-100 mb-3 hide-duplicate" onclick="printCustomers()">
       🖨 ग्राहक सूची प्रिंट करें
     </button>
 
@@ -319,8 +491,8 @@ td.name-col span {
            class="form-control mb-3"
            style="display:none">
 
-    <button class="btn btn-warning w-100 mb-3"
-            onclick="document.getElementById('excelUpload').click()">
+  <button class="btn btn-warning w-100 mb-3 hide-duplicate"
+        onclick="document.getElementById('excelUpload').click()">
       📤 Excel से डेटा अपलोड करें
     </button>
 
@@ -330,7 +502,7 @@ td.name-col span {
          style="max-height:65vh; overflow-y:auto;">
 
       <table class="table table-bordered text-center align-middle">
-        <thead class="table-primary">
+      <thead>
           <tr>
             <th class="check-col">
               <input type="checkbox" id="selectAll"
@@ -641,7 +813,7 @@ function loadCustomers(callback){
         customerTable.insertAdjacentHTML("beforeend", row);
       });
 
-      customerCount.innerText = "कुल ग्राहक: " + snap.numChildren();
+      document.getElementById("customerCount").innerText = snap.numChildren();
 if(callback) callback();
   });
 }
@@ -1252,6 +1424,7 @@ function toggleSummary() {
 ====================================================== */
 
 // Popup खोलना
+customerListCard.style.display = "none";
 function openVillageManager() {
     let html = `
       <div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;">
@@ -1274,6 +1447,7 @@ function openVillageManager() {
 }
 
 // Popup बंद करना
+customerListCard.style.display = "block";
 function closeVillagePopup() {
     villagePopup.style.display = "none";
 }
@@ -1569,5 +1743,9 @@ function closeFasalPopup() {
     window.editingFasalId = null;   // edit मोड बंद
 }
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+</script>
+
 </body>
 </html>
