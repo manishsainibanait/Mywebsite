@@ -1696,14 +1696,12 @@ async function fingerLogin() {
 
         const assertion = await navigator.credentials.get(getCredentialOptions);
         if (assertion) {
-            // FIX: Using sessionStorage for session persistence on fingerprint success
-            sessionStorage.setItem("isLoggedIn", "true");
-            loginScreen.style.display = "none";
-            document.getElementById("appContent").style.display = "block";
-            customerListCard.style.display = "block";
-            loadCustomers();
-            alert("Authentication Successful ✔");
-        }
+    sessionStorage.setItem("isLoggedIn", "true");
+    loginScreen.style.display = "none";
+    document.getElementById("appContent").style.display = "block";
+    customerListCard.style.display = "block";
+    loadCustomers();
+}
     } catch (err) {
         console.error("Auth error:", err);
         // Friendly message instead of technical browser error
@@ -1899,4 +1897,3 @@ function closeFasalPopup() {
 
 </body>
 </html>
-softwar developer MANISH SAINI DHANANI
