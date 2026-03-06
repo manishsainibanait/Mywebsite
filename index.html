@@ -165,7 +165,7 @@ th.reg-col, td.reg-col {
 }
 
 /* Popup */
-#popupOverlay, #fasalPopupOverlay, #villagePopup {
+#popupOverlay, #fasalPopupOverlay, #villagePopup, #changePassPopup {
     position:fixed; top:0; left:0; width:100%; height:100%;
     background:rgba(0,0,0,0.5); display:none;
     justify-content:center; align-items:center; z-index:3000;
@@ -402,6 +402,17 @@ td.name-col span {
 
 </div>
 
+<div id="changePassPopup">
+    <div id="popupBox">
+        <h4 class="text-center mb-3">🔐 पासवर्ड बदलें</h4>
+        <input id="currPass" type="password" class="form-control mb-2" placeholder="पुराना पासवर्ड">
+        <input id="newPass" type="password" class="form-control mb-2" placeholder="नया पासवर्ड">
+        <input id="confPass" type="password" class="form-control mb-3" placeholder="नया पासवर्ड कन्फर्म करें">
+        <button class="btn btn-success w-100 mb-2" onclick="submitChangePassword()">पासवर्ड बदलें</button>
+        <button class="btn btn-secondary w-100" onclick="closeChangePass()">बंद करें</button>
+    </div>
+</div>
+
 <div id="appContent">
 
 <div id="customerListCard" class="card" style="display:none">
@@ -447,6 +458,7 @@ td.name-col span {
       <li><a class="dropdown-item" href="#" onclick="openAddCustomer()">➕ नया ग्राहक जोड़ें</a></li>
       <li><a class="dropdown-item" href="#" onclick="document.getElementById('excelUpload').click()">📤 Excel डेटा अपलोड</a></li>
       <li><a class="dropdown-item" href="#" onclick="printCustomers()">🖨 ग्राहक सूची प्रिंट</a></li>
+      <li><a class="dropdown-item" href="#" onclick="openChangePass()">🔐 पासवर्ड बदलें</a></li>
     </ul>
   </div>
 </div>
@@ -722,8 +734,7 @@ td.name-col span {
 
 <script>
 window.onload = () => {
-    // FIX: Using sessionStorage instead of localStorage for temporary session
-    if(sessionStorage.getItem("logged") === "yes"){
+    if(localStorage.getItem("logged") === "yes"){
         loginScreen.style.display = "none";
         document.getElementById("appContent").style.display = "block";
         customerListCard.style.display = "block";
@@ -1301,7 +1312,7 @@ function saveEditedCustomer() {
 
 /* ======================================================
       DELETE CUSTOMER
-===================================================== */
+====================================================== */
 function deleteCustomer(id) {
     if (!confirm("क्या ग्राहक हटाना है?")) return;
 
@@ -1518,14 +1529,13 @@ loadVillageDropdown();
       LOGIN SYSTEM
 ====================================================== */
 
-const MASTER_PASS = "1234";          // अपना पासवर्ड यहाँ सेट करो
+let MASTER_PASS = localStorage.getItem("app_password") || "1234";
 const FAV_NAME = "saini";            // Forgot password वाला नाम
 
 function loginNow(){
     let p = loginPass.value.trim();
     if(p === MASTER_PASS){
-        // FIX: Using sessionStorage for session persistence during tab life
-        sessionStorage.setItem("logged", "yes");
+        localStorage.setItem("logged", "yes");
         loginScreen.style.display = "none";
         document.getElementById("appContent").style.display = "block";
         customerListCard.style.display = "block";
@@ -1548,7 +1558,7 @@ function hideForgot(){
 function resetPass(){
     let name = favName.value.trim().toLowerCase();
     if(name === FAV_NAME){
-        alert("✔ आपका नया पासवर्ड है: " + MASTER_PASS);
+        alert("✔ आपका पासवर्ड है: " + MASTER_PASS);
         hideForgot();
     } else {
         alert("❌ गलत नाम!");
@@ -1557,7 +1567,7 @@ function resetPass(){
 
 function logoutNow(){
     // 1. Clear session
-    sessionStorage.removeItem("logged");
+    localStorage.removeItem("logged");
 
     // 2. Clear all inputs
     loginPass.value = "";
@@ -1570,6 +1580,46 @@ function logoutNow(){
     
     // 4. Show only login screen
     loginScreen.style.display = "block";
+}
+
+/* ✅ Change Password Logic */
+function openChangePass() {
+    changePassPopup.style.display = "flex";
+}
+
+function closeChangePass() {
+    changePassPopup.style.display = "none";
+    currPass.value = "";
+    newPass.value = "";
+    confPass.value = "";
+}
+
+function submitChangePassword() {
+    let cp = currPass.value.trim();
+    let np = newPass.value.trim();
+    let cnp = confPass.value.trim();
+
+    if (cp !== MASTER_PASS) {
+        alert("Current password incorrect");
+        return;
+    }
+
+    if (np === "") {
+        alert("New password cannot be empty");
+        return;
+    }
+
+    if (np !== cnp) {
+        alert("Passwords do not match");
+        return;
+    }
+
+    // Update Storage
+    MASTER_PASS = np;
+    localStorage.setItem("app_password", np);
+    
+    alert("Password changed successfully! ✔");
+    closeChangePass();
 }
 
 /* Fingerprint Fix: Correct WebAuthn Logic */
@@ -1646,8 +1696,7 @@ async function fingerLogin() {
 
         const assertion = await navigator.credentials.get(getCredentialOptions);
         if (assertion) {
-            // FIX: Use sessionStorage on successful finger login
-            sessionStorage.setItem("logged", "yes");
+            localStorage.setItem("logged", "yes");
             loginScreen.style.display = "none";
             document.getElementById("appContent").style.display = "block";
             customerListCard.style.display = "block";
@@ -1849,4 +1898,4 @@ function closeFasalPopup() {
 
 </body>
 </html>
-App credit by Manish saini dhanani
+Software developed by MANISH SAINI DHANANI
