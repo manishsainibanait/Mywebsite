@@ -730,11 +730,19 @@ window.onload = () => {
     } else {
         document.getElementById("appContent").style.display = "none";
         loginScreen.style.display = "block";
+        
+        // --- IMPROVEMENT: Trigger automatic fingerprint prompt if credential exists ---
+        if (localStorage.getItem("fingerprintRegistered") === "true" && localStorage.getItem("fingerprint_id")) {
+             // Delay slightly to ensure UI is ready
+             setTimeout(() => {
+                 fingerLogin();
+             }, 500);
+        }
     }
 };
 
 /* ======================================================
-   Firebase Init
+      Firebase Init
 ====================================================== */
 const firebaseConfig = {
   apiKey: "AIzaSyB30K96un0DsFbJ0-dx329za1HEnky3iC8",
@@ -1610,7 +1618,9 @@ async function fingerLogin() {
     // 1. Check if credential exists
     const storedId = localStorage.getItem("fingerprint_id");
     if (localStorage.getItem("fingerprintRegistered") !== "true" || !storedId) {
-        return alert("कृपया पहले फिंगर प्रिंट रजिस्टर करें!");
+        // If triggered manually, show alert. If automatic, we just stay on login screen.
+        if (event && event.type === 'click') alert("कृपया पहले फिंगर प्रिंट रजिस्टर करें!");
+        return;
     }
 
     try {
@@ -1645,9 +1655,10 @@ async function fingerLogin() {
         console.error("Auth error:", err);
         // Friendly message instead of technical browser error
         if (err.name === "NotAllowedError") {
-            alert("लॉगिन रद्द कर दिया गया या टाइम आउट हो गया।");
+            // Only alert if the user manually clicked login and it failed/cancelled
+            if (event && event.type === 'click') alert("लॉगिन रद्द कर दिया गया या टाइम आउट हो गया।");
         } else {
-            alert("फिंगरप्रिंट काम नहीं कर रहा, कृपया पासवर्ड से लॉगिन करें।");
+             if (event && event.type === 'click') alert("फिंगरप्रिंट काम नहीं कर रहा, कृपया पासवर्ड से लॉगिन करें।");
         }
     }
 }
