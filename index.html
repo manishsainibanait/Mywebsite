@@ -355,6 +355,11 @@ td.name-col span {
 #villagePopupBox{
   z-index: 10000;
 }
+
+/* FIX: Ensure app content is hidden during login */
+#appContent {
+    display: none;
+}
 </style>
 </head>
 
@@ -396,6 +401,9 @@ td.name-col span {
   <button class="btn btn-secondary w-100 mt-2" onclick="hideForgot()">वापस</button>
 
 </div>
+
+<div id="appContent">
+
 <div id="customerListCard" class="card" style="display:none">
   <div class="header">
 
@@ -519,7 +527,6 @@ td.name-col span {
     </div>
 
   </div>
-</div>
 
 <div id="addCustomerCard" class="card" style="display:none">
   <div class="header" id="formHeader">➕ नया ग्राहक जोड़ें</div>
@@ -596,8 +603,6 @@ td.name-col span {
     📘 ग्राहक लेजर
 
     <button class="btn btn-light float-end btn-sm" onclick="backToList()">🔙 वापस</button>
-        ←
-    </button>
 </div>
 
   <div class="sub-header" id="ledgerCustomerName"></div>
@@ -644,8 +649,7 @@ td.name-col span {
   </div>
 </div>
 
-
-<div id="transactionPopupOverlay"
+</div> <div id="transactionPopupOverlay"
      style="position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.5); display:none;
             justify-content:center; align-items:center; z-index:2000;">
@@ -720,8 +724,12 @@ td.name-col span {
 window.onload = () => {
     if(localStorage.getItem("logged") === "yes"){
         loginScreen.style.display = "none";
+        document.getElementById("appContent").style.display = "block";
         customerListCard.style.display = "block";
         loadCustomers();
+    } else {
+        document.getElementById("appContent").style.display = "none";
+        loginScreen.style.display = "block";
     }
 };
 
@@ -749,7 +757,9 @@ function showCard(id){
   customerListCard.style.display="none";
   addCustomerCard.style.display="none";
   ledgerCard.style.display="none";
+  // Always hide login when showing cards
   loginScreen.style.display="none";
+  document.getElementById("appContent").style.display = "block";
 
   document.getElementById(id).style.display="block";
 }
@@ -1411,7 +1421,6 @@ function toggleSummary() {
 ====================================================== */
 
 // Popup खोलना
-customerListCard.style.display = "none";
 function openVillageManager() {
     let html = `
       <div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;">
@@ -1434,7 +1443,6 @@ function openVillageManager() {
 }
 
 // Popup बंद करना
-customerListCard.style.display = "block";
 function closeVillagePopup() {
     villagePopup.style.display = "none";
 }
@@ -1450,7 +1458,7 @@ function addVillage() {
     document.getElementById("newVillage").value = "";
     loadVillageList();
     loadVillageDropdown();
-loadFasalDropdown();
+    loadFasalDropdown();
 }
 
 /* ⭐ Village list लोड करना (Popup में) */
@@ -1507,8 +1515,9 @@ const FAV_NAME = "saini";            // Forgot password वाला नाम
 function loginNow(){
     let p = loginPass.value.trim();
     if(p === MASTER_PASS){
-localStorage.setItem("logged", "yes");
+        localStorage.setItem("logged", "yes");
         loginScreen.style.display = "none";
+        document.getElementById("appContent").style.display = "block";
         customerListCard.style.display = "block";
         loadCustomers();
     } else {
@@ -1537,14 +1546,23 @@ function resetPass(){
 }
 
 function logoutNow(){
-localStorage.removeItem("logged");
+    // 1. Clear session
+    localStorage.removeItem("logged");
+
+    // 2. Clear all inputs
+    loginPass.value = "";
+
+    // 3. Hide ALL app layouts completely
+    document.getElementById("appContent").style.display = "none";
     customerListCard.style.display = "none";
     ledgerCard.style.display = "none";
     addCustomerCard.style.display = "none";
+    
+    // 4. Show only login screen
     loginScreen.style.display = "block";
 }
 
-/* Fingerprint Fix: Real Biometric Authentication Implementation */
+/* Fingerprint Fix: Correct WebAuthn Logic */
 async function registerFinger() {
     if (!window.PublicKeyCredential) {
         return alert("This browser does not support Biometric authentication.");
@@ -1554,23 +1572,31 @@ async function registerFinger() {
         const challenge = new Uint8Array(32);
         window.crypto.getRandomValues(challenge);
 
+        // Simple mock ID for platform authenticator
+        const userId = new Uint8Array(16);
+        window.crypto.getRandomValues(userId);
+
         const createCredentialOptions = {
             publicKey: {
                 challenge,
                 rp: { name: "Saini Trading" },
                 user: {
-                    id: new Uint8Array(16),
+                    id: userId,
                     name: "admin",
                     displayName: "Admin User"
                 },
                 pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-                authenticatorSelection: { authenticatorAttachment: "platform" },
+                authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
                 timeout: 60000
             }
         };
 
         const credential = await navigator.credentials.create(createCredentialOptions);
         if (credential) {
+            // Store Credential ID to use in allowCredentials
+            const rawId = new Uint8Array(credential.rawId);
+            const idArray = Array.from(rawId);
+            localStorage.setItem("fingerprint_id", JSON.stringify(idArray));
             localStorage.setItem("fingerprintRegistered", "true");
             alert("Fingerprint Registered successfully! ✔");
         }
@@ -1581,18 +1607,27 @@ async function registerFinger() {
 }
 
 async function fingerLogin() {
-    if (localStorage.getItem("fingerprintRegistered") !== "true") {
-        return alert("Please register your fingerprint first!");
+    // 1. Check if credential exists
+    const storedId = localStorage.getItem("fingerprint_id");
+    if (localStorage.getItem("fingerprintRegistered") !== "true" || !storedId) {
+        return alert("कृपया पहले फिंगर प्रिंट रजिस्टर करें!");
     }
 
     try {
         const challenge = new Uint8Array(32);
         window.crypto.getRandomValues(challenge);
+        
+        const idArray = JSON.parse(storedId);
+        const allowCredentialsId = new Uint8Array(idArray);
 
         const getCredentialOptions = {
             publicKey: {
                 challenge,
                 timeout: 60000,
+                allowCredentials: [{
+                    id: allowCredentialsId,
+                    type: 'public-key'
+                }],
                 userVerification: "required"
             }
         };
@@ -1601,13 +1636,19 @@ async function fingerLogin() {
         if (assertion) {
             localStorage.setItem("logged", "yes");
             loginScreen.style.display = "none";
+            document.getElementById("appContent").style.display = "block";
             customerListCard.style.display = "block";
             loadCustomers();
-            alert("Fingerprint Authenticated ✔");
+            alert("Authentication Successful ✔");
         }
     } catch (err) {
-        console.error(err);
-        alert("Authentication failed: " + err.message);
+        console.error("Auth error:", err);
+        // Friendly message instead of technical browser error
+        if (err.name === "NotAllowedError") {
+            alert("लॉगिन रद्द कर दिया गया या टाइम आउट हो गया।");
+        } else {
+            alert("फिंगरप्रिंट काम नहीं कर रहा, कृपया पासवर्ड से लॉगिन करें।");
+        }
     }
 }
 
@@ -1644,7 +1685,7 @@ tDate.onchange = calcDays;
 tEndDate.onchange = calcDays;
 tInterest.oninput = calcInterest;
 tDebit.oninput = calcInterest;
-tCredit.oninput = calcInterest;   // ⭐⭐⭐ यही missing था
+tCredit.oninput = calcInterest;   
 tDays.oninput = calcInterest;
 function calcDays() {
     let start = tDate.value;
