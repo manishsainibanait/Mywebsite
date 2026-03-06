@@ -5,11 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>सैनी ट्रेडिंग कंपनी</title>
 
-<!-- Manifest -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d6efd">
 
-<!-- Service Worker -->
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', ()=> {
@@ -18,14 +16,11 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<!-- Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- Bootstrap -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
@@ -366,11 +361,13 @@ td.name-col span {
 
 <body>
 
-<!-- 🔐 LOGIN SCREEN -->
 <div id="loginScreen" style="
     width:100%; max-width:400px; margin:40px auto;
     background:white; padding:25px; border-radius:15px;
     box-shadow:0 4px 10px rgba(0,0,0,0.25);">
+
+  <h2 class="text-center fw-bold text-primary mb-1">Saini Trading Company App</h2>
+  <hr>
 
   <h3 class="text-center mb-3">🔐 लॉगिन</h3>
 
@@ -385,7 +382,6 @@ td.name-col span {
   <button class="btn btn-success w-100" onclick="fingerLogin()">🔒 फिंगर लॉगिन</button>
 </div>
 
-<!-- 🔑 FORGOT PASSWORD BOX -->
 <div id="forgotBox" style="
     display:none; width:100%; max-width:400px;
     margin:40px auto; background:white; padding:20px;
@@ -400,7 +396,6 @@ td.name-col span {
   <button class="btn btn-secondary w-100 mt-2" onclick="hideForgot()">वापस</button>
 
 </div>
-<!-- ⭐ CUSTOMER LIST SCREEN -->
 <div id="customerListCard" class="card" style="display:none">
   <div class="header">
 
@@ -429,10 +424,7 @@ td.name-col span {
 </div>
 
 
-  <!-- कुल ग्राहक -->
-  
-  <!-- ☰ MENU -->
-<div class="d-flex justify-content-start px-3 mt-2 mb-4">
+  <div class="d-flex justify-content-start px-3 mt-2 mb-4">
   <div class="dropdown">
     <button class="menu-btn dropdown-toggle"
         type="button"
@@ -450,25 +442,20 @@ td.name-col span {
     </ul>
   </div>
 </div>
-    <!-- कुल सारांश बटन -->
     <button class="btn btn-info w-100 mb-2 hide-duplicate" onclick="toggleSummary()">
       🔍 कुल सारांश
     </button>
 
-    <!-- सारांश बॉक्स -->
     <div id="totalSummary"
          class="alert alert-info text-center fw-bold mb-3"
          style="display:none">
-      <!-- JS से भरेगा -->
-    </div>
+      </div>
 
-    <!-- गाँव मैनेजर -->
-   <button class="btn btn-dark w-100 mb-3 hide-duplicate" onclick="openVillageManager()">
+    <button class="btn btn-dark w-100 mb-3 hide-duplicate" onclick="openVillageManager()">
       🏡 गाँव प्रबंधन (Edit / Delete)
     </button>
 
-    <!-- सर्च + गाँव फिल्टर -->
-  <div class="row mb-3 mt-2">
+    <div class="row mb-3 mt-2">
       <div class="col-6">
         <input id="searchBox"
                class="form-control"
@@ -481,7 +468,6 @@ td.name-col span {
       </div>
     </div>
 
-    <!-- Delete buttons -->
     <div class="d-flex gap-2 mb-3">
     <button class="btn btn-danger flex-fill hide-duplicate" onclick="deleteSelectedCustomers()">
         🗑 चुने हुए हटाएं
@@ -489,7 +475,6 @@ td.name-col span {
  
     </div>
 
-    <!-- नया ग्राहक / प्रिंट / एक्सेल -->
     <button class="btn btn-success w-100 mb-3 hide-duplicate" onclick="openAddCustomer()">
       + नया ग्राहक जोड़ें
     </button>
@@ -508,7 +493,6 @@ td.name-col span {
       📤 Excel से डेटा अपलोड करें
     </button>
 
-    <!-- ग्राहक टेबल -->
     <div id="customerTableContainer"
          class="table-responsive"
          style="max-height:65vh; overflow-y:auto;">
@@ -537,7 +521,6 @@ td.name-col span {
   </div>
 </div>
 
-<!-- ⭐ ADD CUSTOMER SCREEN -->
 <div id="addCustomerCard" class="card" style="display:none">
   <div class="header" id="formHeader">➕ नया ग्राहक जोड़ें</div>
 
@@ -569,7 +552,6 @@ td.name-col span {
   </div>
 </div>
 
-<!-- ⭐ Village Manager Popup -->
 <div id="villagePopup">
   <div id="fasalPopupBox">
 
@@ -587,7 +569,6 @@ td.name-col span {
 
   </div>
 </div>
-<!-- ⭐ FASAL MANAGER POPUP -->
 <div id="fasalManagerPopup" style="display:none;
     position:fixed;top:0;left:0;width:100%;height:100%;
     background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:3000;">
@@ -610,7 +591,6 @@ td.name-col span {
     </button>
   </div>
 </div>
-<!-- ⭐ LEDGER SCREEN -->
 <div id="ledgerCard" class="card" style="display:none">
  <div class="header">
     📘 ग्राहक लेजर
@@ -630,14 +610,12 @@ td.name-col span {
 
     <button class="btn btn-success flex-fill" onclick="openFasalPopup()">🌾 फसल जोड़ें</button>
 
-    <!-- ⭐ नया बटन यहाँ -->
     <button class="btn btn-warning flex-fill" onclick="openFasalManager()">🌾 फसल लिस्ट</button>
 
     <button class="btn btn-secondary flex-fill" onclick="printLedger()">🖨 प्रिंट</button>
 
 </div>
 
-    <!-- ⭐ Multi Fasal Summary Box (Collapsible) -->
     <div class="fasal-box">
         <div class="fasal-head" onclick="toggleFasalSummary()">📊 कुल फसल सारांश (Tap)</div>
         <div id="fasalSummary" class="fasal-detail"></div>
@@ -648,8 +626,7 @@ td.name-col span {
         <thead class="table-warning">
   <tr>
     <th>तारीख</th>
-    <th>अंतिम तारीख</th>   <!-- ⭐ नया END DATE column -->
-    <th>जमा</th>
+    <th>अंतिम तारीख</th>   <th>जमा</th>
     <th>निकासी</th>
     <th>ब्याज %</th>
     <th>दिन</th>
@@ -668,7 +645,6 @@ td.name-col span {
 </div>
 
 
-<!-- ⭐ NORMAL TRANSACTION POPUP -->
 <div id="transactionPopupOverlay"
      style="position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.5); display:none;
@@ -693,7 +669,6 @@ td.name-col span {
 </div>
 
 
-<!-- ⭐ FASAL POPUP -->
 <div id="fasalPopupOverlay"
      style="position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.5); display:none;
@@ -1569,15 +1544,73 @@ localStorage.removeItem("logged");
     loginScreen.style.display = "block";
 }
 
-/* Dummy Fingerprint — Mobile पर काम तभी करेगा जब browser allow करे */
-function registerFinger(){
-    alert("Fingerprint Registered ✔");
+/* Fingerprint Fix: Real Biometric Authentication Implementation */
+async function registerFinger() {
+    if (!window.PublicKeyCredential) {
+        return alert("This browser does not support Biometric authentication.");
+    }
+
+    try {
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+
+        const createCredentialOptions = {
+            publicKey: {
+                challenge,
+                rp: { name: "Saini Trading" },
+                user: {
+                    id: new Uint8Array(16),
+                    name: "admin",
+                    displayName: "Admin User"
+                },
+                pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                authenticatorSelection: { authenticatorAttachment: "platform" },
+                timeout: 60000
+            }
+        };
+
+        const credential = await navigator.credentials.create(createCredentialOptions);
+        if (credential) {
+            localStorage.setItem("fingerprintRegistered", "true");
+            alert("Fingerprint Registered successfully! ✔");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Registration failed: " + err.message);
+    }
 }
 
-function fingerLogin(){
-    alert("Fingerprint Success ✔");
-    loginNow();
+async function fingerLogin() {
+    if (localStorage.getItem("fingerprintRegistered") !== "true") {
+        return alert("Please register your fingerprint first!");
+    }
+
+    try {
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+
+        const getCredentialOptions = {
+            publicKey: {
+                challenge,
+                timeout: 60000,
+                userVerification: "required"
+            }
+        };
+
+        const assertion = await navigator.credentials.get(getCredentialOptions);
+        if (assertion) {
+            localStorage.setItem("logged", "yes");
+            loginScreen.style.display = "none";
+            customerListCard.style.display = "block";
+            loadCustomers();
+            alert("Fingerprint Authenticated ✔");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Authentication failed: " + err.message);
+    }
 }
+
 function editFasal(id){
     db.ref("ledgers/" + currentCustomerId + "/" + id).once("value").then(s=>{
         let f = s.val();
