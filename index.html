@@ -1,1899 +1,1868 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>सैनी ट्रेडिंग कंपनी</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0d6efd">
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', ()=> {
-    navigator.serviceWorker.register('service-worker.js');
-  });
-}
-</script>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
-<style>
-/* ===== PROFESSIONAL COLOURFUL SEARCH + FILTER ===== */
-
-/* 🔵 नाम से खोजें */
-#searchBox{
-  border:2px solid #60a5fa;
-  border-radius:10px;
-  padding:10px;
-  font-weight:600;
-  background:#f0f7ff;
-}
-#searchBox:focus{
-  outline:none;
-  border-color:#2563eb;
-  box-shadow:0 0 0 3px rgba(37,99,235,.25);
-  background:white;
-}
-
-/* 🟡 गाँव filter */
-#villageFilter{
-  border:2px solid #facc15;
-  border-radius:10px;
-  padding:10px;
-  font-weight:600;
-  background:#fffbea;
-}
-#villageFilter:focus{
-  outline:none;
-  border-color:#eab308;
-  box-shadow:0 0 0 3px rgba(234,179,8,.25);
-  background:white;
-}
-
-/* ===== TABLE PROFESSIONAL LOOK ===== */
-thead th{
-  background:linear-gradient(180deg,#eaf2ff,#dbeafe);
-  color:#1e3a8a;
-  font-weight:700;
-  position:sticky;
-  top:0;
-  z-index:20;
-}
-/* GLOBAL */
-body { background:#f8fafc; padding:20px; font-family:'Poppins',sans-serif; }
-.card { border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.12); margin-bottom:20px; }
-.header {
-    background:#0d6efd;
-    color:white;
-    text-align:center;
-    padding:12px;
-    border-radius:15px 15px 0 0;
-    font-weight:600;
-    font-size:1.2rem;
-    position: relative;   /* ⭐ यही डालना है */
-}
-.sub-header { background:#ffc107; padding:6px; text-align:center;
-              font-weight:600; border-radius:0 0 15px 15px; }
-.btn { border-radius:8px; font-weight:600; }
-table { font-size:0.9rem; }
-
-/* 🌾 फसल Display बॉक्स */
-.fasal-note-box {
-    background:#fff8d6; padding:12px; border-radius:10px;
-    border-left:6px solid #f4c542; line-height:1.4;
-    white-space:pre-line; font-size:14px;
-}
-
-/* 🌾 Multi-Fasal Collapsible	UI */
-.fasal-box {
-    background:#fff8d6; border:2px solid #f4c542;
-    padding:12px; border-radius:12px; margin-top:6px;
-    white-space:pre-line;
-}
-.fasal-head {
-    background:#ffe8a3; padding:6px 10px; border-radius:6px;
-    cursor:pointer; font-weight:600;
-}
-.fasal-detail { display:none; }
-/* === 3D METAL BLUE BACK BUTTON === */
-.back-3d-btn {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    transform: translateY(-50%);
-
-    padding: 10px 22px;
-    border-radius: 40px;
-
-    background: linear-gradient(145deg, #6eb0ff, #2b7cff);
-    border: 4px solid #dcdcdc;
-
-    box-shadow:
-        inset 0 4px 7px rgba(255,255,255,0.9),
-        inset 0 -4px 7px rgba(0,0,0,0.25),
-        0 6px 14px rgba(0,0,0,0.35),
-        0 0 6px rgba(255,255,255,0.8);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: white;
-    font-size: 22px;
-    font-weight: 700;
-
-    height: 45px;
-    width: 85px;
-
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.back-3d-btn:active {
-    transform: translateY(-50%) scale(0.96);
-}
-/* Customer table freeze columns */
-th.check-col, td.check-col {
-    position:sticky; left:0; background:white; z-index:30;
-}
-th.name-col{
-    position:sticky;
-    left:35px;
-    background:linear-gradient(180deg,#eaf2ff,#dbeafe);
-    color:#1e3a8a;
-    z-index:31;
-}
-
-td.name-col{
-    position:sticky;
-    left:35px;
-    background:white;
-    z-index:29;
-}
-    white-space:normal; line-height:1.1;
-    min-width:95px; max-width:95px;
-}
-th.reg-col, td.reg-col {
-    width:55px !important; text-align:center; font-weight:bold;
-}
-
-/* Popup */
-#popupOverlay, #fasalPopupOverlay, #villagePopup, #changePassPopup {
-    position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.5); display:none;
-    justify-content:center; align-items:center; z-index:3000;
-}
-#popupBox {
-    background:white; padding:20px; border-radius:12px;
-    width:90%; max-width:420px;
-}
-
-/* ✅ PRINT FIX */
-@media print {
-#customerTableContainer {
-    max-height: none !important;
-    overflow: visible !important;
-}
-    /* Login screen hide */
-    #loginScreen {
-        display: none !important;
-    }
-
-    /* Header–buttons hide */
-    .btn, button, select, input {
-        display: none !important;
-    }
-
-    /* Fasals ke upar wale बड़े बॉक्स hide */
-    .summary-card,
-    .total-fasal-wrapper,
-    .fasal-summary-box,
-    .fasal-box {
-        display: none !important;
-    }
-
-    /* PDF में रंग सही दिखाने के लिए */
-    body {
-        -webkit-print-color-adjust: exact !important;
-        background: white !important;
-    }
-
-    /* Table पूरा दिखे */
-    table, tr, td, th {
-        color: #000 !important;
-        background: white !important;
-    }
-}
-td.name-col span {
-    font-weight: 800 !important;
-}
-/* यहाँ तेरे बाकी CSS हैं... */
-
-/* यहाँ PRINT FIX डालना है  =================== */
-@media print {
-
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  html, body {
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  .card {
-    page-break-inside: avoid !important;
-  }
-
-  table {
-    page-break-inside: auto !important;
-  }
-
-  tr, td, th {
-    page-break-inside: avoid !important;
-    page-break-after: auto !important;
-  }
-
-  #customerListCard {
-    max-height: none !important;
-    overflow: visible !important;
-  }
-
-}
-/* ============================================= */
-.hide-duplicate{
-  display:none !important;
-}
-/* ☰ MENU click fix */
-.dropdown{
-  position: relative;
-  z-index: 9999;
-}
-#searchBox::placeholder{
-  color:#374151;
-}
-#customerTable tr:hover{
-  background:#f1f5ff;
-}
-#villageFilter option{
-  font-weight:600;
-}
-.customer-count-card{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  margin:12px;
-  padding:14px 18px;
-  background:linear-gradient(135deg,#e0f2ff,#f8fbff);
-  border-radius:14px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.15);
-  border-left:6px solid #0d6efd;
-}
-
-.cc-icon{
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  background:#0d6efd;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  color:white;
-}
-
-.cc-label{
-  font-size:14px;
-  color:#1e3a8a;
-  font-weight:600;
-}
-
-.cc-number{
-  font-size:22px;
-  font-weight:800;
-  color:#0d6efd;
-}
-.count-header{
-  background:#eaf2ff;
-  color:#1e3a8a;
-  font-weight:700;
-  text-align:center;
-  padding:8px;
-  border-bottom:2px solid #0d6efd;
-  font-size:15px;
-}
-.count-sub{
-  background:#f1f5ff;     /* हल्का blue */
-  color:#1e3a8a;
-  font-size:14px;
-  font-weight:600;
-  border-top:1px solid #dbeafe;
-}
-/* ===== PROFESSIONAL MENU BUTTON ===== */
-.menu-btn{
-  background: linear-gradient(135deg,#1e88e5,#0d47a1);
-  color:white;
-  border:none;
-  border-radius:12px;
-  padding:8px 14px;
-  font-weight:700;
-  display:flex;
-  align-items:center;
-  gap:6px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.25);
-}
-
-.menu-btn:focus,
-.menu-btn:active{
-  box-shadow:0 0 0 3px rgba(30,136,229,.35);
-}
-
-.menu-btn i{
-  font-size:18px;
-}
-/* ❌ Popup ke andar main menu hide */
-#villagePopup .main-menu {
-  display: none !important;
-}
-/* ❌ गाँव प्रबंधन Popup में Menu hide */
-#villagePopup .dropdown,
-#villagePopup .menu-btn {
-  display: none !important;
-}
-#villagePopup{
-  z-index: 9999;
-}
-
-#villagePopupBox{
-  z-index: 10000;
-}
-
-/* FIX: Ensure app content is hidden during login */
-#appContent {
-    display: none;
-}
-</style>
-</head>
-
-
-<body>
-
-<div id="loginScreen" style="
-    width:100%; max-width:400px; margin:40px auto;
-    background:white; padding:25px; border-radius:15px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.25);">
-
-  <h2 class="text-center fw-bold text-primary mb-1">Saini Trading Company App</h2>
-  <hr>
-
-  <h3 class="text-center mb-3">🔐 लॉगिन</h3>
-
-  <input id="loginPass" type="password"
-         class="form-control mb-3"
-         placeholder="पासवर्ड दर्ज करें">
-
-  <button class="btn btn-primary w-100 mb-2" onclick="loginNow()">लॉगिन</button>
-  <button class="btn btn-danger w-100 mb-2" onclick="showForgot()">❓ पासवर्ड भूल गए?</button>
-
-  <button class="btn btn-warning w-100 mb-2" onclick="registerFinger()">🔑 फिंगर प्रिंट रजिस्टर</button>
-  <button class="btn btn-success w-100" onclick="fingerLogin()">🔒 फिंगर लॉगिन</button>
-</div>
-
-<div id="forgotBox" style="
-    display:none; width:100%; max-width:400px;
-    margin:40px auto; background:white; padding:20px;
-    border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.25);">
-
-  <h4 class="text-center mb-3">🔑 पासवर्ड रीसेट</h4>
-
-  <input id="favName" class="form-control mb-2"
-         placeholder="फेवरेट नाम लिखें">
-
-  <button class="btn btn-success w-100" onclick="resetPass()">Reset करें</button>
-  <button class="btn btn-secondary w-100 mt-2" onclick="hideForgot()">वापस</button>
-
-</div>
-
-<div id="changePassPopup">
-    <div id="popupBox">
-        <h4 class="text-center mb-3">🔐 पासवर्ड बदलें</h4>
-        <input id="currPass" type="password" class="form-control mb-2" placeholder="पुराना पासवर्ड">
-        <input id="newPass" type="password" class="form-control mb-2" placeholder="नया पासवर्ड">
-        <input id="confPass" type="password" class="form-control mb-3" placeholder="नया पासवर्ड कन्फर्म करें">
-        <button class="btn btn-success w-100 mb-2" onclick="submitChangePassword()">पासवर्ड बदलें</button>
-        <button class="btn btn-secondary w-100" onclick="closeChangePass()">बंद करें</button>
-    </div>
-</div>
-
-<div id="appContent">
-
-<div id="customerListCard" class="card" style="display:none">
-  <div class="header">
-
-    <button onclick="logoutNow()" class="btn btn-light btn-sm" style="float:left">
-      🚪 Logout
-    </button>
-
-    सैनी ट्रेडिंग कंपनी
-
-    <span id="mainDate" style="float:right; font-size:14px;"></span>
-  </div>
-
-<div class="sub-header">
-  ग्राहक सूची
-  <span style="
-    font-weight:700;
-    font-size:16px;
-    color:#0d47a1;
-    margin-left:6px;
-  ">
-    (कुल ग्राहक :
-    <span id="customerCount" style="color:#c62828;font-weight:800;">
-      0
-    </span>)
-  </span>
-</div>
-
-
-  <div class="d-flex justify-content-start px-3 mt-2 mb-4">
-  <div class="dropdown">
-    <button class="menu-btn dropdown-toggle"
-        type="button"
-        data-bs-toggle="dropdown">
-  <i class="bi bi-list"></i> मेन्यू
-</button>
-
-    <ul class="dropdown-menu">
-      <li><a class="dropdown-item" href="#" onclick="openVillageManager()">🏡 गाँव प्रबंधन</a></li>
-      <li><a class="dropdown-item" href="#" onclick="toggleSummary()">🔍 कुल सारांश</a></li>
-      <li><a class="dropdown-item" href="#" onclick="deleteSelectedCustomers()">🗑 चुने हुए ग्राहक हटाएं</a></li>
-      <li><a class="dropdown-item" href="#" onclick="openAddCustomer()">➕ नया ग्राहक जोड़ें</a></li>
-      <li><a class="dropdown-item" href="#" onclick="document.getElementById('excelUpload').click()">📤 Excel डेटा अपलोड</a></li>
-      <li><a class="dropdown-item" href="#" onclick="printCustomers()">🖨 ग्राहक सूची प्रिंट</a></li>
-      <li><a class="dropdown-item" href="#" onclick="openChangePass()">🔐 पासवर्ड बदलें</a></li>
-    </ul>
-  </div>
-</div>
-    <button class="btn btn-info w-100 mb-2 hide-duplicate" onclick="toggleSummary()">
-      🔍 कुल सारांश
-    </button>
-
-    <div id="totalSummary"
-         class="alert alert-info text-center fw-bold mb-3"
-         style="display:none">
-      </div>
-
-    <button class="btn btn-dark w-100 mb-3 hide-duplicate" onclick="openVillageManager()">
-      🏡 गाँव प्रबंधन (Edit / Delete)
-    </button>
-
-    <div class="row mb-3 mt-2">
-      <div class="col-6">
-        <input id="searchBox"
-               class="form-control"
-               placeholder="नाम से खोजें...">
-      </div>
-      <div class="col-6">
-        <select id="villageFilter" class="form-select">
-          <option value="">सभी गाँव</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="d-flex gap-2 mb-3">
-    <button class="btn btn-danger flex-fill hide-duplicate" onclick="deleteSelectedCustomers()">
-        🗑 चुने हुए हटाएं
-      </button>
- 
-    </div>
-
-    <button class="btn btn-success w-100 mb-3 hide-duplicate" onclick="openAddCustomer()">
-      + नया ग्राहक जोड़ें
-    </button>
-
-  <button class="btn btn-secondary w-100 mb-3 hide-duplicate" onclick="printCustomers()">
-      🖨 ग्राहक सूची प्रिंट करें
-    </button>
-
-    <input type="file" id="excelUpload"
-           accept=".xlsx,.xls,.csv"
-           class="form-control mb-3"
-           style="display:none">
-
-  <button class="btn btn-warning w-100 mb-3 hide-duplicate"
-        onclick="document.getElementById('excelUpload').click()">
-      📤 Excel से डेटा अपलोड करें
-    </button>
-
-    <div id="customerTableContainer"
-         class="table-responsive"
-         style="max-height:65vh; overflow-y:auto;">
-
-      <table class="table table-bordered text-center align-middle">
-      <thead>
-          <tr>
-            <th class="check-col">
-              <input type="checkbox" id="selectAll"
-                     onchange="toggleSelectAll(this)">
-            </th>
-            <th class="name-col">नाम</th>
-            <th class="reg-col">र.न.</th>
-            <th>पुत्र</th>
-            <th>गाँव</th>
-            <th>मोबाइल</th>
-            <th>आधार</th>
-            <th>कार्य</th>
-          </tr>
-        </thead>
-        <tbody id="customerTable"></tbody>
-      </table>
-
-    </div>
-
-  </div>
-
-<div id="addCustomerCard" class="card" style="display:none">
-  <div class="header" id="formHeader">➕ नया ग्राहक जोड़ें</div>
-
-  <div class="card-body">
-
-    <input id="cName"   class="form-control mb-2" placeholder="नाम">
-    <input id="cFather" class="form-control mb-2" placeholder="पुत्र का नाम">
-
-    <div class="input-group mb-2">
-      <select id="cVillage" class="form-select">
-        <option value="">गाँव चुनें</option>
-      </select>
-      <button class="btn btn-outline-secondary"
-              type="button"
-              onclick="addNewVillage()">+
-      </button>
-    </div>
-
-    <input id="cPhone"  class="form-control mb-2" placeholder="मोबाइल नंबर">
-    <input id="cAadhar" class="form-control mb-3" placeholder="आधार नंबर">
-<input id="cRN" class="form-control mb-3" placeholder="रजिस्टर नंबर (R.N.)">
-    <button class="btn btn-success w-100 mb-2" onclick="saveEditedCustomer()">
-✔ सहेजें
-</button>
-
-<button class="btn btn-secondary w-100" onclick="backToList()">
-🔙 वापस
-</button>
-  </div>
-</div>
-
-<div id="villagePopup">
-  <div id="fasalPopupBox">
-
-    <h4 class="text-center mb-3">🏡 गाँव प्रबंधन</h4>
-
-    <ul id="villageList" class="list-group mb-3"></ul>
-
-    <button class="btn btn-success w-100 mb-2" onclick="addNewVillage()">
-      + नया गाँव जोड़ें
-    </button>
-
-    <button class="btn btn-secondary w-100" onclick="closeVillageManager()">
-      बंद करें
-    </button>
-
-  </div>
-</div>
-<div id="fasalManagerPopup" style="display:none;
-    position:fixed;top:0;left:0;width:100%;height:100%;
-    background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:3000;">
+<!DOCTYPE html>  <html lang="hi">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1">  
+<title>सैनी ट्रेडिंग कंपनी</title>  <link rel="manifest" href="manifest.json">  
+<meta name="theme-color" content="#0d6efd">  <script>  
+if ('serviceWorker' in navigator) {  
+  window.addEventListener('load', ()=> {  
+    navigator.serviceWorker.register('service-worker.js');  
+  });  
+}  
+</script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">  <style>  
+/* ===== ADVANCED REPORT FONT BIG + BOLD ===== */  
   
-  <div style="background:white;padding:20px;border-radius:12px;
-      width:90%;max-width:400px;">
-
-    <h4 class="text-center mb-3">🌾 फसल प्रबंधन</h4>
-
-    <input id="newFasalName" class="form-control mb-2" placeholder="नई फसल का नाम">
-
-    <button class="btn btn-success w-100 mb-3" onclick="addNewFasal()">
-      + जोड़ें
-    </button>
-
-    <div id="fasalList" style="max-height:300px;overflow-y:auto;"></div>
-
-    <button class="btn btn-danger w-100 mt-3" onclick="closeFasalManager()">
-      ❌ बंद करें
-    </button>
-  </div>
-</div>
-<div id="ledgerCard" class="card" style="display:none">
- <div class="header">
-    📘 ग्राहक लेजर
-
-    <button class="btn btn-light float-end btn-sm" onclick="backToList()">🔙 वापस</button>
-</div>
-
-  <div class="sub-header" id="ledgerCustomerName"></div>
-
-  <div class="card-body">
-
-    <div class="d-flex gap-2 mb-3">
-
-    <button class="btn btn-primary flex-fill" onclick="openTransactionPopup()">+ लेन-देन</button>
-
-    <button class="btn btn-success flex-fill" onclick="openFasalPopup()">🌾 फसल जोड़ें</button>
-
-    <button class="btn btn-warning flex-fill" onclick="openFasalManager()">🌾 फसल लिस्ट</button>
-
-    <button class="btn btn-secondary flex-fill" onclick="printLedger()">🖨 प्रिंट</button>
-
-</div>
-
-    <div class="fasal-box">
-        <div class="fasal-head" onclick="toggleFasalSummary()">📊 कुल फसल सारांश (Tap)</div>
-        <div id="fasalSummary" class="fasal-detail"></div>
-    </div>
-
-    <div class="table-responsive mt-3">
-      <table class="table table-bordered text-center">
-        <thead class="table-warning">
-  <tr>
-    <th>तारीख</th>
-    <th>अंतिम तारीख</th>   <th>जमा</th>
-    <th>निकासी</th>
-    <th>ब्याज %</th>
-    <th>दिन</th>
-    <th>ब्याज राशि</th>
-    <th>फसल</th>
-    <th>नोट</th>
-    <th>कार्य</th>
-  </tr>
-</thead>
-        <tbody id="ledgerTable"></tbody>
-        <tfoot id="ledgerFooter"></tfoot>
-      </table>
-    </div>
-
-  </div>
-</div>
-
-</div> <div id="transactionPopupOverlay"
-     style="position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.5); display:none;
-            justify-content:center; align-items:center; z-index:2000;">
-  <div id="popupBox">
-
-    <h5 class="text-center mb-3">🧾 नया लेन-देन</h5>
-<input id="tDate" type="date" class="form-control mb-2" placeholder="शुरू तारीख़">
-    <input id="tEndDate" type="date" class="form-control mb-2" placeholder="अंतिम तारीख़">
-    <input id="tCredit" type="number" class="form-control mb-2" placeholder="जमा (₹)">
-    <input id="tDebit" type="number" class="form-control mb-2" placeholder="निकासी (₹)">
-    <input id="tInterest" type="number" class="form-control mb-2" placeholder="ब्याज (%)">
-   <input id="tDays" type="number" class="form-control mb-2" placeholder="दिन" readonly>
-
-<input id="tInterestAmount" type="number" class="form-control mb-2" placeholder="ब्याज राशि (₹)" readonly>
-
-<textarea id="tNote" class="form-control mb-3" placeholder="नोट"></textarea>
-
-    <button class="btn btn-success w-100 mb-2" onclick="saveTransaction()">✔ सहेजें</button>
-    <button class="btn btn-danger w-100" onclick="closeTransactionPopup()">रद्द</button>
-  </div>
-</div>
-
-
-<div id="fasalPopupOverlay"
-     style="position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.5); display:none;
-            justify-content:center; align-items:center; z-index:2000;">
-  <div id="popupBox">
-
-    <h5 class="text-center mb-3">🌾 नई फसल जोड़ें</h5>
-<input id="fDate" type="date" class="form-control mb-2">
-
-    <select id="fName" class="form-select mb-2">
-      <option value="">फसल चुनें</option>
-      <option>सरसों</option>
-      <option>गेहूं</option>
-      <option>बाजरा</option>
-      <option>धान</option>
-      <option>चना</option>
-      <option>मूंगफली</option>
-    </select>
-
-    <div class="row">
-      <div class="col-6">
-        <input id="fBori" type="number" class="form-control mb-2" placeholder="बोरियाँ">
-      </div>
-      <div class="col-6">
-        <input id="fWeightPer" type="number" class="form-control mb-2" placeholder="1 बोरी KG">
-      </div>
-    </div>
-<input id="fExtraKG" type="number" class="form-control mb-2" placeholder="अतिरिक्त KG">
-    <input id="fTotalQ" class="form-control mb-2" placeholder="कुल क्विंटल" readonly>
-
-    <input id="fRate" type="number" class="form-control mb-2" placeholder="भाव ₹/Q">
-    <input id="fMajduri" type="number" class="form-control mb-2" placeholder="मजदूरी ₹/Q">
-
-    <input id="fCutOther" type="number" class="form-control mb-2" placeholder="अन्य कटौती (₹)">
-    <input id="fCutTotal" class="form-control mb-2" placeholder="कुल कटौती" readonly>
-
-    <input id="fNetAmount" class="form-control fw-bold mb-2" placeholder="शुद्ध राशि" readonly>
-
-    <textarea id="fNote" class="form-control mb-3" placeholder="नोट"></textarea>
-
-    <button class="btn btn-success w-100 mb-2" onclick="saveFasal()">✔ सहेजें</button>
-    <button class="btn btn-danger w-100" onclick="closeFasalPopup()">रद्द</button>
-
-  </div>
-</div>
-
-
-<script>
-window.onload = () => {
-    // FIX: Using sessionStorage instead of localStorage for isLoggedIn check
-    if(sessionStorage.getItem("isLoggedIn") === "true"){
-        loginScreen.style.display = "none";
-        document.getElementById("appContent").style.display = "block";
-        customerListCard.style.display = "block";
-        loadCustomers();
-    } else {
-        document.getElementById("appContent").style.display = "none";
-        loginScreen.style.display = "block";
-        
-        if (localStorage.getItem("fingerprintRegistered") === "true" && localStorage.getItem("fingerprint_id")) {
-             setTimeout(() => {
-                 fingerLogin();
-             }, 500);
-        }
-    }
-};
-
-/* ======================================================
-      Firebase Init
-====================================================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyB30K96un0DsFbJ0-dx329za1HEnky3iC8",
-  authDomain: "ms-saini.firebaseapp.com",
-  databaseURL: "https://ms-saini-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "ms-saini",
-  storageBucket: "ms-saini.appspot.com",
-  messagingSenderId: "56761297643",
-  appId: "1:56761297643:web:efbb8d890036191cfcacae"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let currentCustomerId = null;
-
-/* ======================================================
-      CARD SWITCHING
-====================================================== */
-function showCard(id){
-  customerListCard.style.display="none";
-  addCustomerCard.style.display="none";
-  ledgerCard.style.display="none";
-  // Always hide login when showing cards
-  loginScreen.style.display="none";
-  document.getElementById("appContent").style.display = "block";
-
-  document.getElementById(id).style.display="block";
-}
-
-function backToList(){
-    showCard("customerListCard");
-    loadCustomers(() => {
-        filterCustomers();   // 🔥 search + village filter वापस apply
-    });
-}
-
-/* ======================================================
-      LOAD CUSTOMERS
-====================================================== */
-function loadCustomers(callback){
-  const ref = db.ref("customers");
-
-  ref.once("value").then(snap=>{
-      customerTable.innerHTML = "";
-
-      snap.forEach(c=>{
-        let d = c.val();
-        let id = c.key;
-
-        
-        let row = `
-        <tr>
-          <td class="check-col"><input value="${id}" class="customerCheckbox" type="checkbox"></td>
-
-          <td class="name-col">
-            <span style="color:blue;cursor:pointer" onclick="openLedger('${id}')">
-              ${(d.name || "").replace(/\s+\d+$/, "").replace(" ", "<br>")}
-            </span>
-          </td>
-
-          <td class="reg-col">${d.rn || ((d.name || "").match(/\d+$/) || [""])[0]}</td>
-      <td>${d.father || ""}</td>
-          <td>${d.village || ""}</td>
-          <td>${d.phone || ""}</td>
-          <td>${d.aadhar || ""}</td>
-
-          <td>
-            <button class="btn btn-sm btn-primary" onclick="editCustomer('${id}')">✏️</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${id}')">🗑</button>
-          </td>
-        </tr>
-        `;
-        customerTable.insertAdjacentHTML("beforeend", row);
-      });
-
-      document.getElementById("customerCount").innerText = snap.numChildren();
-if(callback) callback();
-  });
-}
-
-/* ======================================================
-      OPEN LEDGER
-====================================================== */
-function openLedger(id){
-  currentCustomerId = id;
-
-  db.ref("customers/" + id).once("value").then(s=>{
-    ledgerCustomerName.innerText = s.val().name;
-  });
-
-  showCard("ledgerCard");
-  loadLedger();
-}
-
-/* ======================================================
-      LOAD LEDGER + FASAL SUMMARY
-====================================================== */
-function loadLedger(){
-  const ref = db.ref("ledgers/" + currentCustomerId);
-
-  ref.once("value").then(snap=>{
-      ledgerTable.innerHTML = "";
-
-      let totalC = 0, totalD = 0, totalI = 0;
-      let allFasal = [];
-
-      snap.forEach(e=>{
-        let d = e.val();
-        let key = e.key;
-
-        totalC += +d.credit || 0;
-        totalD += +d.debit || 0;
-        if(d.interestType === "debit"){
-    totalI += +d.interestAmount || 0;   // Debit interest add
-}else{
-    totalI -= +d.interestAmount || 0;   // Credit interest minus
-}
-
-        if(d.isFasal) allFasal.push(d);
-
-        let row = `
-<tr style="${d.isFasal ?
-'background:#fff7d1;color:#b8860b;font-weight:bold;' : ''}">
-
-    <td>${d.startDate || d.date || ""}</td>
-    <td>${d.endDate || ""}</td>
-
-    <td>₹${d.credit || 0}</td>
-    <td>₹${d.debit || 0}</td>
-    <td>${d.interest || 0}</td>
-    <td>${d.days || 0}</td>
-  <td>${d.isFasal ? "" : "+₹" + (d.interestAmount || 0)}</td>
-<td>
-${d.isFasal
-  ? (function(){
-      let q = +d.quintal || 0;
-      let totalKG = q * 100;
-
-      let mainQ = Math.floor(totalKG / 100);
-      let extraKG = Math.round(totalKG % 100);
-
-      let name = d.name || "";
-let firstChar = name.trim().charAt(0);
-
-// अगर नाम पहले से emoji से शुरू हो रहा है
-if (/\p{Emoji}/u.test(firstChar)) {
-    return name + " (" + mainQ + " Q " + extraKG + " KG)";
-} else {
-    let name = d.name || "";
-
-let hasIcon = name.trim().startsWith("🌱") ||
-              name.trim().startsWith("🌾") ||
-              name.trim().startsWith("🌻") ||
-              name.trim().startsWith("🌽") ||
-              name.trim().startsWith("🥜") ||
-              name.trim().startsWith("🌿");
-
-let finalName = hasIcon ? name : "🌾 " + name;
-
-return finalName + " (" + mainQ + " Q " + extraKG + " KG)";
-}
-    })()
-  : ""
-}
-</td>
-    <td>${d.note || ""}</td>
-
-    <td>
-        ${
-          d.isFasal
-          ? `<button class="btn btn-sm btn-primary" onclick="editFasal('${key}')">✏️</button>`
-          : `<button class="btn btn-sm btn-primary" onclick="editTransaction('${key}')">✏️</button>`
-        }
-        <button class="btn btn-sm btn-danger" onclick="deleteLedgerEntry('${key}')">❌</button>
-    </td>
-</tr>
-`; 
-ledgerTable.insertAdjacentHTML("beforeend", row);
-      });
-
-      // ⭐ फसल TOTAL जोड़ें
-let totalFasalNet = 0;
-let totalFasalMajduri = 0;
-let totalFasalCut = 0;
-
-allFasal.forEach(f => {
-    totalFasalNet += +f.netFasal || 0;
-    totalFasalMajduri += +f.totalMajduri || 0;
-    totalFasalCut += +f.totalCut || 0;
-});
-
-// ⭐ Final Balance Calculation (फसल + मजदूरी + कटौती शामिल)
-let balance =
-    (totalD + totalI) -
-    (totalC + totalFasalNet + totalFasalMajduri + totalFasalCut);
-
-// ⭐ FOOTER दिखाओ
-ledgerFooter.innerHTML = `
-<tr class="total-row" style="background:#fff3cd;font-weight:bold;color:#a66d00;">
-    <td colspan="2">कुल</td>
-    <td>₹${totalC}</td>
-    <td>₹${totalD}</td>
-    <td></td>
-    <td>₹${totalI.toFixed(2)}</td>
-    <td colspan="3">
-        शेष: ₹${balance.toFixed(2)}<br>
-        <small>(नेट फसल: ₹${totalFasalNet} | मजदूरी: ₹${totalFasalMajduri} | कटौती: ₹${totalFasalCut})</small>
-    </td>
-</tr>
-`;
-// =============== कुल फसल टोटल ===============
-let fasalTQ = 0, fasalTAmount = 0, fasalTNet = 0;
-
-allFasal.forEach(f => {
-  fasalTQ += +f.quintal || 0;
-  fasalTAmount += +f.totalAmount || 0;
-  fasalTNet += +f.netFasal || 0;
-});
-
-ledgerFooter.insertAdjacentHTML("beforeend", `
-  <tr style="background:#fff3cd;font-weight:bold;color:#a66d00;">
-    <td colspan="2">कुल फसल</td>
-    <td colspan="2">कुल क्विंटल: ${fasalTQ.toFixed(2)}</td>
-    <td colspan="2">कुल कीमत: ₹${fasalTAmount}</td>
-    <td colspan="3">नेट फसल: ₹${fasalTNet}</td>
-  </tr>
-`);
-
-      generateFasalSummary(allFasal);
-  });
-}
-
-/* ======================================================
-      COLLAPSE FASAL SUMMARY
-====================================================== */
-function toggleFasalSummary(){
-  const b = fasalSummary;
-  b.style.display = b.style.display == "block" ? "none" : "block";
-}
-
-function generateFasalSummary(all){
-    if(all.length == 0){
-        fasalSummary.innerHTML = "<div class='p-2 text-center'>कोई फसल नहीं</div>";
-        return;
-    }
-
-    fasalSummary.innerHTML = ""; // पहले साफ करो
-
-    all.forEach((f, i) => {
-        fasalSummary.insertAdjacentHTML("beforeend", `
-            <div class="fasal-box" style="margin:8px 0;padding:8px;border-radius:8px;background:#fff5d6;border:1px solid #e6c77e">
-                <div onclick="openFasal(${i})" style="font-weight:bold;font-size:16px;cursor:pointer;">
-                    ▶ फसल ${i+1} (Tap to open)
-                </div>
-
-                <div id="fasalDetail${i}" style="display:none;margin-top:6px;line-height:22px;">
-                    🌾 क्विंटल: <b>${f.quintal}</b><br>
-                    💰 कीमत: <b>₹${f.totalAmount}</b><br>
-                    🧳 मजदूरी: <b>₹${f.totalMaiduri}</b><br>
-                    ✂ कटौती: <b>₹${f.totalCut}</b><br>
-                    🟡 नेट फसल: <b>₹${f.netFasal}</b>
-                </div>
-            </div>
-        `);
-    });
-}
-
-function openFasal(i){
-    const a = document.getElementById("fasalDetail"+i);
-    a.style.display = a.style.display === "block" ? "none" : "block";
-}
-
+#advancedReportCard table {  
+  font-size: 14px !important;  
+}  
   
-
-/* ======================================================
-      SAVE NORMAL TRANSACTION
-====================================================== */
-function openTransactionPopup(){
-
-    // सभी fields clear करो
-    tDate.value = "";
-    tEndDate.value = "";
-    tCredit.value = "";
-    tDebit.value = "";
-    tInterest.value = "";
-    tDays.value = "";
-    tInterestAmount.value = "";
-    tNote.value = "";
-
-    transactionPopupOverlay.style.display = "flex";
-}
-function closeTransactionPopup(){
-  transactionPopupOverlay.style.display="none";
-}
-
-function saveTransaction(){
-
-    let start = tDate.value || "";     // Start date खाली allowed
-    let end = tEndDate.value || "";    // End date खाली allowed
-
-    let days = 0;
-    let totalInterest = 0;
-
-    // यदि user ने end date दी है तभी दिन/ब्याज निकालो
-    if(start && end){
-        let d1 = new Date(start);
-        let d2 = new Date(end);
-
-        days = Math.floor((d2 - d1) / (1000*60*60*24));
-
-        if(days < 0){
-            alert("End Date, Start Date के बाद होनी चाहिए!");
-            return;
-        }
-
-        let amount = +tDebit.value || +tCredit.value || 0;
-        let rate = +tInterest.value || 0;
-
-        let monthlyInterest = (amount * rate) / 100;
-        let dailyInterest = monthlyInterest / 30;
-        totalInterest = dailyInterest * days;
-    }
-
-    let data = {
-    startDate: start,
-    endDate: end,
-    credit: +tCredit.value || 0,
-    debit: +tDebit.value || 0,
-    interest: +tInterest.value || 0,
-    days: days,
-    interestAmount: +tInterestAmount.value || 0,
-    interestType: (+tDebit.value || 0) > 0 ? "debit" : "credit",
-    note: tNote.value
-};
-    // ⭐ EDIT MODE
-    if(window.editingTransactionId){
-        db.ref("ledgers/" + currentCustomerId + "/" + window.editingTransactionId).update(data);
-        window.editingTransactionId = null;
-    }
-    // ⭐ NEW ENTRY
-    else{
-        db.ref("ledgers/" + currentCustomerId).push(data);
-    }
-
-    closeTransactionPopup();
-    loadLedger();
-}
-/* ======================================================
-      FASAL AUTO CALC
-====================================================== */
-["fBori","fWeightPer","fExtraKG","fRate","fMajduri","fCutOther"].forEach(id=>{ document.getElementById(id).addEventListener("input", calcFasal);
-});
-
-function calcFasal(){
-  let b = +fBori.value||0;
-  let w = +fWeightPer.value||0;
-  let r = +fRate.value||0;
-  let m = +fMajduri.value||0;
-  let o = +fCutOther.value||0;
-
-let extra = +fExtraKG.value || 0;
-let totalKG = (b * w) + extra;
-  let q = totalKG / 100;
-  fTotalQ.value = q.toFixed(2);
-
-  let totalAmount = q * r;
-  let totalMajduri = q * m;
-  let totalCut = totalMajduri + o;
-  let net = totalAmount - totalCut;
-
-  fCutTotal.value = totalCut;
-  fNetAmount.value = net;
-}
-function openFasalPopup() {
-    fasalPopupOverlay.style.display = "flex";
-
-    // 🔥 हर बार dropdown refresh
-    loadFasalDropdown();
-
-    // 🔥 सभी fields साफ (new entry)
-    fName.value = "";
-    fBori.value = "";
-    fWeightPer.value = "";
-    fTotalQ.value = "";
-    fRate.value = "";
-    fMajduri.value = "";
-    fCutOther.value = "";
-    fCutTotal.value = "";
-    fNetAmount.value = "";
-    fNote.value = "";
-
-    // 🔥 Editing mode बंद
-    window.editingFasalId = null;
-}
-/* ======================================================
-      SAVE FASAL ENTRY
-====================================================== */
-function saveFasal(){
-
-  if(!fName.value) return alert("फसल चुनें!");
-
-  let b = +fBori.value||0;
-  let w = +fWeightPer.value||0;
-  let q = +fTotalQ.value||0;
-  let r = +fRate.value||0;
-  let m = +fMajduri.value||0;
-  let o = +fCutOther.value||0;
-
-  let totalAmount = q * r;
-  let totalMajduri = q * m;
-  let totalCut = totalMajduri + o;
-  let net = totalAmount - totalCut;
-
-  let data = {
-    isFasal:true,
-    name:fName.value,
-date: fDate.value || "",
-    bori:b,
-    weightPer:w,
-    quintal:q,
-    rate:r,
-    totalAmount,
-    totalMajduri,
-    totalCut,
-    netFasal:net,
-    note:fNote.value
-  };
-
-  // 🔥 EDIT MODE
-  if(window.editingFasalId){
-      db.ref("ledgers/" + currentCustomerId + "/" + window.editingFasalId).update(data);
-      window.editingFasalId = null;
-  } 
-
-  // 🔥 NEW ENTRY MODE
-  else {
-      db.ref("ledgers/" + currentCustomerId).push(data);
-  }
-
-  closeFasalPopup();
-  loadLedger();
-}
-
-/* ======================================================
-      DELETE LEDGER ENTRY
-====================================================== */
-function deleteLedgerEntry(id){
-  if(!confirm("हटाना चाहते हैं?")) return;
-  db.ref("ledgers/" + currentCustomerId + "/" + id).remove();
-  loadLedger();
-}
-
-/* ======================================================
-      PRINT
-====================================================== */
-function printLedger(){
-    // फसल सारांश हमेशा दिखाओ ताकि PDF में आए
-    fasalSummary.style.display = "block";
-
-    // PDF सेव करो
-    window.print();
-}
-/* ======================================================
-      SEARCH + FILTER SYSTEM
-====================================================== */
-document.getElementById("searchBox").addEventListener("input", () => filterCustomers());
-document.getElementById("villageFilter").addEventListener("change", () => filterCustomers());
-
-function filterCustomers() {
-    let search = searchBox.value.toLowerCase();
-    let village = villageFilter.value;
-
-    [...customerTable.rows].forEach(r => {
-        let name = r.cells[1].innerText.toLowerCase();
-        let vill = r.cells[4].innerText;
-
-        let ok =
-            (search === "" || name.includes(search)) &&
-            (village === "" || village === vill);
-
-        r.style.display = ok ? "" : "none";
-    });
-}
-
-/* ======================================================
-      ADD CUSTOMER
-====================================================== */
-function openAddCustomer() {
-    showCard("addCustomerCard");
-}
-
-function saveCustomer() {
-
-    if (!cName.value) return alert("नाम लिखें!");
-
-    let obj = {
-    name: cName.value,
-    father: cFather.value,
-    village: cVillage.value,
-    phone: cPhone.value,
-    aadhar: cAadhar.value,
-    rn: cRN.value          // ⭐ नया जोड़ा
-};
-
-    db.ref("customers").push(obj);
-
-    cName.value = "";
-    cFather.value = "";
-    cVillage.value = "";
-    cPhone.value = "";
-    cAadhar.value = "";
-
-    backToList();
-}
-
-/* ======================================================
-      EDIT CUSTOMER
-====================================================== */
-let editingCustomerId = null;
-
-function editCustomer(id) {
-    editingCustomerId = id;
-
-    db.ref("customers/" + id).once("value").then(s => {
-        let d = s.val();
-
-        cName.value = d.name;
-        cFather.value = d.father;
-        cVillage.value = d.village;
-        cPhone.value = d.phone;
-        cAadhar.value = d.aadhar;
-cRN.value = d.rn || "";
-        showCard("addCustomerCard");
-    });
-}
-
-/* save edited customer */
-function saveEditedCustomer() {
-    if (!editingCustomerId) return saveCustomer();
-
-    let obj = {
-        name: cName.value,
-        father: cFather.value,
-        village: cVillage.value,
-        phone: cPhone.value,
-        aadhar: cAadhar.value,
-        rn: cRN.value        // ⭐ यह लाइन ज़रूर डालनी है
-    };
-
-    db.ref("customers/" + editingCustomerId).update(obj);
-
-    editingCustomerId = null;
-    backToList();
-}
-
-/* ======================================================
-      DELETE CUSTOMER
-===================================================== */
-function deleteCustomer(id) {
-    if (!confirm("क्या ग्राहक हटाना है?")) return;
-
-    db.ref("customers/" + id).remove();
-    db.ref("ledgers/" + id).remove();
-
-    loadCustomers();
-}
-
-/* ======================================================
-      SELECT ALL CHECKBOX
-====================================================== */
-function toggleSelectAll(source) {
-    document.querySelectorAll(".customerCheckbox").forEach(c => (c.checked = source.checked));
-}
-
-/* ======================================================
-      DELETE SELECTED CUSTOMERS
-====================================================== */
-function deleteSelectedCustomers() {
-    let selected = [...document.querySelectorAll(".customerCheckbox:checked")].map(c => c.value);
-
-    if (selected.length === 0) return alert("किसी ग्राहक को चुना नहीं!");
-
-    if (!confirm("चुने हुए ग्राहक हटाऊँ?")) return;
-
-    selected.forEach(id => {
-        db.ref("customers/" + id).remove();
-        db.ref("ledgers/" + id).remove();
-    });
-
-    loadCustomers();
-}
-
-/* ======================================================
-      DELETE ALL CUSTOMERS
-====================================================== */
-function deleteAllCustomers() {
-    if (!confirm("❌ सभी ग्राहकों को हटाना है?")) return;
-
-    db.ref("customers").remove();
-    db.ref("ledgers").remove();
-
-    loadCustomers();
-}
-
-/* ======================================================
-      PRINT CUSTOMER LIST
-====================================================== */
-function printCustomers() {
-    window.print();
-}
-
-/* ======================================================
-      EXCEL UPLOAD
-====================================================== */
-excelUpload.addEventListener("change", handleExcelUpload);
-
-function handleExcelUpload(e) {
-    let file = e.target.files[0];
-    if (!file) return;
-
-    let reader = new FileReader();
-    reader.onload = function () {
-        let data = new Uint8Array(reader.result);
-        let workbook = XLSX.read(data, { type: "array" });
-
-        let sheet = workbook.Sheets[workbook.SheetNames[0]];
-        let json = XLSX.utils.sheet_to_json(sheet);
-
-        json.forEach(row => {
-            let c = {
-                name: row.name || "",
-                father: row.father || "",
-                village: row.village || "",
-                phone: row.phone || "",
-                aadhar: row.aadhar || ""
-            };
-            db.ref("customers").push(c);
-        });
-
-        alert("Excel Import Done ✔");
-        loadCustomers();
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-/* ======================================================
-      SUMMARY ON LIST PAGE
-====================================================== */
-function toggleSummary() {
-    let box = totalSummary;
-    if (box.style.display == "block") {
-        box.style.display = "none";
-        return;
-    }
-
-    db.ref("ledgers").once("value").then(snap => {
-        let sumC = 0,
-            sumD = 0,
-            sumI = 0;
-
-        snap.forEach(c => {
-            c.forEach(r => {
-                let d = r.val();
-                sumC += +d.credit || 0;
-                sumD += +d.debit || 0;
-                sumI += +d.interestAmount || 0;
-            });
-        });
-
-        let bal = (sumD + sumI) - sumC;
-
-        box.innerHTML = `
-          जमा: ₹${sumC}<br>
-          निकासी: ₹${sumD}<br>
-          ब्याज: ₹${sumI.toFixed(2)}<br>
-          शेष: ₹${bal.toFixed(2)}
-        `;
-        box.style.display = "block";
-    });
-}
-
-/* ======================================================
-      VILLAGE MANAGER (FINAL WORKING)
-====================================================== */
-
-// Popup खोलना
-function openVillageManager() {
-    let html = `
-      <div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;">
-         <h5 class="text-center mb-3">🏡 गाँव प्रबंधन</h5>
-
-         <input id="newVillage" class="form-control mb-2" placeholder="नया गाँव जोड़ें">
-
-         <button class="btn btn-success w-100 mb-3" onclick="addVillage()">✔ जोड़ें</button>
-
-         <div id="villageList" style="max-height:300px;overflow-y:auto;"></div>
-
-         <button onclick="closeVillagePopup()" class="btn btn-danger w-100 mt-3">❌ बंद</button>
-      </div>
-    `;
-
-    villagePopup.innerHTML = html;
-    villagePopup.style.display = "flex";
-
-    loadVillageList();
-}
-
-// Popup बंद करना
-function closeVillagePopup() {
-    villagePopup.style.display = "none";
-}
-
-/* ⭐ नया गाँव add करना */
-function addVillage() {
-    let v = document.getElementById("newVillage").value.trim();
-    if (!v) return alert("गाँव का नाम लिखें!");
-
-    // ✔ सही जगह सेव होगा
-    db.ref("settings/villages").push(v);
-
-    document.getElementById("newVillage").value = "";
-    loadVillageList();
-    loadVillageDropdown();
-    loadFasalDropdown();
-}
-
-/* ⭐ Village list लोड करना (Popup में) */
-function loadVillageList() {
-    const box = document.getElementById("villageList");
-    box.innerHTML = "";
-
-    db.ref("settings/villages").once("value").then(snap => {
-        snap.forEach(v => {
-            let name = v.val();
-            let id = v.key;
-
-            box.insertAdjacentHTML("beforeend", `
-                <div class="d-flex justify-content-between p-2 border mb-1">
-                    ${name}
-                    <button class="btn btn-sm btn-danger" onclick="deleteVillage('${id}')">❌</button>
-                </div>
-            `);
-        });
-    });
-}
-
-/* ⭐ Village delete करना */
-function deleteVillage(id) {
-    db.ref("settings/villages/" + id).remove();
-    loadVillageList();
-    loadVillageDropdown();
-}
-
-/* ⭐ Dropdown में village लोड करना */
-function loadVillageDropdown() {
-
-    cVillage.innerHTML = `<option value="">गाँव चुनें</option>`;
-    villageFilter.innerHTML = `<option value="">सभी गाँव</option>`;
-
-    db.ref("settings/villages").once("value").then(snap => {
-        snap.forEach(v => {
-            let name = v.val();
-
-            cVillage.insertAdjacentHTML("beforeend", `<option>${name}</option>`);
-            villageFilter.insertAdjacentHTML("beforeend", `<option>${name}</option>`);
-        });
-    });
-}
-
-loadVillageDropdown();
-/* ======================================================
-      LOGIN SYSTEM
-====================================================== */
-
-let MASTER_PASS = localStorage.getItem("app_password") || "1234";
-const FAV_NAME = "saini";            // Forgot password वाला नाम
-
-function loginNow(){
-    let p = loginPass.value.trim();
-    if(p === MASTER_PASS){
-        // SUCCESS: Correct Login logic fixed below
-        sessionStorage.setItem("isLoggedIn", "true");
-        loginScreen.style.display = "none";
-        document.getElementById("appContent").style.display = "block";
-        customerListCard.style.display = "block";
-        loadCustomers();
-    } else {
-        alert("❌ गलत पासवर्ड!");
-    }
-}
-
-function showForgot(){
-    loginScreen.style.display = "none";
-    forgotBox.style.display = "block";
-}
-
-function hideForgot(){
-    forgotBox.style.display = "none";
-    loginScreen.style.display = "block";
-}
-
-function resetPass(){
-    let name = favName.value.trim().toLowerCase();
-    if(name === FAV_NAME){
-        alert("✔ आपका पासवर्ड है: " + MASTER_PASS);
-        hideForgot();
-    } else {
-        alert("❌ गलत नाम!");
-    }
-}
-
-function logoutNow(){
-    // FIX: Clear sessionStorage on logout
-    sessionStorage.removeItem("isLoggedIn");
-
-    // 2. Clear all inputs
-    loginPass.value = "";
-
-    // 3. Hide ALL app layouts completely
-    document.getElementById("appContent").style.display = "none";
-    customerListCard.style.display = "none";
-    ledgerCard.style.display = "none";
-    addCustomerCard.style.display = "none";
+#advancedReportCard th {  
+  font-size: 15px !important;  
+  font-weight: 800 !important;  
+}  
+  
+#advancedReportCard td {  
+  font-weight: 600 !important;  
+}  
+  
+/* नाम bold */  
+#advancedReportCard td:nth-child(2){  
+  font-weight: 700 !important;  
+  color: #0d47a1;  
+}  
+  
+/* पैसे bold */  
+#advancedReportCard td:nth-child(4),  
+#advancedReportCard td:nth-child(5){  
+  font-weight: 800 !important;  
+}  
+/* ===== PROFESSIONAL COLOURFUL SEARCH + FILTER ===== */  
+  
+/* 🔵 नाम से खोजें */  
+#searchBox{  
+  border:2px solid #60a5fa;  
+  border-radius:10px;  
+  padding:10px;  
+  font-weight:600;  
+  background:#f0f7ff;  
+}  
+#searchBox:focus{  
+  outline:none;  
+  border-color:#2563eb;  
+  box-shadow:0 0 0 3px rgba(37,99,235,.25);  
+  background:white;  
+}  
+  
+/* 🟡 गाँव filter */  
+#villageFilter{  
+  border:2px solid #facc15;  
+  border-radius:10px;  
+  padding:10px;  
+  font-weight:600;  
+  background:#fffbea;  
+}  
+#villageFilter:focus{  
+  outline:none;  
+  border-color:#eab308;  
+  box-shadow:0 0 0 3px rgba(234,179,8,.25);  
+  background:white;  
+}  
+  
+/* ===== TABLE PROFESSIONAL LOOK ===== */  
+thead th{  
+  background:linear-gradient(180deg,#eaf2ff,#dbeafe);  
+  color:#1e3a8a;  
+  font-weight:700;  
+  position:sticky;  
+  top:0;  
+  z-index:20;  
+}  
+/* GLOBAL */  
+body { background:#f8fafc; padding:20px; font-family:'Poppins',sans-serif; }  
+.card { border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.12); margin-bottom:20px; }  
+.header {  
+    background:#0d6efd;  
+    color:white;  
+    text-align:center;  
+    padding:12px;  
+    border-radius:15px 15px 0 0;  
+    font-weight:600;  
+    font-size:1.2rem;  
+    position: relative;  
+}  
+.sub-header { background:#ffc107; padding:6px; text-align:center;  
+              font-weight:600; border-radius:0 0 15px 15px; }  
+.btn { border-radius:8px; font-weight:600; }  
+table { font-size:0.9rem; }  
+  
+/* 🌾 फसल Display बॉक्स */  
+.fasal-note-box {  
+    background:#fff8d6; padding:12px; border-radius:10px;  
+    border-left:6px solid #f4c542; line-height:1.4;  
+    white-space:pre-line; font-size:14px;  
+}  
+  
+/* 🌾 Multi-Fasal Collapsible	UI */  
+.fasal-box {  
+    background:#fff8d6; border:2px solid #f4c542;  
+    padding:12px; border-radius:12px; margin-top:6px;  
+    white-space:pre-line;  
+}  
+.fasal-head {  
+    background:#ffe8a3; padding:6px 10px; border-radius:6px;  
+    cursor:pointer; font-weight:600;  
+}  
+.fasal-detail { display:none; }  
+/* === 3D METAL BLUE BACK BUTTON === */  
+.back-3d-btn {  
+    position: absolute;  
+    top: 50%;  
+    right: 12px;  
+  
+    transform: translateY(-50%);  
+z-index: 999999 !important;  
+pointer-events: auto !important;  
+    padding: 10px 22px;  
+    border-radius: 40px;  
+  
+    background: linear-gradient(145deg, #6eb0ff, #2b7cff);  
+    border: 4px solid #dcdcdc;  
+  
+    box-shadow:  
+        inset 0 4px 7px rgba(255,255,255,0.9),  
+        inset 0 -4px 7px rgba(0,0,0,0.25),  
+        0 6px 14px rgba(0,0,0,0.35),  
+        0 0 6px rgba(255,255,255,0.8);  
+  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+  
+    color: white;  
+    font-size: 22px;  
+    font-weight: 700;  
+  
+    height: 45px;  
+    width: 85px;  
+  
+    cursor: pointer;  
+    transition: 0.2s ease;  
+}  
+  
+.back-3d-btn:active {  
+    transform: translateY(-50%) scale(0.96);  
+}  
+/* Customer table freeze columns */  
+th.check-col, td.check-col {  
+    position:sticky; left:0; background:white; z-index:30;  
+}  
+th.name-col{  
+    position:sticky;  
+    left:35px;  
+    background:linear-gradient(180deg,#eaf2ff,#dbeafe);  
+    color:#1e3a8a;  
+    z-index:31;  
+}  
+  
+td.name-col{  
+    position:sticky;  
+    left:35px;  
+    background:white;  
+    z-index:29;  
+}  
+    white-space:normal; line-height:1.1;  
+    min-width:95px; max-width:95px;  
+}  
+th.reg-col, td.reg-col {  
+    width:55px !important; text-align:center; font-weight:bold;  
+}  
+  
+/* Popup */  
+#popupOverlay, #fasalPopupOverlay, #villagePopup, #changePassPopup {  
+    position:fixed; top:0; left:0; width:100%; height:100%;  
+    background:rgba(0,0,0,0.5); display:none;  
+    justify-content:center; align-items:center; z-index:3000;  
+}  
+#popupBox {  
+    background:white; padding:20px; border-radius:12px;  
+    width:90%; max-width:420px;  
+}  
+  
+/* ✅ UPDATED STRICT PRINT SYSTEM CSS */  
+@media print {  
+  @page {  
+    size: A4;  
+    margin: 15mm;  
+  }  
+  body * {  
+    visibility: hidden;  
+  }  
+  #printPreviewBox, #printPreviewBox * {  
+    visibility: visible;  
+  }  
+  /* Hide UI Buttons during actual print */  
+  #printPreviewBox > div:first-child {  
+    display: none !important;  
+  }  
+  #printContent, #printContent * {  
+    visibility: visible !important;  
+  }  
+  /* FIX SCROLL ISSUE: Ensure full height and visibility */  
+  #printContent, .table-responsive {  
+    position: static !important;  
+    overflow: visible !important;  
+    height: auto !important;  
+    max-height: none !important;  
+    width: 100% !important;  
+    display: block !important;  
+  }  
+  table {  
+    width: 100% !important;  
+    border-collapse: collapse !important;  
+    page-break-inside: auto;  
+  }  
+  tr {  
+    page-break-inside: avoid;  
+    page-break-after: auto;  
+  }  
+  th, td {  
+    border: 1px solid black !important;  
+    padding: 8px !important;  
+    text-align: center !important;  
+    font-size: 12pt !important;  
+    color: black !important;  
+    background: white !important;  
+  }  
+  th {  
+    background-color: #f2f2f2 !important;  
+    font-weight: bold !important;  
+  }  
+  th.check-col, td.check-col, th.name-col, td.name-col {  
+    position: static !important;  
+    background: white !important;  
+  }  
+  .print-title {  
+    text-align: center;  
+    font-size: 20pt;  
+    font-weight: bold;  
+    margin-bottom: 20px;  
+    border-bottom: 2px solid black;  
+    padding-bottom: 10px;  
+  }  
+}  
+  
+.hide-duplicate{  
+  display:none !important;  
+}  
+/* ☰ MENU click fix */  
+.dropdown{  
+  position: relative;  
+  z-index: 9999;  
+}  
+#searchBox::placeholder{  
+  color:#374151;  
+}  
+#customerTable tr:hover{  
+  background:#f1f5ff;  
+}  
+#villageFilter option{  
+  font-weight:600;  
+}  
+.customer-count-card{  
+  display:flex;  
+  align-items:center;  
+  gap:14px;  
+  margin:12px;  
+  padding:14px 18px;  
+  background:linear-gradient(135deg,#e0f2ff,#f8fbff);  
+  border-radius:14px;  
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);  
+  border-left:6px solid #0d6efd;  
+}  
+  
+.cc-icon{  
+  width:46px;  
+  height:46px;  
+  border-radius:50%;  
+  background:#0d6efd;  
+  display:flex;  
+  align-items:center;  
+  justify-content:center;  
+  font-size:22px;  
+  color:white;  
+}  
+  
+.cc-label{  
+  font-size:14px;  
+  color:#1e3a8a;  
+  font-weight:600;  
+}  
+  
+.cc-number{  
+  font-size:22px;  
+  font-weight:800;  
+  color:#0d6efd;  
+}  
+.count-header{  
+  background:#eaf2ff;  
+  color:#1e3a8a;  
+  font-weight:700;  
+  text-align:center;  
+  padding:8px;  
+  border-bottom:2px solid #0d6efd;  
+  font-size:15px;  
+}  
+.count-sub{  
+  background:#f1f5ff;  
+  color:#1e3a8a;  
+  font-size:14px;  
+  font-weight:600;  
+  border-top:1px solid #dbeafe;  
+}  
+/* ===== PROFESSIONAL MENU BUTTON ===== */  
+.menu-btn{  
+  background: linear-gradient(135deg,#1e88e5,#0d47a1);  
+  color:white;  
+  border:none;  
+  border-radius:12px;  
+  padding:8px 14px;  
+  font-weight:700;  
+  display:flex;  
+  align-items:center;  
+  gap:6px;  
+  box-shadow:0 3px 8px rgba(0,0,0,0.25);  
+}  
+  
+.menu-btn:focus,  
+.menu-btn:active{  
+  box-shadow:0 0 0 3px rgba(30,136,229,.35);  
+}  
+  
+.menu-btn i{  
+  font-size:18px;  
+}  
+/* ❌ Popup ke andar main menu hide */  
+#villagePopup .main-menu {  
+  display: none !important;  
+}  
+/* ❌ गाँव प्रबंधन Popup में Menu hide */  
+#villagePopup .dropdown,  
+#villagePopup .menu-btn {  
+  display: none !important;  
+}  
+#villagePopup{  
+  z-index: 9999;  
+}  
+  
+#villagePopupBox{  
+  z-index: 10000;  
+}  
+  
+/* FIX: Ensure app content is hidden during login */  
+#appContent {  
+    display: none;  
+}  
+/* ===== COMPACT FULL SCREEN REPORT ===== */  
+  
+#advancedReportCard{  
+  height:100% !important;  
+  overflow:auto !important;  
+}  
+  
+#advancedReportCard .card-body{  
+  padding:8px !important;  
+}  
+  
+#advancedReportCard input,  
+#advancedReportCard select{  
+  padding:6px !important;  
+  font-size:12px !important;  
+}  
+  
+#advancedReportCard button{  
+  padding:6px !important;  
+  font-size:13px !important;  
+}  
+  
+#advancedReportCard table{  
+  font-size:14px !important;  
+}  
+  
+#advancedReportCard th,  
+#advancedReportCard td{  
+  padding:4px !important;  
+}  
+  
+#advancedReportCard .header{  
+  padding:8px !important;  
+  font-size:16px !important;  
+}  
+  
+#advancedReportCard .table-responsive{  
+  height:60vh !important;  
+  overflow-y:auto !important;  
+}  
+  
+/* ===== FULL SCREEN ADVANCED REPORT ===== */  
+#advancedReportCard{  
+ position: static !important;  
+  top: 0;  
+  left: 0;  
+  width: 100%;  
+  height: 100%;  
+  margin: 0 !important;  
+  border-radius: 0 !important;  
+  z-index: 99999;  
+  overflow-y: auto;  
+  background: white;  
+}  
+  
+/* header fixed */  
+#advancedReportCard .header{  
+  position: sticky;  
+  top: 0;  
+  z-index: 1000;  
+}  
+  
+/* table full visible */  
+#advancedReportCard .table-responsive{  
+  height:60vh !important;  
+  overflow-y:auto !important;  
+}  
+/* ===== FULL SCREEN ADVANCED REPORT ===== */  
+#advancedReportCard{  
+  position: fixed !important;  
+  top: 0;  
+  left: 0;  
+  width: 100%;  
+}  
+  
+</style>  </head>  <body>  <div id="loginScreen" style="  
+    width:100%; max-width:400px; margin:40px auto;  
+    background:white; padding:25px; border-radius:15px;  
+    box-shadow:0 4px 10px rgba(0,0,0,0.25);">    <h2 class="text-center fw-bold text-primary mb-1">Saini Trading Company App</h2>  
+  <hr>    <h3 class="text-center mb-3">🔐 लॉगिन</h3>  <input id="loginPass" type="password"  
+class="form-control mb-3"  
+placeholder="पासवर्ड दर्ज करें">
+
+<button class="btn btn-primary w-100 mb-2" onclick="loginNow()">लॉगिन</button>
+<button class="btn btn-danger w-100 mb-2" onclick="showForgot()">❓ पासवर्ड भूल गए?</button>
+
+<button class="btn btn-warning w-100 mb-2" onclick="registerFinger()">🔑 फिंगर प्रिंट रजिस्टर</button>
+<button class="btn btn-success w-100" onclick="fingerLogin()">🔒 फिंगर लॉगिन</button>
+
+</div>  <div id="forgotBox" style="  
+    display:none; width:100%; max-width:400px;  
+    margin:40px auto; background:white; padding:20px;  
+    border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.25);">    <h4 class="text-center mb-3">🔑 पासवर्ड रीसेट</h4>  <input id="favName" class="form-control mb-2"  
+placeholder="फेवरेट नाम लिखें">
+
+<button class="btn btn-success w-100" onclick="resetPass()">Reset करें</button>
+<button class="btn btn-secondary w-100 mt-2" onclick="hideForgot()">वापस</button>
+
+</div>  <div id="changePassPopup">  
+    <div id="popupBox">  
+        <h4 class="text-center mb-3">🔐 पासवर्ड बदलें</h4>  
+        <input id="currPass" type="password" class="form-control mb-2" placeholder="पुराना पासवर्ड">  
+        <input id="newPass" type="password" class="form-control mb-2" placeholder="नया पासवर्ड">  
+        <input id="confPass" type="password" class="form-control mb-3" placeholder="नया पासवर्ड कन्फर्म करें">  
+        <button class="btn btn-success w-100 mb-2" onclick="submitChangePassword()">पासवर्ड बदलें</button>  
+        <button class="btn btn-secondary w-100" onclick="closeChangePass()">बंद करें</button>  
+    </div>  
+</div>  <div id="appContent">  <div id="customerListCard" class="card" style="display:none">  
+  <div class="header">  <button onclick="logoutNow()" class="btn btn-light btn-sm" style="float:left">  
+  🚪 Logout  
+</button>  
+
+सैनी ट्रेडिंग कंपनी  
+
+<span id="mainDate" style="float:right; font-size:14px;"></span>
+
+  </div>  <div class="sub-header">  
+  ग्राहक सूची  
+  <span style="  
+    font-weight:700;  
+    font-size:16px;  
+    color:#0d47a1;  
+    margin-left:6px;  
+  ">  
+    (कुल ग्राहक :  
+    <span id="customerCount" style="color:#c62828;font-weight:800;">  
+      0  
+    </span>)  
+  </span>  
+</div>    <div class="d-flex justify-content-start px-3 mt-2 mb-4">  
+  <div class="dropdown">  
+    <button class="menu-btn dropdown-toggle"  
+        type="button"  
+        data-bs-toggle="dropdown">  
+  <i class="bi bi-list"></i> मेन्यू  
+</button>  <ul class="dropdown-menu">
+
+<li><a class="dropdown-item" href="#" onclick="openReport()">📊 Advanced Report</a></li>  
+      <li><a class="dropdown-item" href="#" onclick="openVillageManager()">🏡 गाँव प्रबंधन</a></li>  
+      <li><a class="dropdown-item" href="#" onclick="toggleSummary()">🔍 कुल सारांश</a></li>  
+      <li><a class="dropdown-item" href="#" onclick="deleteSelectedCustomers()">🗑 चुने हुए ग्राहक हटाएं</a></li>  
+      <li><a class="dropdown-item" href="#" onclick="openAddCustomer()">➕ नया ग्राहक जोड़ें</a></li>  
+      <li><a class="dropdown-item" href="#" onclick="document.getElementById('excelUpload').click()">📤 Excel डेटा अपलोड</a></li>  
+      <li><a class="dropdown-item" href="#" onclick="printCustomers()">🖨 ग्राहक सूची प्रिंट</a></li>  
+      <li><a class="dropdown-item" href="#" onclick="openChangePass()">🔐 पासवर्ड बदलें</a></li>  
+    </ul>  
+  </div>  
+</div>  
+    <button class="btn btn-info w-100 mb-2 hide-duplicate" onclick="toggleSummary()">  
+      🔍 कुल सारांश  
+    </button>  <div id="totalSummary"  
+     class="alert alert-info text-center fw-bold mb-3"  
+     style="display:none">  
+  </div>  
+
+<button class="btn btn-dark w-100 mb-3 hide-duplicate" onclick="openVillageManager()">  
+  🏡 गाँव प्रबंधन (Edit / Delete)  
+</button>  
+
+<div class="row mb-3 mt-2">  
+  <div class="col-6">  
+    <input id="searchBox"  
+           class="form-control"  
+           placeholder="नाम से खोजें...">  
+  </div>  
+  <div class="col-6">  
+    <select id="villageFilter" class="form-select">  
+      <option value="">सभी गाँव</option>  
+    </select>  
+  </div>  
+</div>  
+
+<div class="d-flex gap-2 mb-3">  
+<button class="btn btn-danger flex-fill hide-duplicate" onclick="deleteSelectedCustomers()">  
+    🗑 चुने हुए हटाएं  
+  </button>  
+
+</div>  
+
+<button class="btn btn-success w-100 mb-3 hide-duplicate" onclick="openAddCustomer()">  
+  + नया ग्राहक जोड़ें  
+</button>
+
+  <button class="btn btn-secondary w-100 mb-3 hide-duplicate" onclick="printCustomers()">  
+      🖨 ग्राहक सूची प्रिंट करें  
+    </button>  <input type="file" id="excelUpload"  
+       accept=".xlsx,.xls,.csv"  
+       class="form-control mb-3"  
+       style="display:none">
+
+<button class="btn btn-warning w-100 mb-3 hide-duplicate"  
+onclick="document.getElementById('excelUpload').click()">
+📤 Excel से डेटा अपलोड करें
+</button>
+
+<div id="customerTableContainer"  
+     class="table-responsive"  
+     style="max-height:65vh; overflow-y:auto;">  
+
+  <table class="table table-bordered text-center align-middle" id="customerTableMain">  
+  <thead>  
+      <tr>  
+        <th class="check-col">  
+          <input type="checkbox" id="selectAll"  
+                 onchange="toggleSelectAll(this)">  
+        </th>  
+        <th class="name-col">नाम</th>  
+        <th class="reg-col">र.न.</th>  
+        <th>पुत्र</th>  
+        <th>गाँव</th>  
+        <th>मोबाइल</th>  
+        <th>आधार</th>  
+        <th class="action-col">कार्य</th>  
+      </tr>  
+    </thead>  
+    <tbody id="customerTable"></tbody>  
+  </table>  
+
+</div>
+
+  </div>  <div id="addCustomerCard" class="card" style="display:none">  
+  <div class="header" id="formHeader">➕ नया ग्राहक जोड़ें</div>    <div class="card-body">  <input id="cName"   class="form-control mb-2" placeholder="नाम">  
+<input id="cFather" class="form-control mb-2" placeholder="पुत्र का नाम">  
+
+<div class="input-group mb-2">  
+  <select id="cVillage" class="form-select">  
+    <option value="">गाँव चुनें</option>  
+  </select>  
+  <button class="btn btn-outline-secondary"  
+          type="button"  
+          onclick="addNewVillage()">+  
+  </button>  
+</div>  
+
+<input id="cPhone"  class="form-control mb-2" placeholder="मोबाइल नंबर">  
+<input id="cAadhar" class="form-control mb-3" placeholder="आधार नंबर">
+
+<input id="cRN" class="form-control mb-3" placeholder="रजिस्टर नंबर (R.N.)">  
+    <button class="btn btn-success w-100 mb-2" onclick="saveEditedCustomer()">  
+✔ सहेजें  
+</button>  <button class="btn btn-secondary w-100" onclick="backToList()">  
+🔙 वापस  
+</button>  
+  </div>  
+</div>  <div id="villagePopup">  
+  <div id="fasalPopupBox">  <h4 class="text-center mb-3">🏡 गाँव प्रबंधन</h4>  
+
+<ul id="villageList" class="list-group mb-3"></ul>  
+
+<button class="btn btn-success w-100 mb-2" onclick="addNewVillage()">  
+  + नया गाँव जोड़ें  
+</button>  
+
+<button class="btn btn-secondary w-100" onclick="closeVillageManager()">  
+  बंद करें  
+</button>
+
+  </div>  
+</div>  
+<div id="fasalManagerPopup" style="display:none;  
+    position:fixed;top:0;left:0;width:100%;height:100%;  
+    background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:3000;">    <div style="background:white;padding:20px;border-radius:12px;  
+      width:90%;max-width:400px;">  <h4 class="text-center mb-3">🌾 फसल प्रबंधन</h4>  
+
+<input id="newFasalName" class="form-control mb-2" placeholder="नई फसल का नाम">  
+
+<button class="btn btn-success w-100 mb-3" onclick="addNewFasal()">  
+  + जोड़ें  
+</button>  
+
+<div id="fasalList" style="max-height:300px;overflow-y:auto;"></div>  
+
+<button class="btn btn-danger w-100 mt-3" onclick="closeFasalManager()">  
+  ❌ बंद करें  
+</button>
+
+  </div>  
+</div>  
+<div id="ledgerCard" class="card" style="display:none">  
+ <div class="header">  
+    📘 ग्राहक लेजर  <button class="btn btn-light float-end btn-sm" onclick="backToList()">🔙 वापस</button>
+
+</div>    <div class="sub-header" id="ledgerCustomerName"></div>    <div class="card-body">  <div class="d-flex gap-2 mb-3">  
+
+<button class="btn btn-primary flex-fill" onclick="openTransactionPopup()">+ लेन-देन</button>  
+
+<button class="btn btn-success flex-fill" onclick="openFasalPopup()">🌾 फसल जोड़ें</button>  
+
+<button class="btn btn-warning flex-fill" onclick="openFasalManager()">🌾 फसल लिस्ट</button>  
+
+<button class="btn btn-secondary flex-fill" onclick="printLedger()">🖨 प्रिंट</button>
+
+</div>  <div class="fasal-box">  
+    <div class="fasal-head" onclick="toggleFasalSummary()">📊 कुल फसल सारांश (Tap)</div>  
+    <div id="fasalSummary" class="fasal-detail"></div>  
+</div>  
+
+<div class="table-responsive mt-3">  
+  <table class="table table-bordered text-center" id="ledgerTableMain">  
+    <thead class="table-warning">
+
+  <tr>  
+    <th>तारीख</th>  
+    <th>अंतिम तारीख</th>   <th>जमा</th>  
+    <th>निकासी</th>  
+    <th>ब्याज %</th>  
+    <th>दिन</th>  
+    <th>ब्याज राशि</th>  
+    <th>फसल</th>  
+    <th>नोट</th>  
+    <th class="action-col">कार्य</th>  
+  </tr>  
+</thead>  
+        <tbody id="ledgerTable"></tbody>  
+        <tfoot id="ledgerFooter"></tfoot>  
+      </table>  
+    </div>    </div>  
+</div>  </div>  
+<div id="advancedReportCard" class="card" style="display:none">    <div class="header">  
+    📊 Advanced Report  
+    <button class="back-3d-btn" onclick="backToList();event.stopPropagation();">🔙</button>  
+  </div>    <div class="card-body">  <input id="reportSearch" class="form-control mb-2"  
+       placeholder="नाम से खोजें...">  
+
+<div class="row mb-2">  
+  <div class="col-6">  
+    <input type="date" id="fromDate" class="form-control">  
+  </div>  
+  <div class="col-6">  
+    <input type="date" id="toDate" class="form-control">  
+  </div>  
+</div>  
+
+<select id="sortType" class="form-select mb-2">  
+  <option value="new">Newest → Oldest</option>  
+  <option value="old">Oldest → Newest</option>  
+</select>  
+
+<button class="btn btn-primary w-100 mb-3"  
+        onclick="generateReport()">OK / Generate</button>  
+
+<div class="table-responsive">  
+  <table class="table table-bordered text-center">  
+    <thead>  
+      <tr>  
+        <th>तारीख</th>  
+        <th>नाम</th>  
+        <th>विवरण</th>  
+        <th>जमा</th>  
+        <th>निकासी</th>  
+      </tr>  
+    </thead>  
+    <tbody id="reportTable"></tbody>  
+  </table>  
+</div>
+
+  </div>  
+</div>  
+ <div id="transactionPopupOverlay"  
+     style="position:fixed; top:0; left:0; width:100%; height:100%;  
+            background:rgba(0,0,0,0.5); display:none;  
+            justify-content:center; align-items:center; z-index:2000;">  
+  <div id="popupBox">  <h5 class="text-center mb-3">🧾 नया लेन-देन</h5>
+
+<input id="tDate" type="date" class="form-control mb-2" placeholder="शुरू तारीख़">  
+    <input id="tEndDate" type="date" class="form-control mb-2" placeholder="अंतिम तारीख़">  
+    <input id="tCredit" type="number" class="form-control mb-2" placeholder="जमा (₹)">  
+    <input id="tDebit" type="number" class="form-control mb-2" placeholder="निकासी (₹)">  
+    <input id="tInterest" type="number" class="form-control mb-2" placeholder="ब्याज (%)">  
+   <input id="tDays" type="number" class="form-control mb-2" placeholder="दिन" readonly>  <input id="tInterestAmount" type="number" class="form-control mb-2" placeholder="ब्याज राशि (₹)" readonly>  <textarea id="tNote" class="form-control mb-3" placeholder="नोट"></textarea>  <button class="btn btn-success w-100 mb-2" onclick="saveTransaction()">✔ सहेजें</button>  
+<button class="btn btn-danger w-100" onclick="closeTransactionPopup()">रद्द</button>
+
+  </div>  
+</div>  <div id="fasalPopupOverlay"  
+     style="position:fixed; top:0; left:0; width:100%; height:100%;  
+            background:rgba(0,0,0,0.5); display:none;  
+            justify-content:center; align-items:center; z-index:2000;">  
+  <div id="popupBox">  <h5 class="text-center mb-3">🌾 नई फसल जोड़ें</h5>
+
+<input id="fDate" type="date" class="form-control mb-2">  <select id="fName" class="form-select mb-2">  
+  <option value="">फसल चुनें</option>  
+  <option>सरसों</option>  
+  <option>गेहूं</option>  
+  <option>बाजरा</option>  
+  <option>धान</option>  
+  <option>चना</option>  
+  <option>मूंगफली</option>  
+</select>  
+
+<div class="row">  
+  <div class="col-6">  
+    <input id="fBori" type="number" class="form-control mb-2" placeholder="बोरियाँ">  
+  </div>  
+  <div class="col-6">  
+    <input id="fWeightPer" type="number" class="form-control mb-2" placeholder="1 बोरी KG">  
+  </div>  
+</div>
+
+<input id="fExtraKG" type="number" class="form-control mb-2" placeholder="अतिरिक्त KG">  
+    <input id="fTotalQ" class="form-control mb-2" placeholder="कुल क्विंटल" readonly>  <input id="fRate" type="number" class="form-control mb-2" placeholder="भाव ₹/Q">  
+<input id="fMajduri" type="number" class="form-control mb-2" placeholder="मजदूरी ₹/Q">  
+
+<input id="fCutOther" type="number" class="form-control mb-2" placeholder="अन्य कटौती (₹)">  
+<input id="fCutTotal" class="form-control mb-2" placeholder="कुल कटौती" readonly>  
+
+<input id="fNetAmount" class="form-control fw-bold mb-2" placeholder="शुद्ध राशि" readonly>  
+
+<textarea id="fNote" class="form-control mb-3" placeholder="नोट"></textarea>  
+
+<button class="btn btn-success w-100 mb-2" onclick="saveFasal()">✔ सहेजें</button>  
+<button class="btn btn-danger w-100" onclick="closeFasalPopup()">रद्द</button>
+
+  </div>  
+</div>  <script>  
+window.onload = () => {  
+    if(sessionStorage.getItem("isLoggedIn") === "true"){  
+        loginScreen.style.display = "none";  
+        document.getElementById("appContent").style.display = "block";  
+        customerListCard.style.display = "block";  
+        loadCustomers();  
+    } else {  
+        document.getElementById("appContent").style.display = "none";  
+        loginScreen.style.display = "block";  
+          
+        if (localStorage.getItem("fingerprintRegistered") === "true" && localStorage.getItem("fingerprint_id")) {  
+             setTimeout(() => {  
+                 fingerLogin();  
+             }, 500);  
+        }  
+    }  
+};  
+  
+const firebaseConfig = {  
+  apiKey: "AIzaSyB30K96un0DsFbJ0-dx329za1HEnky3iC8",  
+  authDomain: "ms-saini.firebaseapp.com",  
+  databaseURL: "https://ms-saini-default-rtdb.asia-southeast1.firebasedatabase.app",  
+  projectId: "ms-saini",  
+  storageBucket: "ms-saini.appspot.com",  
+  messagingSenderId: "56761297643",  
+  appId: "1:56761297643:web:efbb8d890036191cfcacae"  
+};  
+firebase.initializeApp(firebaseConfig);  
+const db = firebase.database();  
+  
+let currentCustomerId = null;  
+  
+function showCard(id){  
+  customerListCard.style.display="none";  
+  addCustomerCard.style.display="none";  
+  ledgerCard.style.display="none";  
+advancedReportCard.style.display="none";  
+  loginScreen.style.display="none";  
+  document.getElementById("appContent").style.display = "block";  
+  
+  document.getElementById(id).style.display="block";  
+}  
+  
+function backToList(){  
+    showCard("customerListCard");  
+    loadCustomers(() => {  
+        filterCustomers();  
+    });  
+}  
+  
+function loadCustomers(callback){  
+  const ref = db.ref("customers");  
+  
+  ref.once("value").then(snap=>{  
+      customerTable.innerHTML = "";  
+  
+      snap.forEach(c=>{  
+        let d = c.val();  
+        let id = c.key;  
+  
+          
+        let row = `  
+        <tr>  
+          <td class="check-col"><input value="${id}" class="customerCheckbox" type="checkbox"></td>  
+  
+          <td class="name-col">  
+           <span style="color:blue;cursor:pointer;font-weight:900"
+      onclick="openLedger('${id}'); speakName('${d.name}')">
+              ${(d.name || "").replace(/\s+\d+$/, "").replace(" ", "<br>")}  
+            </span>  
+          </td>  
+  
+          <td class="reg-col">${d.rn || ((d.name || "").match(/\d+$/) || [""])[0]}</td>  
+      <td>${d.father || ""}</td>  
+          <td>${d.village || ""}</td>  
+          <td>${d.phone || ""}</td>  
+          <td>${d.aadhar || ""}</td>  
+  
+          <td class="action-col">  
+            <button class="btn btn-sm btn-primary" onclick="editCustomer('${id}')">✏️</button>  
+            <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${id}')">🗑</button>  
+          </td>  
+        </tr>  
+        `;  
+        customerTable.insertAdjacentHTML("beforeend", row);  
+      });  
+  
+      document.getElementById("customerCount").innerText = snap.numChildren();  
+if(callback) callback();  
+  });  
+}  
+  
+function openLedger(id){  
+  currentCustomerId = id;  
+  
+  db.ref("customers/" + id).once("value").then(s=>{  
+    ledgerCustomerName.innerText = s.val().name;  
+  });  
+  
+  showCard("ledgerCard");  
+  loadLedger();  
+}  
+  
+function loadLedger(){  
+  const ref = db.ref("ledgers/" + currentCustomerId);  
+  
+  ref.once("value").then(snap=>{  
+      ledgerTable.innerHTML = "";  
+  
+      let totalC = 0, totalD = 0, totalI = 0;  
+      let allFasal = [];  
+  
+      snap.forEach(e=>{  
+        let d = e.val();  
+        let key = e.key;  
+  
+        totalC += +d.credit || 0;  
+        totalD += +d.debit || 0;  
+        if(d.interestType === "debit"){  
+    totalI += +d.interestAmount || 0;  
+}else{  
+    totalI -= +d.interestAmount || 0;  
+}  
+  
+        if(d.isFasal) allFasal.push(d);  
+  
+        let row = `  
+<tr style="${d.isFasal ?  
+'background:#fff7d1;color:#b8860b;font-weight:bold;' : ''}">  
+  
+    <td>${d.startDate || d.date || ""}</td>  
+    <td>${d.endDate || ""}</td>  
+  
+    <td>₹${d.credit || 0}</td>  
+    <td>₹${d.debit || 0}</td>  
+    <td>${d.interest || 0}</td>  
+    <td>${d.days || 0}</td>  
+  <td>${d.isFasal ? "" : "+₹" + (d.interestAmount || 0)}</td>  
+<td>  
+${d.isFasal  
+  ? (function(){  
+      let q = +d.quintal || 0;  
+      let totalKG = q * 100;  
+  
+      let mainQ = Math.floor(totalKG / 100);  
+      let extraKG = Math.round(totalKG % 100);  
+  
+      let name = d.name || "";  
+let firstChar = name.trim().charAt(0);  
+  
+if (/\p{Emoji}/u.test(firstChar)) {  
+    return name + " (" + mainQ + " Q " + extraKG + " KG)";  
+} else {  
+    let name = d.name || "";  
+  
+let hasIcon = name.trim().startsWith("🌱") ||  
+              name.trim().startsWith("🌾") ||  
+              name.trim().startsWith("🌻") ||  
+              name.trim().startsWith("🌽") ||  
+              name.trim().startsWith("🥜") ||  
+              name.trim().startsWith("🌿");  
+  
+let finalName = hasIcon ? name : "🌾 " + name;  
+  
+return finalName + " (" + mainQ + " Q " + extraKG + " KG)";  
+}  
+    })()  
+  : ""  
+}  
+</td>  
+    <td>${d.note || ""}</td>  
+  
+    <td class="action-col">  
+        ${  
+          d.isFasal  
+          ? `<button class="btn btn-sm btn-primary" onclick="editFasal('${key}')">✏️</button>`  
+          : `<button class="btn btn-sm btn-primary" onclick="editTransaction('${key}')">✏️</button>`  
+        }  
+        <button class="btn btn-sm btn-danger" onclick="deleteLedgerEntry('${key}')">❌</button>  
+    </td>  
+</tr>  
+`;   
+ledgerTable.insertAdjacentHTML("beforeend", row);  
+      });  
+  
+let totalFasalNet = 0;  
+let totalFasalMajduri = 0;  
+let totalFasalCut = 0;  
+  
+allFasal.forEach(f => {  
+    totalFasalNet += +f.netFasal || 0;  
+    totalFasalMajduri += +f.totalMajduri || 0;  
+    totalFasalCut += +f.totalCut || 0;  
+});  
+  
+let balance =  
+    (totalD + totalI) -  
+    (totalC + totalFasalNet + totalFasalMajduri + totalFasalCut);  
+  
+ledgerFooter.innerHTML = `  
+<tr class="total-row" style="background:#fff3cd;font-weight:bold;color:#a66d00;">  
+    <td colspan="2">कुल</td>  
+    <td>₹${totalC}</td>  
+    <td>₹${totalD}</td>  
+    <td></td>  
+    <td></td>  
+    <td>₹${totalI.toFixed(2)}</td>  
+    <td colspan="3">  
+        शेष: ₹${balance.toFixed(2)}<br>  
+        <small>(नेट फसल: ₹${totalFasalNet} | मजदूरी: ₹${totalFasalMajduri} | कटौती: ₹${totalFasalCut})</small>  
+    </td>  
+</tr>  
+`;  
+let fasalTQ = 0, fasalTAmount = 0, fasalTNet = 0;  
+  
+allFasal.forEach(f => {  
+  fasalTQ += +f.quintal || 0;  
+  fasalTAmount += +f.totalAmount || 0;  
+  fasalTNet += +f.netFasal || 0;  
+});  
+  
+ledgerFooter.insertAdjacentHTML("beforeend", `  
+  <tr style="background:#fff3cd;font-weight:bold;color:#a66d00;">  
+    <td colspan="2">कुल फसल</td>  
+    <td colspan="2">कुल क्विंटल: ${fasalTQ.toFixed(2)}</td>  
+    <td colspan="2">कुल कीमत: ₹${fasalTAmount}</td>  
+    <td colspan="4">नेट फसल: ₹${fasalTNet}</td>  
+  </tr>  
+`);  
+  
+      generateFasalSummary(allFasal);  
+  });  
+}  
+  
+function toggleFasalSummary(){  
+  const b = fasalSummary;  
+  b.style.display = b.style.display == "block" ? "none" : "block";  
+}  
+  
+function generateFasalSummary(all){  
+    if(all.length == 0){  
+        fasalSummary.innerHTML = "<div class='p-2 text-center'>कोई फसल नहीं</div>";  
+        return;  
+    }  
+  
+    fasalSummary.innerHTML = "";  
+  
+    all.forEach((f, i) => {  
+        fasalSummary.insertAdjacentHTML("beforeend", `  
+            <div class="fasal-box" style="margin:8px 0;padding:8px;border-radius:8px;background:#fff5d6;border:1px solid #e6c77e">  
+                <div onclick="openFasal(${i})" style="font-weight:bold;font-size:16px;cursor:pointer;">  
+                    ▶ फसल ${i+1} (Tap to open)  
+                </div>  
+  
+                <div id="fasalDetail${i}" style="display:none;margin-top:6px;line-height:22px;">  
+                    🌾 क्विंटल: <b>${f.quintal}</b><br>  
+                    💰 कीमत: <b>₹${f.totalAmount}</b><br>  
+                    🧳 मजदूरी: <b>₹${f.totalMaiduri}</b><br>  
+                    ✂ कटौती: <b>₹${f.totalCut}</b><br>  
+                    🟡 नेट फसल: <b>₹${f.netFasal}</b>  
+                </div>  
+            </div>  
+        `);  
+    });  
+}  
+  
+function openFasal(i){  
+    const a = document.getElementById("fasalDetail"+i);  
+    a.style.display = a.style.display === "block" ? "none" : "block";  
+}  
+  
+function openTransactionPopup(){  
+    tDate.value = "";  
+    tEndDate.value = "";  
+    tCredit.value = "";  
+    tDebit.value = "";  
+    tInterest.value = "";  
+    tDays.value = "";  
+    tInterestAmount.value = "";  
+    tNote.value = "";  
+    transactionPopupOverlay.style.display = "flex";  
+}  
+function closeTransactionPopup(){  
+  transactionPopupOverlay.style.display="none";  
+}  
+  
+function saveTransaction(){  
+    let start = tDate.value || "";  
+    let end = tEndDate.value || "";  
+    let days = 0;  
+    let totalInterest = 0;  
+  
+    if(start && end){  
+        let d1 = new Date(start);  
+        let d2 = new Date(end);  
+        days = Math.floor((d2 - d1) / (1000*60*60*24));  
+        if(days < 0){  
+            alert("End Date, Start Date के बाद होनी चाहिए!");  
+            return;  
+        }  
+        let amount = +tDebit.value || +tCredit.value || 0;  
+        let rate = +tInterest.value || 0;  
+        let monthlyInterest = (amount * rate) / 100;  
+        let dailyInterest = monthlyInterest / 30;  
+        totalInterest = dailyInterest * days;  
+    }  
+  
+    let data = {  
+    startDate: start,  
+    endDate: end,  
+    credit: +tCredit.value || 0,  
+    debit: +tDebit.value || 0,  
+    interest: +tInterest.value || 0,  
+    days: days,  
+    interestAmount: +tInterestAmount.value || 0,  
+    interestType: (+tDebit.value || 0) > 0 ? "debit" : "credit",  
+    note: tNote.value  
+};  
+    if(window.editingTransactionId){  
+        db.ref("ledgers/" + currentCustomerId + "/" + window.editingTransactionId).update(data);  
+        window.editingTransactionId = null;  
+    }  
+    else{  
+        db.ref("ledgers/" + currentCustomerId).push(data);  
+    }  
+    closeTransactionPopup();  
+    loadLedger();  
+}  
+  
+["fBori","fWeightPer","fExtraKG","fRate","fMajduri","fCutOther"].forEach(id=>{ document.getElementById(id).addEventListener("input", calcFasal);  
+});  
+  
+function calcFasal(){  
+  let b = +fBori.value||0;  
+  let w = +fWeightPer.value||0;  
+  let r = +fRate.value||0;  
+  let m = +fMajduri.value||0;  
+  let o = +fCutOther.value||0;  
+let extra = +fExtraKG.value || 0;  
+let totalKG = (b * w) + extra;  
+  let q = totalKG / 100;  
+  fTotalQ.value = q.toFixed(2);  
+  let totalAmount = q * r;  
+  let totalMajduri = q * m;  
+  let totalCut = totalMajduri + o;  
+  let net = totalAmount - totalCut;  
+  fCutTotal.value = totalCut;  
+  fNetAmount.value = net;  
+}  
+function openFasalPopup() {  
+    fasalPopupOverlay.style.display = "flex";  
+    loadFasalDropdown();  
+    fName.value = "";  
+    fBori.value = "";  
+    fWeightPer.value = "";  
+    fTotalQ.value = "";  
+    fRate.value = "";  
+    fMajduri.value = "";  
+    fCutOther.value = "";  
+    fCutTotal.value = "";  
+    fNetAmount.value = "";  
+    fNote.value = "";  
+    window.editingFasalId = null;  
+}  
+  
+function saveFasal(){  
+  if(!fName.value) return alert("फसल चुनें!");  
+  let b = +fBori.value||0;  
+  let w = +fWeightPer.value||0;  
+  let q = +fTotalQ.value||0;  
+  let r = +fRate.value||0;  
+  let m = +fMajduri.value||0;  
+  let o = +fCutOther.value||0;  
+  let totalAmount = q * r;  
+  let totalMajduri = q * m;  
+  let totalCut = totalMajduri + o;  
+  let net = totalAmount - totalCut;  
+  let data = {  
+    isFasal:true,  
+    name:fName.value,  
+date: fDate.value || "",  
+    bori:b,  
+    weightPer:w,  
+    quintal:q,  
+    rate:r,  
+    totalAmount,  
+    totalMajduri,  
+    totalCut,  
+    netFasal:net,  
+    note:fNote.value  
+  };  
+  if(window.editingFasalId){  
+      db.ref("ledgers/" + currentCustomerId + "/" + window.editingFasalId).update(data);  
+      window.editingFasalId = null;  
+  }   
+  else {  
+      db.ref("ledgers/" + currentCustomerId).push(data);  
+  }  
+  closeFasalPopup();  
+  loadLedger();  
+}  
+  
+function deleteLedgerEntry(id){  
+  if(!confirm("हटाना चाहते हैं?")) return;  
+  db.ref("ledgers/" + currentCustomerId + "/" + id).remove();  
+  loadLedger();  
+}  
+  
+/* ✅ UPDATED PRINT LEDGER (STRICT REQUIREMENTS) */  
+function printLedger(){  
+    let name = document.getElementById("ledgerCustomerName").innerText;  
+    let table = document.getElementById("ledgerTableMain").cloneNode(true);  
+      
+    // Remove unwanted UI from clone  
+    table.querySelectorAll('.action-col').forEach(el => el.remove());  
+      
+    let html = `  
+        <div class="print-title">ग्राहक लेजर: ${name}</div>  
+        <div class="table-responsive">  
+            ${table.outerHTML}  
+        </div>  
+    `;  
+      
+    openPrintPreviewManual(html);  
+}  
+  
+document.getElementById("searchBox").addEventListener("input", () => filterCustomers());  
+document.getElementById("villageFilter").addEventListener("change", () => filterCustomers());  
+  
+function filterCustomers() {  
+    let search = searchBox.value.toLowerCase();  
+    let village = villageFilter.value;  
+    [...customerTable.rows].forEach(r => {  
+        let name = r.cells[1].innerText.toLowerCase();  
+        let vill = r.cells[4].innerText;  
+        let ok =  
+            (search === "" || name.includes(search)) &&  
+            (village === "" || village === vill);  
+        r.style.display = ok ? "" : "none";  
+    });  
+}  
+  
+function openAddCustomer() {  
+    showCard("addCustomerCard");  
+}  
+  
+function saveCustomer() {  
+    if (!cName.value) return alert("नाम लिखें!");  
+    let obj = {  
+    name: cName.value,  
+    father: cFather.value,  
+    village: cVillage.value,  
+    phone: cPhone.value,  
+    aadhar: cAadhar.value,  
+    rn: cRN.value  
+};  
+    db.ref("customers").push(obj);  
+    cName.value = "";  
+    cFather.value = "";  
+    cVillage.value = "";  
+    cPhone.value = "";  
+    cAadhar.value = "";  
+    backToList();  
+}  
+  
+let editingCustomerId = null;  
+  
+function editCustomer(id) {  
+    editingCustomerId = id;  
+    db.ref("customers/" + id).once("value").then(s => {  
+        let d = s.val();  
+        cName.value = d.name;  
+        cFather.value = d.father;  
+        cVillage.value = d.village;  
+        cPhone.value = d.phone;  
+        cAadhar.value = d.aadhar;  
+cRN.value = d.rn || "";  
+        showCard("addCustomerCard");  
+    });  
+}  
+  
+function saveEditedCustomer() {  
+    if (!editingCustomerId) return saveCustomer();  
+    let obj = {  
+        name: cName.value,  
+        father: cFather.value,  
+        village: cVillage.value,  
+        phone: cPhone.value,  
+        aadhar: cAadhar.value,  
+        rn: cRN.value  
+    };  
+    db.ref("customers/" + editingCustomerId).update(obj);  
+    editingCustomerId = null;  
+    backToList();  
+}  
+  
+function deleteCustomer(id) {  
+    if (!confirm("क्या ग्राहक हटाना है?")) return;  
+    db.ref("customers/" + id).remove();  
+    db.ref("ledgers/" + id).remove();  
+    loadCustomers();  
+}  
+  
+function toggleSelectAll(source) {  
+    document.querySelectorAll(".customerCheckbox").forEach(c => (c.checked = source.checked));  
+}  
+  
+function deleteSelectedCustomers() {  
+    let selected = [...document.querySelectorAll(".customerCheckbox:checked")].map(c => c.value);  
+    if (selected.length === 0) return alert("किसी ग्राहक को चुना नहीं!");  
+    if (!confirm("चुने हुए ग्राहक हटाऊँ?")) return;  
+    selected.forEach(id => {  
+        db.ref("customers/" + id).remove();  
+        db.ref("ledgers/" + id).remove();  
+    });  
+    loadCustomers();  
+}  
+  
+function deleteAllCustomers() {  
+    if (!confirm("❌ सभी ग्राहकों को हटाना है?")) return;  
+    db.ref("customers").remove();  
+    db.ref("ledgers").remove();  
+    loadCustomers();  
+}  
+  
+/* ✅ UPDATED PRINT CUSTOMERS (STRICT REQUIREMENTS) */  
+function printCustomers() {  
+    let table = document.getElementById("customerTableMain").cloneNode(true);  
+      
+    // Remove Action and Checkbox columns from clone  
+    table.querySelectorAll('.action-col, .check-col').forEach(el => el.remove());  
+      
+    let html = `  
+        <div class="print-title">ग्राहक सूची</div>  
+        <div class="table-responsive">  
+            ${table.outerHTML}  
+        </div>  
+    `;  
+      
+    openPrintPreviewManual(html);  
+}  
+  
+excelUpload.addEventListener("change", handleExcelUpload);  
+  
+function handleExcelUpload(e) {  
+    let file = e.target.files[0];  
+    if (!file) return;  
+    let reader = new FileReader();  
+    reader.onload = function () {  
+        let data = new Uint8Array(reader.result);  
+        let workbook = XLSX.read(data, { type: "array" });  
+        let sheet = workbook.Sheets[workbook.SheetNames[0]];  
+        let json = XLSX.utils.sheet_to_json(sheet);  
+        json.forEach(row => {  
+            let c = {  
+                name: row.name || "",  
+                father: row.father || "",  
+                village: row.village || "",  
+                phone: row.phone || "",  
+                aadhar: row.aadhar || ""  
+            };  
+            db.ref("customers").push(c);  
+        });  
+        alert("Excel Import Done ✔");  
+        loadCustomers();  
+    };  
+    reader.readAsArrayBuffer(file);  
+}  
+  
+function toggleSummary() {  
+    let box = totalSummary;  
+    if (box.style.display == "block") {  
+        box.style.display = "none";  
+        return;  
+    }  
+    db.ref("ledgers").once("value").then(snap => {  
+        let sumC = 0, sumD = 0, sumI = 0;  
+        snap.forEach(c => {  
+            c.forEach(r => {  
+                let d = r.val();  
+                sumC += +d.credit || 0;  
+                sumD += +d.debit || 0;  
+                sumI += +d.interestAmount || 0;  
+            });  
+        });  
+        let bal = (sumD + sumI) - sumC;  
+        box.innerHTML = `जमा: ₹${sumC}<br>निकासी: ₹${sumD}<br>ब्याज: ₹${sumI.toFixed(2)}<br>शेष: ₹${bal.toFixed(2)}`;  
+        box.style.display = "block";  
+    });  
+}  
+  
+function openVillageManager() {  
+    let html = `  
+      <div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;">  
+         <h5 class="text-center mb-3">🏡 गाँव प्रबंधन</h5>  
+         <input id="newVillage" class="form-control mb-2" placeholder="नया गाँव जोड़ें">  
+         <button class="btn btn-success w-100 mb-3" onclick="addVillage()">✔ जोड़ें</button>  
+         <div id="villageList" style="max-height:300px;overflow-y:auto;"></div>  
+         <button onclick="closeVillagePopup()" class="btn btn-danger w-100 mt-3">❌ बंद</button>  
+      </div>  
+    `;  
+    villagePopup.innerHTML = html;  
+    villagePopup.style.display = "flex";  
+    loadVillageList();  
+}  
+  
+function closeVillagePopup() {  
+    villagePopup.style.display = "none";  
+}  
+  
+function addVillage() {  
+    let v = document.getElementById("newVillage").value.trim();  
+    if (!v) return alert("गाँव का नाम लिखें!");  
+    db.ref("settings/villages").push(v);  
+    document.getElementById("newVillage").value = "";  
+    loadVillageList();  
+    loadVillageDropdown();  
+    loadFasalDropdown();  
+}  
+  
+function loadVillageList() {  
+    const box = document.getElementById("villageList");  
+    box.innerHTML = "";  
+    db.ref("settings/villages").once("value").then(snap => {  
+        snap.forEach(v => {  
+            let name = v.val();  
+            let id = v.key;  
+            box.insertAdjacentHTML("beforeend", `  
+                <div class="d-flex justify-content-between p-2 border mb-1">  
+                    ${name}  
+                    <button class="btn btn-sm btn-danger" onclick="deleteVillage('${id}')">❌</button>  
+                </div>  
+            `);  
+        });  
+    });  
+}  
+  
+function deleteVillage(id) {  
+    db.ref("settings/villages/" + id).remove();  
+    loadVillageList();  
+    loadVillageDropdown();  
+}  
+  
+function loadVillageDropdown() {  
+    cVillage.innerHTML = `<option value="">गाँव चुनें</option>`;  
+    villageFilter.innerHTML = `<option value="">सभी गाँव</option>`;  
+    db.ref("settings/villages").once("value").then(snap => {  
+        snap.forEach(v => {  
+            let name = v.val();  
+            cVillage.insertAdjacentHTML("beforeend", `<option>${name}</option>`);  
+            villageFilter.insertAdjacentHTML("beforeend", `<option>${name}</option>`);  
+        });  
+    });  
+}  
+  
+loadVillageDropdown();  
+  
+let MASTER_PASS = localStorage.getItem("app_password") || "1234";  
+const FAV_NAME = "saini";  
+  
+function loginNow(){  
+    let p = loginPass.value.trim();  
+    if(p === MASTER_PASS){  
+        sessionStorage.setItem("isLoggedIn", "true");  
+        loginScreen.style.display = "none";  
+        document.getElementById("appContent").style.display = "block";  
+        customerListCard.style.display = "block";  
+        loadCustomers();  
+    } else {  
+        alert("❌ गलत पासवर्ड!");  
+    }  
+}  
+  
+function showForgot(){  
+    loginScreen.style.display = "none";  
+    forgotBox.style.display = "block";  
+}  
+  
+function hideForgot(){  
+    forgotBox.style.display = "none";  
+    loginScreen.style.display = "block";  
+}  
+  
+function resetPass(){  
+    let name = favName.value.trim().toLowerCase();  
+    if(name === FAV_NAME){  
+        alert("✔ आपका पासवर्ड है: " + MASTER_PASS);  
+        hideForgot();  
+    } else {  
+        alert("❌ गलत नाम!");  
+    }  
+}  
+  
+function logoutNow(){  
+    sessionStorage.removeItem("isLoggedIn");  
+    loginPass.value = "";  
+    document.getElementById("appContent").style.display = "none";  
+    customerListCard.style.display = "none";  
+    ledgerCard.style.display = "none";  
+    addCustomerCard.style.display = "none";  
+    loginScreen.style.display = "block";  
+}  
+  
+function openChangePass() {  
+    changePassPopup.style.display = "flex";  
+}  
+  
+function closeChangePass() {  
+    changePassPopup.style.display = "none";  
+    currPass.value = "";  
+    newPass.value = "";  
+    confPass.value = "";  
+}  
+  
+function submitChangePassword() {  
+    let cp = currPass.value.trim();  
+    let np = newPass.value.trim();  
+    let cnp = confPass.value.trim();  
+    if (cp !== MASTER_PASS) {  
+        alert("Current password incorrect");  
+        return;  
+    }  
+    if (np === "") {  
+        alert("New password cannot be empty");  
+        return;  
+    }  
+    if (np !== cnp) {  
+        alert("Passwords do not match");  
+        return;  
+    }  
+    MASTER_PASS = np;  
+    localStorage.setItem("app_password", np);  
+    alert("Password changed successfully! ✔");  
+    closeChangePass();  
+}  
+  
+async function registerFinger() {  
+    if (!window.PublicKeyCredential) {  
+        return alert("This browser does not support Biometric authentication.");  
+    }  
+    try {  
+        const challenge = new Uint8Array(32);  
+        window.crypto.getRandomValues(challenge);  
+        const userId = new Uint8Array(16);  
+        window.crypto.getRandomValues(userId);  
+        const createCredentialOptions = {  
+            publicKey: {  
+                challenge,  
+                rp: { name: "Saini Trading" },  
+                user: {  
+                    id: userId,  
+                    name: "admin",  
+                    displayName: "Admin User"  
+                },  
+                pubKeyCredParams: [{ alg: -7, type: "public-key" }],  
+                authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },  
+                timeout: 60000  
+            }  
+        };  
+        const credential = await navigator.credentials.create(createCredentialOptions);  
+        if (credential) {  
+            const rawId = new Uint8Array(credential.rawId);  
+            const idArray = Array.from(rawId);  
+            localStorage.setItem("fingerprint_id", JSON.stringify(idArray));  
+            localStorage.setItem("fingerprintRegistered", "true");  
+            alert("Fingerprint Registered successfully! ✔");  
+        }  
+    } catch (err) {  
+        console.error(err);  
+        alert("Registration failed: " + err.message);  
+    }  
+}  
+  
+async function fingerLogin() {  
+    const storedId = localStorage.getItem("fingerprint_id");  
+    if (localStorage.getItem("fingerprintRegistered") !== "true" || !storedId) {  
+        if (event && event.type === 'click') alert("कृपया पहले फिंगर प्रिंट रजिस्टर करें!");  
+        return;  
+    }  
+    try {  
+        const challenge = new Uint8Array(32);  
+        window.crypto.getRandomValues(challenge);  
+        const idArray = JSON.parse(storedId);  
+        const allowCredentialsId = new Uint8Array(idArray);  
+        const getCredentialOptions = {  
+            publicKey: {  
+                challenge,  
+                timeout: 60000,  
+                allowCredentials: [{  
+                    id: allowCredentialsId,  
+                    type: 'public-key'  
+                }],  
+                userVerification: "required"  
+            }  
+        };  
+        const assertion = await navigator.credentials.get(getCredentialOptions);  
+        if (assertion) {  
+    sessionStorage.setItem("isLoggedIn", "true");  
+    loginScreen.style.display = "none";  
+    document.getElementById("appContent").style.display = "block";  
+    customerListCard.style.display = "block";  
+    loadCustomers();  
+}  
+    } catch (err) {  
+        console.error("Auth error:", err);  
+        if (err.name === "NotAllowedError") {  
+            if (event && event.type === 'click') alert("लॉगिन रद्द कर दिया गया या टाइम आउट हो गया।");  
+        } else {  
+             if (event && event.type === 'click') alert("फिंगरप्रिंट काम नहीं कर रहा, कृपया पासवर्ड से लॉगिन करें।");  
+        }  
+    }  
+}  
+  
+function editFasal(id){  
+    db.ref("ledgers/" + currentCustomerId + "/" + id).once("value").then(s=>{  
+        let f = s.val();  
+        if(!f.isFasal){  
+            alert("यह फसल एंट्री नहीं है!");  
+            return;  
+        }  
+        fasalPopupOverlay.style.display = "flex";  
+        fName.value = f.name;  
+        fBori.value = f.bori;  
+        fWeightPer.value = f.weightPer;  
+        fTotalQ.value = f.quintal;  
+        fRate.value = f.rate;  
+        let perMajduri = f.totalMajduri / f.quintal;  
+        fMajduri.value = perMajduri;  
+        fCutOther.value = f.totalCut - f.totalMajduri;  
+        fCutTotal.value = f.totalCut;  
+        fNetAmount.value = f.netFasal;  
+        fNote.value = f.note;  
+        window.editingFasalId = id;  
+    });  
+}  
+tDate.onchange = calcDays;  
+tEndDate.onchange = calcDays;  
+tInterest.oninput = calcInterest;  
+tDebit.oninput = calcInterest;  
+tCredit.oninput = calcInterest;     
+tDays.oninput = calcInterest;  
+function calcDays() {  
+    let start = tDate.value;  
+    let end = tEndDate.value;  
+    if (!start || !end) {  
+        tDays.value = "";  
+        tInterestAmount.value = "";  
+        return;  
+    }  
+    let d1 = new Date(start);  
+    let d2 = new Date(end);  
+    let diff = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));  
+    if (diff < 0) {  
+        alert("End Date, Start Date के बाद होनी चाहिए!");  
+        tEndDate.value = "";  
+        tDays.value = "";  
+        return;  
+    }  
+    tDays.value = diff;  
+    calcInterest();  
+}  
+  
+function calcInterest() {  
+    let amount = (+tDebit.value > 0) ? +tDebit.value : +tCredit.value;  
+    let rate = +tInterest.value || 0;  
+    let days = +tDays.value || 0;  
+    if(amount === 0 || rate === 0 || days === 0){  
+        tInterestAmount.value = "";  
+        return;  
+    }  
+    let monthlyInterest = (amount * rate) / 100;  
+    let dailyInterest = monthlyInterest / 30;  
+    let totalInterest = dailyInterest * days;  
+    tInterestAmount.value = totalInterest.toFixed(2);  
+}  
+function editTransaction(id){  
+    window.editingTransactionId = id;  
+    db.ref("ledgers/" + currentCustomerId + "/" + id).once("value").then(s=>{  
+        let d = s.val();  
+        if(d.isFasal){  
+            alert("यह फसल है, इसे फसल Edit में खोलें!");  
+            return;  
+        }  
+        transactionPopupOverlay.style.display = "flex";  
+        tDate.value = d.startDate || "";  
+        tEndDate.value = d.endDate || "";  
+        tCredit.value = d.credit || 0;  
+        tDebit.value = d.debit || 0;  
+        tInterest.value = d.interest || 0;  
+        tDays.value = d.days || 0;  
+        tInterestAmount.value = d.interestAmount || 0;  
+        tNote.value = d.note || "";  
+    });  
+}  
+  
+function openFasalManager() {  
+    document.getElementById("fasalManagerPopup").style.display = "flex";  
+    loadFasalList();  
+}  
+  
+function closeFasalManager() {  
+    document.getElementById("fasalManagerPopup").style.display = "none";  
+}  
+  
+function addNewFasal() {  
+    let name = document.getElementById("newFasalName").value.trim();  
+    if (!name) return alert("फसल का नाम लिखें!");  
+    db.ref("fasals").push({ name });  
+    document.getElementById("newFasalName").value = "";  
+    loadFasalList();  
+    loadFasalDropdown();  
+}  
+  
+function deleteFasal(id) {  
+    if (!confirm("क्या आप फसल हटाना चाहते हैं?")) return;  
+    db.ref("fasals/" + id).remove();  
+    loadFasalList();  
+    loadFasalDropdown();  
+}  
+  
+function loadFasalList() {  
+    const box = document.getElementById("fasalList");  
+    box.innerHTML = "";  
+    db.ref("fasals").once("value").then(snap => {  
+        snap.forEach(f => {  
+            let d = f.val();  
+            let id = f.key;  
+            box.insertAdjacentHTML("beforeend", `  
+                <div class="d-flex justify-content-between p-2 border mb-1">  
+                    ${d.name}  
+                    <button class="btn btn-sm btn-danger" onclick="deleteFasal('${id}')">❌</button>  
+                </div>  
+            `);  
+        });  
+    });  
+}  
+  
+function loadFasalDropdown() {  
+    db.ref("fasals").once("value").then(snap => {  
+        fName.innerHTML = `<option value="">फसल चुनें</option>`;  
+        snap.forEach(f => {  
+            let d = f.val();  
+            fName.insertAdjacentHTML("beforeend", `<option>${d.name}</option>`);  
+        });  
+    });  
+}  
+loadFasalDropdown();  
+function closeFasalPopup() {  
+    document.getElementById("fasalPopupOverlay").style.display = "none";  
+    window.editingFasalId = null;  
+}  
+</script>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <script>  
+/* ✅ NEW CLEAN PREVIEW HANDLER */  
+function openPrintPreviewManual(customHtml){  
+  document.getElementById("printContent").innerHTML = customHtml;  
+  document.getElementById("printPreviewBox").style.display = "block";  
+  // Reset zoom to 1 when opening new preview  
+  document.getElementById("zoomRange").value = 1;  
+  document.getElementById("printContent").style.transform = "scale(1)";  
+}  
+  
+function closePrintPreview(){  
+  document.getElementById("printPreviewBox").style.display = "none";  
+}  
+function setZoom(val){  
+  document.getElementById("printContent").style.transform = "scale(" + val + ")";  
+}  
+  
+/* ✅ UPDATED FINAL PRINT (STRICT REQUIREMENTS) */  
+function finalPrint(){  
+  const pc = document.getElementById("printContent");  
+  const zoomInput = document.getElementById("zoomRange");  
     
-    // 4. Show only login screen
-    loginScreen.style.display = "block";
-}
-
-/* ✅ Change Password Logic */
-function openChangePass() {
-    changePassPopup.style.display = "flex";
-}
-
-function closeChangePass() {
-    changePassPopup.style.display = "none";
-    currPass.value = "";
-    newPass.value = "";
-    confPass.value = "";
-}
-
-function submitChangePassword() {
-    let cp = currPass.value.trim();
-    let np = newPass.value.trim();
-    let cnp = confPass.value.trim();
-
-    if (cp !== MASTER_PASS) {
-        alert("Current password incorrect");
-        return;
-    }
-
-    if (np === "") {
-        alert("New password cannot be empty");
-        return;
-    }
-
-    if (np !== cnp) {
-        alert("Passwords do not match");
-        return;
-    }
-
-    // Update Storage
-    MASTER_PASS = np;
-    localStorage.setItem("app_password", np);
+  // 1. Save current zoom  
+  const originalZoom = zoomInput.value;  
     
-    alert("Password changed successfully! ✔");
-    closeChangePass();
-}
+  // 2. Temporarily remove zoom for print  
+  pc.style.transform = "scale(1)";  
+    
+  // 3. Trigger Print  
+  window.print();  
+    
+  // 4. Restore zoom after a short delay (for system to capture)  
+  setTimeout(() => {  
+    pc.style.transform = "scale(" + originalZoom + ")";  
+  }, 500);  
+}  
+</script>  <script>  
+function openReport(){  
+  showCard("advancedReportCard");  
+}  
+  
+function generateReport(){  
+  let from = fromDate.value ? new Date(fromDate.value) : null;  
+  let to = toDate.value ? new Date(toDate.value) : null;  
+  let search = reportSearch.value.toLowerCase().trim();  
+  let sort = sortType.value;  
+  reportTable.innerHTML = "";  
+  let all = [];  
+  db.ref("customers").once("value").then(async csnap => {  
+    let promises = [];  
+    csnap.forEach(c => {  
+      let cid = c.key;  
+      let cname = c.val().name || "";  
+      let cnameLower = cname.toLowerCase();  
+      let p = db.ref("ledgers/" + cid).once("value").then(lsnap => {  
+        lsnap.forEach(e => {  
+          let d = e.val();  
+          let date = d.startDate || d.date || "";  
+          if(!date) return;  
+          let dObj = new Date(date);  
+          if(from && dObj < from) return;  
+          if(to && dObj > to) return;  
+          let detailMatch = (d.note || "").toLowerCase().includes(search);  
+          if(!search || cnameLower.includes(search) || detailMatch){  
+            all.push({  
+              date: date,  
+              name: cname,  
+              detail: d.note || (d.isFasal ? "Fasal" : "Transaction"),  
+              credit: d.credit || "",  
+              debit: d.debit || ""  
+            });  
+          }  
+        });  
+      });  
+      promises.push(p);  
+    });  
+    await Promise.all(promises);  
+    renderReport(all, sort);  
+  });  
+}  
+  
+function renderReport(data, sort){  
+  if(sort === "new"){  
+    data.sort((a,b)=> new Date(b.date) - new Date(a.date));  
+  }else{  
+    data.sort((a,b)=> new Date(a.date) - new Date(b.date));  
+  }  
+  reportTable.innerHTML = "";  
+  data.forEach(r=>{  
+    reportTable.insertAdjacentHTML("beforeend",`  
+      <tr>  
+        <td>${r.date}</td>  
+        <td>${r.name}</td>  
+        <td>${r.detail}</td>  
+        <td>${r.credit}</td>  
+        <td>${r.debit}</td>  
+      </tr>  
+    `);  
+  });  
+}  
+</script>  <div id="printPreviewBox" style="  
+display:none;  
+position:fixed;  
+top:0;left:0;width:100%;height:100%;  
+background:white;  
+z-index:999999;  
+">    <div style="  
+    display:flex;  
+    align-items:center;  
+    justify-content:space-between;  
+    padding:10px;  
+    background:#1976d2;  
+    color:white;  
+  ">  
+    <button onclick="closePrintPreview()" style="  
+      background:red;color:white;  
+      border:none;padding:8px 12px;border-radius:6px;">  
+      Cancel  
+    </button>  <div>  
+  Zoom:  
+  <input type="range" id="zoomRange" min="0.6" max="2" step="0.1"  
+         value="1" onchange="setZoom(this.value)">  
+</div>  
 
-/* Fingerprint Fix: Correct WebAuthn Logic */
-async function registerFinger() {
-    if (!window.PublicKeyCredential) {
-        return alert("This browser does not support Biometric authentication.");
-    }
+<button onclick="finalPrint()" style="  
+  background:green;color:white;  
+  border:none;padding:8px 12px;border-radius:6px;">  
+  Print Now  
+</button>
 
-    try {
-        const challenge = new Uint8Array(32);
-        window.crypto.getRandomValues(challenge);
-
-        // Simple mock ID for platform authenticator
-        const userId = new Uint8Array(16);
-        window.crypto.getRandomValues(userId);
-
-        const createCredentialOptions = {
-            publicKey: {
-                challenge,
-                rp: { name: "Saini Trading" },
-                user: {
-                    id: userId,
-                    name: "admin",
-                    displayName: "Admin User"
-                },
-                pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-                authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
-                timeout: 60000
-            }
-        };
-
-        const credential = await navigator.credentials.create(createCredentialOptions);
-        if (credential) {
-            // Store Credential ID to use in allowCredentials
-            const rawId = new Uint8Array(credential.rawId);
-            const idArray = Array.from(rawId);
-            localStorage.setItem("fingerprint_id", JSON.stringify(idArray));
-            localStorage.setItem("fingerprintRegistered", "true");
-            alert("Fingerprint Registered successfully! ✔");
-        }
-    } catch (err) {
-        console.error(err);
-        alert("Registration failed: " + err.message);
-    }
-}
-
-async function fingerLogin() {
-    // 1. Check if credential exists
-    const storedId = localStorage.getItem("fingerprint_id");
-    if (localStorage.getItem("fingerprintRegistered") !== "true" || !storedId) {
-        // If triggered manually, show alert. If automatic, we just stay on login screen.
-        if (event && event.type === 'click') alert("कृपया पहले फिंगर प्रिंट रजिस्टर करें!");
-        return;
-    }
-
-    try {
-        const challenge = new Uint8Array(32);
-        window.crypto.getRandomValues(challenge);
-        
-        const idArray = JSON.parse(storedId);
-        const allowCredentialsId = new Uint8Array(idArray);
-
-        const getCredentialOptions = {
-            publicKey: {
-                challenge,
-                timeout: 60000,
-                allowCredentials: [{
-                    id: allowCredentialsId,
-                    type: 'public-key'
-                }],
-                userVerification: "required"
-            }
-        };
-
-        const assertion = await navigator.credentials.get(getCredentialOptions);
-        if (assertion) {
-    sessionStorage.setItem("isLoggedIn", "true");
-    loginScreen.style.display = "none";
-    document.getElementById("appContent").style.display = "block";
-    customerListCard.style.display = "block";
-    loadCustomers();
-}
-    } catch (err) {
-        console.error("Auth error:", err);
-        // Friendly message instead of technical browser error
-        if (err.name === "NotAllowedError") {
-            // Only alert if the user manually clicked login and it failed/cancelled
-            if (event && event.type === 'click') alert("लॉगिन रद्द कर दिया गया या टाइम आउट हो गया।");
-        } else {
-             if (event && event.type === 'click') alert("फिंगरप्रिंट काम नहीं कर रहा, कृपया पासवर्ड से लॉगिन करें।");
-        }
-    }
-}
-
-function editFasal(id){
-    db.ref("ledgers/" + currentCustomerId + "/" + id).once("value").then(s=>{
-        let f = s.val();
-
-        if(!f.isFasal){
-            alert("यह फसल एंट्री नहीं है!");
-            return;
-        }
-
-        fasalPopupOverlay.style.display = "flex";
-
-        fName.value = f.name;
-        fBori.value = f.bori;
-        fWeightPer.value = f.weightPer;
-        fTotalQ.value = f.quintal;
-        fRate.value = f.rate;
-
-        let perMajduri = f.totalMajduri / f.quintal;
-        fMajduri.value = perMajduri;
-
-        fCutOther.value = f.totalCut - f.totalMajduri;
-
-        fCutTotal.value = f.totalCut;
-        fNetAmount.value = f.netFasal;
-        fNote.value = f.note;
-
-        window.editingFasalId = id;
-    });
-}
-tDate.onchange = calcDays;
-tEndDate.onchange = calcDays;
-tInterest.oninput = calcInterest;
-tDebit.oninput = calcInterest;
-tCredit.oninput = calcInterest;   
-tDays.oninput = calcInterest;
-function calcDays() {
-    let start = tDate.value;
-    let end = tEndDate.value;
-
-    if (!start || !end) {
-        tDays.value = "";
-        tInterestAmount.value = "";
-        return;
-    }
-
-    let d1 = new Date(start);
-    let d2 = new Date(end);
-
-    let diff = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
-
-    if (diff < 0) {
-        alert("End Date, Start Date के बाद होनी चाहिए!");
-        tEndDate.value = "";
-        tDays.value = "";
-        return;
-    }
-
-    tDays.value = diff;
-    calcInterest();  // दिन बदलते ही ब्याज भी अपडेट
-}
-
-function calcInterest() {
-    let amount = (+tDebit.value > 0)
-    ? +tDebit.value
-    : +tCredit.value;   // सिर्फ निकासी राशि
-    let rate = +tInterest.value || 0;    // ब्याज %
-    let days = +tDays.value || 0;        // दिन
-
-    if(amount === 0 || rate === 0 || days === 0){
-        tInterestAmount.value = "";
-        return;
-    }
-
-    // Monthly interest = (amount * rate) / 100
-    let monthlyInterest = (amount * rate) / 100;
-
-    // Daily interest = monthlyInterest / 30
-    let dailyInterest = monthlyInterest / 30;
-
-    // Total interest = dailyInterest * days
-    let totalInterest = dailyInterest * days;
-
-    tInterestAmount.value = totalInterest.toFixed(2);
-}
-function editTransaction(id){
-    window.editingTransactionId = id;
-
-    db.ref("ledgers/" + currentCustomerId + "/" + id).once("value").then(s=>{
-        let d = s.val();
-
-        // Normal transaction होना चाहिए, fasal नहीं
-        if(d.isFasal){
-            alert("यह फसल है, इसे फसल Edit में खोलें!");
-            return;
-        }
-
-        // Popup खोलो
-        transactionPopupOverlay.style.display = "flex";
-
-        // पुराने values भर दो
-        tDate.value = d.startDate || "";
-        tEndDate.value = d.endDate || "";
-        tCredit.value = d.credit || 0;
-        tDebit.value = d.debit || 0;
-        tInterest.value = d.interest || 0;
-        tDays.value = d.days || 0;
-        tInterestAmount.value = d.interestAmount || 0;
-        tNote.value = d.note || "";
-    });
-}
-/* ======================================================
-      FASAL MANAGER (ADD / DELETE)
-====================================================== */
-
-function openFasalManager() {
-    document.getElementById("fasalManagerPopup").style.display = "flex";
-    loadFasalList();
-}
-
-function closeFasalManager() {
-    document.getElementById("fasalManagerPopup").style.display = "none";
-}
-
-function addNewFasal() {
-    let name = document.getElementById("newFasalName").value.trim();
-
-    if (!name) return alert("फसल का नाम लिखें!");
-
-    db.ref("fasals").push({ name });
-    document.getElementById("newFasalName").value = "";
-    loadFasalList();
-    loadFasalDropdown();   // dropdown refresh
-}
-
-function deleteFasal(id) {
-    if (!confirm("क्या आप फसल हटाना चाहते हैं?")) return;
-
-    db.ref("fasals/" + id).remove();
-    loadFasalList();
-    loadFasalDropdown();
-}
-
-function loadFasalList() {
-    const box = document.getElementById("fasalList");
-    box.innerHTML = "";
-
-    db.ref("fasals").once("value").then(snap => {
-        snap.forEach(f => {
-            let d = f.val();
-            let id = f.key;
-
-            box.insertAdjacentHTML("beforeend", `
-                <div class="d-flex justify-content-between p-2 border mb-1">
-                    ${d.name}
-                    <button class="btn btn-sm btn-danger" onclick="deleteFasal('${id}')">❌</button>
-                </div>
-            `);
-        });
-    });
-}
-
-function loadFasalDropdown() {
-    db.ref("fasals").once("value").then(snap => {
-        fName.innerHTML = `<option value="">फसल चुनें</option>`;
-
-        snap.forEach(f => {
-            let d = f.val();
-            fName.insertAdjacentHTML("beforeend", `<option>${d.name}</option>`);
-        });
-    });
-}
-loadFasalDropdown();
-function closeFasalPopup() {
-    document.getElementById("fasalPopupOverlay").style.display = "none";
-    window.editingFasalId = null;   // edit मोड बंद
-}
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
-</script>
-
-</body>
+  </div>    <div id="printContent" style="  
+    padding:10px;  
+    transform-origin: top left;  
+    overflow: visible;  
+    height: auto;  
+  "></div>  </div>  
+</body>  
 </html>
