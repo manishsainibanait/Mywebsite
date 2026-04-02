@@ -889,78 +889,90 @@ function loadLedger(){
       let totalC = 0, totalD = 0, totalI = 0;  
       let allFasal = [];  
   
-      snap.forEach(e=>{  
-        let d = e.val();  
-        let key = e.key;  
+      let entries = [];
+
+snap.forEach(e=>{
+  let d = e.val();
+  let key = e.key;
+  entries.push({ ...d, key });
+});
+
+// SORT
+entries.sort((a,b)=>{
+  return new Date(a.startDate || a.date) - new Date(b.startDate || b.date);
+});
+
+// TABLE CLEAR
+ledgerTable.innerHTML = "";
+
+// LOOP
+entries.forEach(d=>{
+  let key = d.key;
+
+  totalC += +d.credit || 0;
+  totalD += +d.debit || 0;
+
+  if(d.interestType === "debit"){
+    totalI += +d.interestAmount || 0;
+  } else {
+    totalI -= +d.interestAmount || 0;
+  }
+
+  if(d.isFasal) allFasal.push(d);
+
   
-        totalC += +d.credit || 0;  
-        totalD += +d.debit || 0;  
-        if(d.interestType === "debit"){  
-    totalI += +d.interestAmount || 0;  
-}else{  
-    totalI -= +d.interestAmount || 0;  
-}  
-  
-        if(d.isFasal) allFasal.push(d);  
-  
-        let row = `  
+let row = `
 <tr style="${d.isFasal ?  
-'background:#fff7d1;color:#b8860b;font-weight:bold;' : ''}">  
-  
-    <td>${d.startDate || d.date || ""}</td>  
-    <td>${d.endDate || ""}</td>  
-  
-    <td>₹${d.credit || 0}</td>  
-    <td>₹${d.debit || 0}</td>  
-    <td>${d.interest || 0}</td>  
-    <td>${d.days || 0}</td>  
-  <td>${d.isFasal ? "" : "+₹" + (d.interestAmount || 0)}</td>  
-<td>  
-${d.isFasal  
-  ? (function(){  
-      let q = +d.quintal || 0;  
-      let totalKG = q * 100;  
-  
-      let mainQ = Math.floor(totalKG / 100);  
-      let extraKG = Math.round(totalKG % 100);  
-  
-      let name = d.name || "";  
-let firstChar = name.trim().charAt(0);  
-  
-if (/\p{Emoji}/u.test(firstChar)) {  
-    return name + " (" + mainQ + " Q " + extraKG + " KG)";  
-} else {  
-    let name = d.name || "";  
-  
-let hasIcon = name.trim().startsWith("🌱") ||  
-              name.trim().startsWith("🌾") ||  
-              name.trim().startsWith("🌻") ||  
-              name.trim().startsWith("🌽") ||  
-              name.trim().startsWith("🥜") ||  
-              name.trim().startsWith("🌿");  
-  
-let finalName = hasIcon ? name : "🌾 " + name;  
-  
-return finalName + " (" + mainQ + " Q " + extraKG + " KG)";  
-}  
-    })()  
-  : ""  
-}  
-</td>  
-    <td>${d.note || ""}</td>  
-  
-    <td class="action-col">  
-        ${  
-          d.isFasal  
-          ? `<button class="btn btn-sm btn-primary" onclick="editFasal('${key}')">✏️</button>`  
-          : `<button class="btn btn-sm btn-primary" onclick="editTransaction('${key}')">✏️</button>`  
-        }  
-        <button class="btn btn-sm btn-danger" onclick="deleteLedgerEntry('${key}')">❌</button>  
-    </td>  
-</tr>  
-`;   
-ledgerTable.insertAdjacentHTML("beforeend", row);  
-      });  
+'background:#fff7d1;color:#b8860b;font-weight:bold;' : ''}">
+
+<td>${d.startDate || d.date || ""}</td>
+<td>${d.endDate || ""}</td>
+
+<td>₹${d.credit || 0}</td>
+<td>₹${d.debit || 0}</td>
+<td>${d.interest || 0}</td>
+<td>${d.days || 0}</td>
+<td>${d.isFasal ? "" : "+₹" + (d.interestAmount || 0)}</td>
+
+<td>
+${d.isFasal
+  ? (function(){
+      let q = +d.quintal || 0;
+      let totalKG = q * 100;
+
+      let mainQ = Math.floor(totalKG / 100);
+      let extraKG = Math.round(totalKG % 100);
+
+      let name = d.name || "";
+      let hasIcon = name.trim().startsWith("🌱") ||
+                    name.trim().startsWith("🌾") ||
+                    name.trim().startsWith("🌻") ||
+                    name.trim().startsWith("🌽") ||
+                    name.trim().startsWith("🥜") ||
+                    name.trim().startsWith("🌿");
+
+      let finalName = hasIcon ? name : "🌾 " + name;
+
+      return finalName + " (" + mainQ + " Q " + extraKG + " KG)";
+  })()
+  : ""
+}
+</td>
+
+<td>${d.note || ""}</td>
+
+<td class="action-col">
+  ${
+    d.isFasal
+    ? `<button class="btn btn-sm btn-primary" onclick="editFasal('${key}')">✏️</button>`
+    : `<button class="btn btn-sm btn-primary" onclick="editTransaction('${key}')">✏️</button>`
+  }
+  <button class="btn btn-sm btn-danger" onclick="deleteLedgerEntry('${key}')">❌</button>
+</td>
+</tr>
+`;
+  ledgerTable.insertAdjacentHTML("beforeend", row);
+});
   
 let totalFasalNet = 0;  
 let totalFasalMajduri = 0;  
