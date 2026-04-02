@@ -188,12 +188,37 @@ th.reg-col, td.reg-col {
     background:white; padding:20px; border-radius:12px;  
     width:90%; max-width:420px;  
 }  
-  
+
+/* ✅ UPDATED PRINT UI FIXES */
+#printPreviewBox {
+  overflow: auto !important; /* Main box will scroll, not the table */
+}
+
+#printContent {
+  width: 100%;
+  transform-origin: top left;
+  overflow: visible !important; /* Force content to show fully */
+  height: auto !important;
+}
+
+/* Force table to behave inside preview */
+#printContent .table-responsive {
+  overflow: visible !important;
+  max-height: none !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+#printContent table {
+  width: 100% !important;
+  margin-bottom: 50px; /* Space at bottom */
+}
+
 /* ✅ UPDATED STRICT PRINT SYSTEM CSS */  
 @media print {  
   @page {  
     size: A4;  
-    margin: 15mm;  
+    margin: 10mm;  
   }  
   body * {  
     visibility: hidden;  
@@ -201,21 +226,25 @@ th.reg-col, td.reg-col {
   #printPreviewBox, #printPreviewBox * {  
     visibility: visible;  
   }  
-  /* Hide UI Buttons during actual print */  
+  #printPreviewBox {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
   #printPreviewBox > div:first-child {  
     display: none !important;  
   }  
-  #printContent, #printContent * {  
-    visibility: visible !important;  
-  }  
-  /* FIX SCROLL ISSUE: Ensure full height and visibility */  
-  #printContent, .table-responsive {  
-    position: static !important;  
-    overflow: visible !important;  
-    height: auto !important;  
-    max-height: none !important;  
-    width: 100% !important;  
-    display: block !important;  
+  #printContent {  
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    transform: scale(1) !important; /* Reset zoom for actual paper */
+    overflow: visible !important;
+    height: auto !important;
   }  
   table {  
     width: 100% !important;  
@@ -228,9 +257,9 @@ th.reg-col, td.reg-col {
   }  
   th, td {  
     border: 1px solid black !important;  
-    padding: 8px !important;  
+    padding: 6px !important;  
     text-align: center !important;  
-    font-size: 12pt !important;  
+    font-size: 11pt !important;  
     color: black !important;  
     background: white !important;  
   }  
@@ -238,17 +267,18 @@ th.reg-col, td.reg-col {
     background-color: #f2f2f2 !important;  
     font-weight: bold !important;  
   }  
-  th.check-col, td.check-col, th.name-col, td.name-col {  
+  th.check-col, td.check-col, th.name-col, td.name-col, .action-col {  
     position: static !important;  
     background: white !important;  
+    display: none !important; /* Hide UI columns in print */
   }  
   .print-title {  
     text-align: center;  
-    font-size: 20pt;  
+    font-size: 18pt;  
     font-weight: bold;  
-    margin-bottom: 20px;  
+    margin-bottom: 15px;  
     border-bottom: 2px solid black;  
-    padding-bottom: 10px;  
+    padding-bottom: 5px;  
   }  
 }  
   
@@ -1741,20 +1771,36 @@ function closeFasalPopup() {
     window.editingFasalId = null;  
 }  
 </script>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <script>  
-/* ✅ NEW CLEAN PREVIEW HANDLER */  
+/* ✅ UPDATED CLEAN PREVIEW HANDLER (SCROLL FIX) */  
 function openPrintPreviewManual(customHtml){  
-  document.getElementById("printContent").innerHTML = customHtml;  
+  const pc = document.getElementById("printContent");
+  pc.innerHTML = customHtml;  
   document.getElementById("printPreviewBox").style.display = "block";  
-  // Reset zoom to 1 when opening new preview  
-  document.getElementById("zoomRange").value = 1;  
-  document.getElementById("printContent").style.transform = "scale(1)";  
+  
+  // 1. Reset Zoom Range
+  const defaultZoom = 0.7;   // 👈 यहाँ control है
+
+document.getElementById("zoomRange").value = defaultZoom;
+
+pc.style.transform = "scale(" + defaultZoom + ")";
+pc.style.width = (100 / defaultZoom) + "%";
+  
+  // 3. Dynamic Height Reset
+  pc.style.height = "auto";
 }  
   
 function closePrintPreview(){  
   document.getElementById("printPreviewBox").style.display = "none";  
 }  
+
+/* ✅ UPDATED ZOOM HANDLER (RESPONSIVE FIX) */
 function setZoom(val){  
-  document.getElementById("printContent").style.transform = "scale(" + val + ")";  
+  const pc = document.getElementById("printContent");
+  pc.style.transform = "scale(" + val + ")";  
+  
+  // Important: Adjust width to prevent horizontal cut-off
+  // If zoom is 0.5, width needs to be 200% (100 / 0.5) to keep quality
+  pc.style.width = (100 / val) + "%";
 }  
   
 /* ✅ UPDATED FINAL PRINT (STRICT REQUIREMENTS) */  
@@ -1762,19 +1808,22 @@ function finalPrint(){
   const pc = document.getElementById("printContent");  
   const zoomInput = document.getElementById("zoomRange");  
     
-  // 1. Save current zoom  
-  const originalZoom = zoomInput.value;  
+  // Save current zoom to restore later  
+  const currentScale = zoomInput.value;  
+  const currentWidth = pc.style.width;
     
-  // 2. Temporarily remove zoom for print  
+  // 1. Reset for paper printing (A4 standard)
   pc.style.transform = "scale(1)";  
+  pc.style.width = "100%";
     
-  // 3. Trigger Print  
+  // 2. Trigger Print  
   window.print();  
     
-  // 4. Restore zoom after a short delay (for system to capture)  
+  // 3. Restore zoom for screen view after a short delay
   setTimeout(() => {  
-    pc.style.transform = "scale(" + originalZoom + ")";  
-  }, 500);  
+    pc.style.transform = "scale(" + currentScale + ")";  
+    pc.style.width = currentWidth;
+  }, 800);  
 }  
 </script>  <script>  
 function openReport(){  
@@ -1853,6 +1902,9 @@ z-index:999999;
     padding:10px;  
     background:#1976d2;  
     color:white;  
+    position: sticky;
+    top: 0;
+    z-index: 1000000;
   ">  
     <button onclick="closePrintPreview()" style="  
       background:red;color:white;  
@@ -1860,8 +1912,8 @@ z-index:999999;
       Cancel  
     </button>  <div>  
   Zoom:  
-  <input type="range" id="zoomRange" min="0.6" max="2" step="0.1"  
-         value="1" onchange="setZoom(this.value)">  
+  <input type="range" id="zoomRange" min="0.1" max="2" step="0.1"  
+         value="1" oninput="setZoom(this.value)">  
 </div>  
 
 <button onclick="finalPrint()" style="  
@@ -1870,11 +1922,6 @@ z-index:999999;
   Print Now  
 </button>
 
-  </div>    <div id="printContent" style="  
-    padding:10px;  
-    transform-origin: top left;  
-    overflow: visible;  
-    height: auto;  
-  "></div>  </div>  
+  </div>    <div id="printContent"></div>  </div>  
 </body>  
 </html>
