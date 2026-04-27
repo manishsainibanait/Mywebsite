@@ -701,6 +701,7 @@ onclick="document.getElementById('excelUpload').click()">
     <th>ब्याज %</th>  
     <th>दिन</th>  
     <th>ब्याज राशि</th>  
+<th>कटौती</th>
     <th>फसल</th>  
     <th>नोट</th>  
     <th class="action-col">कार्य</th>  
@@ -794,10 +795,10 @@ onclick="document.getElementById('excelUpload').click()">
 <input id="fExtraKG" type="number" class="form-control mb-2" placeholder="अतिरिक्त KG">  
     <input id="fTotalQ" class="form-control mb-2" placeholder="कुल क्विंटल" readonly>  <input id="fRate" type="number" class="form-control mb-2" placeholder="भाव ₹/Q">  
 <input id="fMajduri" type="number" class="form-control mb-2" placeholder="मजदूरी ₹/Q">  
-
-<input id="fCutOther" type="number" class="form-control mb-2" placeholder="अन्य कटौती (₹)">  
-<input id="fCutTotal" class="form-control mb-2" placeholder="कुल कटौती" readonly>  
-
+<input id="fCut" type="number" class="form-control mb-2" placeholder="कटौती ₹ (सीधा)">
+<input id="fMajduriTotal" 
+class="form-control mb-2" 
+placeholder="मजदूरी ₹" readonly>
 <input id="fNetAmount" class="form-control fw-bold mb-2" placeholder="शुद्ध राशि" readonly>  
 
 <textarea id="fNote" class="form-control mb-3" placeholder="नोट"></textarea>  
@@ -838,7 +839,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();  
   
 let currentCustomerId = null;  
-  
+  let ledgerRef = null;
 function showCard(id){  
   customerListCard.style.display="none";  
   addCustomerCard.style.display="none";  
@@ -850,13 +851,18 @@ advancedReportCard.style.display="none";
   document.getElementById(id).style.display="block";  
 }  
   
-function backToList(){  
-    showCard("customerListCard");  
-    loadCustomers(() => {  
-        filterCustomers();  
-    });  
-}  
-  
+function backToList(){
+    // 🔥 listener बंद करो
+    if(ledgerRef){
+      ledgerRef.off();
+    }
+
+    showCard("customerListCard");
+
+    loadCustomers(() => {
+        filterCustomers();
+    });
+}
 function loadCustomers(callback){  
   const ref = db.ref("customers");  
   
@@ -899,21 +905,34 @@ if(callback) callback();
   });  
 }  
   
-function openLedger(id){  
-  currentCustomerId = id;  
+function openLedger(id){
+  currentCustomerId = id;
+
+  // 🛑 पुराना listener हटाओ
+  if(ledgerRef){
+    ledgerRef.off();
+  }
+
+  showCard("ledgerCard");
+
+  // 🔄 साफ करो
+  ledgerCustomerName.innerText = "लोड हो रहा है...";
+  ledgerTable.innerHTML = "";
+  ledgerFooter.innerHTML = "";
+
+  // 👇 पहले नाम लाओ
+  db.ref("customers/" + id).once("value").then(s=>{
+    ledgerCustomerName.innerText = s.val().name;
+
+    // 👇 फिर ledger load
+    loadLedger();
+  });
+}
   
-  db.ref("customers/" + id).once("value").then(s=>{  
-    ledgerCustomerName.innerText = s.val().name;  
-  });  
-  
-  showCard("ledgerCard");  
-  loadLedger();  
-}  
-  
-function loadLedger(){  
-  const ref = db.ref("ledgers/" + currentCustomerId);  
-  
-  ref.once("value").then(snap=>{  
+function loadLedger(){
+  ledgerRef = db.ref("ledgers/" + currentCustomerId);
+
+  ledgerRef.on("value", snap=>{
       ledgerTable.innerHTML = "";  
   
       let totalC = 0, totalD = 0, totalI = 0;  
@@ -963,7 +982,7 @@ let row = `
 <td>${d.interest || 0}</td>
 <td>${d.days || 0}</td>
 <td>${d.isFasal ? "" : "+₹" + (d.interestAmount || 0)}</td>
-
+<td>₹${d.totalCut ?? 0}</td>
 <td>
 ${d.isFasal
   ? (function(){
@@ -1014,9 +1033,7 @@ allFasal.forEach(f => {
     totalFasalCut += +f.totalCut || 0;  
 });  
   
-let balance =  
-    (totalD + totalI) -  
-    (totalC + totalFasalNet + totalFasalMajduri + totalFasalCut);  
+let balance = totalC - totalD + totalI + totalFasalNet;
   
 ledgerFooter.innerHTML = `  
 <tr class="total-row" style="background:#fff3cd;font-weight:bold;color:#a66d00;">  
@@ -1045,7 +1062,7 @@ ledgerFooter.insertAdjacentHTML("beforeend", `
     <td colspan="2">कुल फसल</td>  
     <td colspan="2">कुल क्विंटल: ${fasalTQ.toFixed(2)}</td>  
     <td colspan="2">कुल कीमत: ₹${fasalTAmount}</td>  
-    <td colspan="4">नेट फसल: ₹${fasalTNet}</td>  
+    <td colspan="4">नेट फसल: ₹${fasalTNet.toFixed(2)}</td>  
   </tr>  
 `);  
   
@@ -1105,127 +1122,167 @@ function closeTransactionPopup(){
   transactionPopupOverlay.style.display="none";  
 }  
   
-function saveTransaction(){  
-    let start = tDate.value || "";  
-    let end = tEndDate.value || "";  
-    let days = 0;  
-    let totalInterest = 0;  
-  
-    if(start && end){  
-        let d1 = new Date(start);  
-        let d2 = new Date(end);  
-        days = Math.floor((d2 - d1) / (1000*60*60*24));  
-        if(days < 0){  
-            alert("End Date, Start Date के बाद होनी चाहिए!");  
-            return;  
-        }  
-        let amount = +tDebit.value || +tCredit.value || 0;  
-        let rate = +tInterest.value || 0;  
-        let monthlyInterest = (amount * rate) / 100;  
-        let dailyInterest = monthlyInterest / 30;  
-        totalInterest = dailyInterest * days;  
-    }  
-  
-    let data = {  
-    startDate: start,  
-    endDate: end,  
-    credit: +tCredit.value || 0,  
-    debit: +tDebit.value || 0,  
-    interest: +tInterest.value || 0,  
-    days: days,  
-    interestAmount: +tInterestAmount.value || 0,  
-    interestType: (+tDebit.value || 0) > 0 ? "debit" : "credit",  
-    note: tNote.value  
-};  
-    if(window.editingTransactionId){  
-        db.ref("ledgers/" + currentCustomerId + "/" + window.editingTransactionId).update(data);  
-        window.editingTransactionId = null;  
-    }  
-    else{  
-        db.ref("ledgers/" + currentCustomerId).push(data);  
-    }  
-    closeTransactionPopup();  
-    loadLedger();  
-}  
-  
-["fBori","fWeightPer","fExtraKG","fRate","fMajduri","fCutOther"].forEach(id=>{ document.getElementById(id).addEventListener("input", calcFasal);  
-});  
-  
+function saveTransaction(){
+    let start = tDate.value || "";
+    let end = tEndDate.value || "";
+    let days = 0;
+    let totalInterest = 0;
+
+    if(start && end){
+        let d1 = new Date(start);
+        let d2 = new Date(end);
+        days = Math.floor((d2 - d1) / (1000*60*60*24));
+        if(days < 0){
+            alert("End Date, Start Date के बाद होनी चाहिए!");
+            return;
+        }
+        let amount = +tDebit.value || +tCredit.value || 0;
+        let rate = +tInterest.value || 0;
+        let monthlyInterest = (amount * rate) / 100;
+        let dailyInterest = monthlyInterest / 30;
+        totalInterest = dailyInterest * days;
+    }
+
+    let data = {
+        startDate: start,
+        endDate: end,
+        credit: +tCredit.value || 0,
+        debit: +tDebit.value || 0,
+        interest: +tInterest.value || 0,
+        days: days,
+        interestAmount: totalInterest,
+        interestType: (+tDebit.value || 0) > 0 ? "debit" : "credit",
+        note: tNote.value
+    };
+
+    if(window.editingTransactionId){
+        db.ref("ledgers/" + currentCustomerId + "/" + window.editingTransactionId).update(data);
+        window.editingTransactionId = null;
+    } else {
+        db.ref("ledgers/" + currentCustomerId).push(data);
+    }
+
+    closeTransactionPopup();
+
+    setTimeout(()=>{
+      loadLedger();
+    }, 300);
+}
+["fBori","fWeightPer","fExtraKG","fRate","fMajduri","fCut"]
+.forEach(id=>{
+  let el = document.getElementById(id);
+  if(el){
+    el.addEventListener("input", calcFasal);
+  }
+});
+
+
 function calcFasal(){  
-  let b = +fBori.value||0;  
-  let w = +fWeightPer.value||0;  
-  let r = +fRate.value||0;  
-  let m = +fMajduri.value||0;  
-  let o = +fCutOther.value||0;  
-let extra = +fExtraKG.value || 0;  
-let totalKG = (b * w) + extra;  
+  let b = Number(fBori.value) || 0;  
+  let w = Number(fWeightPer.value) || 0;  
+  let r = Number(fRate.value) || 0;  
+  let m = Number(fMajduri.value) || 0;  
+  let cut = Number(document.getElementById("fCut").value) || 0;
+
+  let extra = Number(fExtraKG.value) || 0;  
+
+  let totalKG = (b * w) + extra;  
   let q = totalKG / 100;  
+
   fTotalQ.value = q.toFixed(2);  
+
   let totalAmount = q * r;  
   let totalMajduri = q * m;  
-  let totalCut = totalMajduri + o;  
-  let net = totalAmount - totalCut;  
-  fCutTotal.value = totalCut;  
-  fNetAmount.value = net;  
-}  
+
+  let net = totalAmount - totalMajduri - cut;  
+
+  fMajduriTotal.value = totalMajduri.toFixed(2);
+  fNetAmount.value = net.toFixed(2);
+}
 function openFasalPopup() {  
     fasalPopupOverlay.style.display = "flex";  
     loadFasalDropdown();  
+
+    // 🔄 FULL RESET
     fName.value = "";  
+    fDate.value = "";  
+
     fBori.value = "";  
     fWeightPer.value = "";  
+    fExtraKG.value = "";  
+
     fTotalQ.value = "";  
     fRate.value = "";  
+
     fMajduri.value = "";  
     fCutOther.value = "";  
+
+    // ✅ IMPORTANT (ye hi missing tha)
+    fMajduriTotal.value = "";  
     fCutTotal.value = "";  
     fNetAmount.value = "";  
+
+document.getElementById("enableCut").checked = false;
     fNote.value = "";  
+
     window.editingFasalId = null;  
-}  
+}
   
-function saveFasal(){  
-  if(!fName.value) return alert("फसल चुनें!");  
-  let b = +fBori.value||0;  
-  let w = +fWeightPer.value||0;  
-  let q = +fTotalQ.value||0;  
-  let r = +fRate.value||0;  
-  let m = +fMajduri.value||0;  
-  let o = +fCutOther.value||0;  
-  let totalAmount = q * r;  
-  let totalMajduri = q * m;  
-  let totalCut = totalMajduri + o;  
-  let net = totalAmount - totalCut;  
-  let data = {  
-    isFasal:true,  
-    name:fName.value,  
-date: fDate.value || "",  
-    bori:b,  
-    weightPer:w,  
-    quintal:q,  
-    rate:r,  
-    totalAmount,  
-    totalMajduri,  
-    totalCut,  
-    netFasal:net,  
-    note:fNote.value  
-  };  
-  if(window.editingFasalId){  
-      db.ref("ledgers/" + currentCustomerId + "/" + window.editingFasalId).update(data);  
-      window.editingFasalId = null;  
-  }   
-  else {  
-      db.ref("ledgers/" + currentCustomerId).push(data);  
-  }  
-  closeFasalPopup();  
-  loadLedger();  
-}  
-  
+function saveFasal(){
+  if(!fName.value) return alert("फसल चुनें!");
+
+  let b = +fBori.value||0;
+  let w = +fWeightPer.value||0;
+  let q = +fTotalQ.value||0;
+  let r = +fRate.value||0;
+  let m = +fMajduri.value||0;
+  let o = +document.getElementById("fCut").value || 0;
+
+  let totalAmount = q * r;
+  let totalMajduri = q * m;
+
+  fMajduriTotal.value = totalMajduri.toFixed(2);
+
+  let totalCut = Math.abs(o);
+
+  // ✅ FINAL FIX
+  let net = totalAmount - totalMajduri - totalCut;
+
+  let data = {
+    isFasal:true,
+    name:fName.value,
+    date: fDate.value || "",
+    bori:b,
+    weightPer:w,
+    quintal:q,
+    rate:r,
+    totalAmount,
+    totalMajduri,
+    totalCut,
+    netFasal:net,
+    note:fNote.value
+  };
+
+  if(window.editingFasalId){
+      db.ref("ledgers/" + currentCustomerId + "/" + window.editingFasalId).update(data);
+      window.editingFasalId = null;
+  } else {
+      db.ref("ledgers/" + currentCustomerId).push(data);
+  }
+
+  closeFasalPopup();
+
+setTimeout(()=>{
+  loadLedger();
+}, 300);
+
+} // ✅ ये bracket add करो (saveFasal का end)
+
 function deleteLedgerEntry(id){  
   if(!confirm("हटाना चाहते हैं?")) return;  
   db.ref("ledgers/" + currentCustomerId + "/" + id).remove();  
   loadLedger();  
-}  
+}
   
 /* ✅ UPDATED PRINT LEDGER (STRICT REQUIREMENTS) */  
 function printLedger(){  
