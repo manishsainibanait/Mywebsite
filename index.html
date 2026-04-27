@@ -1215,16 +1215,14 @@ function openFasalPopup() {
     fRate.value = "";  
 
     fMajduri.value = "";  
-    fCutOther.value = "";  
+    document.getElementById("fCut").value = "";  
 
-    // ✅ IMPORTANT (ye hi missing tha)
     fMajduriTotal.value = "";  
-    fCutTotal.value = "";  
     fNetAmount.value = "";  
 
-document.getElementById("enableCut").checked = false;
     fNote.value = "";  
 
+    // ✅ IMPORTANT
     window.editingFasalId = null;  
 }
   
@@ -1692,25 +1690,39 @@ async function fingerLogin() {
 function editFasal(id){  
     db.ref("ledgers/" + currentCustomerId + "/" + id).once("value").then(s=>{  
         let f = s.val();  
-        if(!f.isFasal){  
-            alert("यह फसल एंट्री नहीं है!");  
-            return;  
-        }  
+
+        if(!f.isFasal){
+            alert("यह फसल एंट्री नहीं है!");
+            return;
+        }
+
         fasalPopupOverlay.style.display = "flex";  
-        fName.value = f.name;  
-        fBori.value = f.bori;  
-        fWeightPer.value = f.weightPer;  
-        fTotalQ.value = f.quintal;  
-        fRate.value = f.rate;  
-        let perMajduri = f.totalMajduri / f.quintal;  
-        fMajduri.value = perMajduri;  
-        fCutOther.value = f.totalCut - f.totalMajduri;  
-        fCutTotal.value = f.totalCut;  
-        fNetAmount.value = f.netFasal;  
-        fNote.value = f.note;  
-        window.editingFasalId = id;  
-    });  
-}  
+
+        fName.value = f.name || "";
+        fDate.value = f.date || "";
+
+        fBori.value = f.bori || 0;
+        fWeightPer.value = f.weightPer || 0;
+        fTotalQ.value = f.quintal || 0;
+
+        fRate.value = f.rate || 0;
+
+        // ✅ सही मजदूरी per quintal
+        let perMajduri = (f.totalMajduri || 0) / (f.quintal || 1);
+        fMajduri.value = perMajduri.toFixed(2);
+
+        // ✅ CUT direct set करो
+        document.getElementById("fCut").value = f.totalCut || 0;
+
+        fMajduriTotal.value = f.totalMajduri || 0;
+        fNetAmount.value = f.netFasal || 0;
+
+        fNote.value = f.note || "";
+
+        // 🔥 IMPORTANT
+        window.editingFasalId = id;
+    });
+}
 tDate.onchange = calcDays;  
 tEndDate.onchange = calcDays;  
 tInterest.oninput = calcInterest;  
