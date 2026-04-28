@@ -961,12 +961,7 @@ entries.forEach(d=>{
   totalC += +d.credit || 0;
   totalD += +d.debit || 0;
 
-  if(d.interestType === "debit"){
-    totalI += +d.interestAmount || 0;
-  } else {
-    totalI -= +d.interestAmount || 0;
-  }
-
+totalI += +d.interestAmount || 0;
   if(d.isFasal) allFasal.push(d);
 
   
@@ -981,7 +976,7 @@ let row = `
 <td>₹${d.debit || 0}</td>
 <td>${d.interest || 0}</td>
 <td>${d.days || 0}</td>
-<td>${d.isFasal ? "" : "+₹" + (d.interestAmount || 0)}</td>
+<td>${d.isFasal ? "" : "+₹" + ((+d.interestAmount || 0).toFixed(2))}</td>
 <td>₹${d.totalCut ?? 0}</td>
 <td>
 ${d.isFasal
@@ -1033,7 +1028,7 @@ allFasal.forEach(f => {
     totalFasalCut += +f.totalCut || 0;  
 });  
   
-let balance = totalC - totalD + totalI + totalFasalNet;
+let balance = totalD + totalI - totalC + totalFasalNet;
   
 ledgerFooter.innerHTML = `  
 <tr class="total-row" style="background:#fff3cd;font-weight:bold;color:#a66d00;">  
