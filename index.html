@@ -796,6 +796,10 @@ onclick="document.getElementById('excelUpload').click()">
     <input id="fTotalQ" class="form-control mb-2" placeholder="कुल क्विंटल" readonly>  <input id="fRate" type="number" class="form-control mb-2" placeholder="भाव ₹/Q">  
 <input id="fMajduri" type="number" class="form-control mb-2" placeholder="मजदूरी ₹/Q">  
 <input id="fCut" type="number" class="form-control mb-2" placeholder="कटौती ₹ (सीधा)">
+<select id="majType" class="form-select mb-2">
+  <option value="quintal">मजदूरी / क्विंटल (₹/Q)</option>
+  <option value="bag">मजदूरी / बोरी (₹/Bag)</option>
+</select>
 <input id="fMajduriTotal" 
 class="form-control mb-2" 
 placeholder="मजदूरी ₹" readonly>
@@ -997,7 +1001,15 @@ ${d.isFasal
 
       let finalName = hasIcon ? name : "🌾 " + name;
 
-      return finalName + " (" + mainQ + " Q " + extraKG + " KG)";
+      let amount = (+d.netFasal || 0).toFixed(2);
+
+      return `
+        ${finalName} (${mainQ} Q ${extraKG} KG)
+        <br>
+        <span style="color:#0d47a1;font-weight:800;">
+          ₹${amount}
+        </span>
+      `;
   })()
   : ""
 }
@@ -1028,8 +1040,7 @@ allFasal.forEach(f => {
     totalFasalCut += +f.totalCut || 0;  
 });  
   
-let balance = totalD + totalI - totalC + totalFasalNet;
-  
+let balance = (totalD + totalI) - (totalC + totalFasalNet);
 ledgerFooter.innerHTML = `  
 <tr class="total-row" style="background:#fff3cd;font-weight:bold;color:#a66d00;">  
     <td colspan="2">कुल</td>  
@@ -1056,7 +1067,7 @@ ledgerFooter.insertAdjacentHTML("beforeend", `
   <tr style="background:#fff3cd;font-weight:bold;color:#a66d00;">  
     <td colspan="2">कुल फसल</td>  
     <td colspan="2">कुल क्विंटल: ${fasalTQ.toFixed(2)}</td>  
-    <td colspan="2">कुल कीमत: ₹${fasalTAmount}</td>  
+    <td colspan="2">कुल कीमत: ₹${fasalTAmount.toFixed(2)}</td>
     <td colspan="4">नेट फसल: ₹${fasalTNet.toFixed(2)}</td>  
   </tr>  
 `);  
@@ -1070,32 +1081,76 @@ function toggleFasalSummary(){
   b.style.display = b.style.display == "block" ? "none" : "block";  
 }  
   
-function generateFasalSummary(all){  
-    if(all.length == 0){  
-        fasalSummary.innerHTML = "<div class='p-2 text-center'>कोई फसल नहीं</div>";  
-        return;  
-    }  
-  
-    fasalSummary.innerHTML = "";  
-  
-    all.forEach((f, i) => {  
-        fasalSummary.insertAdjacentHTML("beforeend", `  
-            <div class="fasal-box" style="margin:8px 0;padding:8px;border-radius:8px;background:#fff5d6;border:1px solid #e6c77e">  
-                <div onclick="openFasal(${i})" style="font-weight:bold;font-size:16px;cursor:pointer;">  
-                    ▶ फसल ${i+1} (Tap to open)  
-                </div>  
-  
-                <div id="fasalDetail${i}" style="display:none;margin-top:6px;line-height:22px;">  
-                    🌾 क्विंटल: <b>${f.quintal}</b><br>  
-                    💰 कीमत: <b>₹${f.totalAmount}</b><br>  
-                    🧳 मजदूरी: <b>₹${f.totalMaiduri}</b><br>  
-                    ✂ कटौती: <b>₹${f.totalCut}</b><br>  
-                    🟡 नेट फसल: <b>₹${f.netFasal}</b>  
-                </div>  
-            </div>  
-        `);  
-    });  
-}  
+function generateFasalSummary(all){
+
+    if(all.length == 0){
+        fasalSummary.innerHTML = "<div class='p-2 text-center'>कोई फसल नहीं</div>";
+        return;
+    }
+
+    let combined = {};
+    let details = {};
+
+    all.forEach(f => {
+        let name = (f.name || "Other").trim();
+
+        if(!combined[name]){
+            combined[name] = 0;
+            details[name] = [];
+        }
+
+        let net = +f.netFasal || 0;
+        combined[name] += net;
+
+        let q = +f.quintal || 0;
+        let totalKG = q * 100;
+
+        let mainQ = Math.floor(totalKG / 100);
+        let extraKG = Math.round(totalKG % 100);
+
+        details[name].push({
+            qty: mainQ + " Q " + extraKG + " KG",
+            amount: net
+        });
+    });
+
+    fasalSummary.innerHTML = "";
+
+    for(let name in combined){
+
+        let html = `
+        <div class="fasal-box" style="margin:8px 0;">
+            
+            <div style="
+                font-weight:800;
+                font-size:16px;
+                color:#0d47a1;
+                border-bottom:1px dashed #ccc;
+                padding-bottom:4px;
+                margin-bottom:4px;
+            ">
+                🌾 ${name} → कुल: ₹${combined[name].toFixed(2)}
+            </div>
+        `;
+
+        details[name].forEach((d,i)=>{
+            html += `
+            <div style="
+                padding-left:10px;
+                font-size:14px;
+                display:flex;
+                justify-content:space-between;
+            ">
+                <span>• ${d.qty}</span>
+                <span style="font-weight:600;">₹${d.amount.toFixed(2)}</span>
+            </div>`;
+        });
+
+        html += `</div>`;
+
+        fasalSummary.insertAdjacentHTML("beforeend", html);
+    }
+}
   
 function openFasal(i){  
     const a = document.getElementById("fasalDetail"+i);  
@@ -1178,7 +1233,6 @@ function calcFasal(){
   let r = Number(fRate.value) || 0;  
   let m = Number(fMajduri.value) || 0;  
   let cut = Number(document.getElementById("fCut").value) || 0;
-
   let extra = Number(fExtraKG.value) || 0;  
 
   let totalKG = (b * w) + extra;  
@@ -1187,7 +1241,17 @@ function calcFasal(){
   fTotalQ.value = q.toFixed(2);  
 
   let totalAmount = q * r;  
-  let totalMajduri = q * m;  
+
+  // 🔥 MAIN FIX
+  let type = document.getElementById("majType").value;
+
+  let totalMajduri = 0;
+
+  if(type === "quintal"){
+    totalMajduri = q * m;
+  } else {
+    totalMajduri = b * m;
+  }
 
   let net = totalAmount - totalMajduri - cut;  
 
@@ -1232,7 +1296,15 @@ function saveFasal(){
   let o = +document.getElementById("fCut").value || 0;
 
   let totalAmount = q * r;
-  let totalMajduri = q * m;
+  let type = document.getElementById("majType").value;
+
+let totalMajduri = 0;
+
+if(type === "quintal"){
+  totalMajduri = q * m;
+}else{
+  totalMajduri = b * m;
+}
 
   fMajduriTotal.value = totalMajduri.toFixed(2);
 
@@ -1242,19 +1314,23 @@ function saveFasal(){
   let net = totalAmount - totalMajduri - totalCut;
 
   let data = {
-    isFasal:true,
-    name:fName.value,
-    date: fDate.value || "",
-    bori:b,
-    weightPer:w,
-    quintal:q,
-    rate:r,
-    totalAmount,
-    totalMajduri,
-    totalCut,
-    netFasal:net,
-    note:fNote.value
-  };
+  isFasal:true,
+  name:fName.value,
+  date: fDate.value || "",
+  bori:b,
+  weightPer:w,
+  quintal:q,
+
+  extraKG: +fExtraKG.value || 0,   // ✅ FIX
+
+  rate:r,
+  totalAmount,
+  totalMajduri,
+  totalCut,
+  netFasal:net,
+  majType: type,
+  note:fNote.value
+};
 
   if(window.editingFasalId){
       db.ref("ledgers/" + currentCustomerId + "/" + window.editingFasalId).update(data);
@@ -1699,14 +1775,23 @@ function editFasal(id){
         fBori.value = f.bori || 0;
         fWeightPer.value = f.weightPer || 0;
         fTotalQ.value = f.quintal || 0;
+fExtraKG.value = f.extraKG || 0;
 
         fRate.value = f.rate || 0;
 
-        // ✅ सही मजदूरी per quintal
-        let perMajduri = (f.totalMajduri || 0) / (f.quintal || 1);
-        fMajduri.value = perMajduri.toFixed(2);
+        // ✅ TYPE LOAD
+        let type = f.majType || "quintal";
+        document.getElementById("majType").value = type;
 
-        // ✅ CUT direct set करो
+        // ✅ FIXED LOGIC
+        if(type === "quintal"){
+            let perMajduri = (f.totalMajduri || 0) / (f.quintal || 1);
+            fMajduri.value = perMajduri.toFixed(2);
+        } else {
+            let perBag = (f.totalMajduri || 0) / (f.bori || 1);
+            fMajduri.value = perBag.toFixed(2);
+        }
+
         document.getElementById("fCut").value = f.totalCut || 0;
 
         fMajduriTotal.value = f.totalMajduri || 0;
@@ -1714,7 +1799,6 @@ function editFasal(id){
 
         fNote.value = f.note || "";
 
-        // 🔥 IMPORTANT
         window.editingFasalId = id;
     });
 }
