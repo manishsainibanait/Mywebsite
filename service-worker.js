@@ -2,7 +2,7 @@
      SERVICE WORKER for CACHE CLEAR + FRESH LOAD
 =========================================================== */
 
-const CACHE_NAME = "saini-app-v1";
+const CACHE_NAME = "saini-app-v2";
 
 self.addEventListener('install', event => {
   self.skipWaiting();
