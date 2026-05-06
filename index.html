@@ -1035,18 +1035,49 @@ function closeAccountManager() {
 function loadAccountListManager() {
     const container = document.getElementById("accountListContainer");
     container.innerHTML = "लोड हो रहा है...";
+
     db.ref("accounts/" + currentCustomerId).once("value").then(snap => {
+
         container.innerHTML = "";
+
         snap.forEach(acc => {
+
             let d = acc.val();
             let id = acc.key;
+
             container.insertAdjacentHTML("beforeend", `
-                <div class="d-flex justify-content-between align-items-center p-2 border mb-2 rounded bg-white">
-                    <span class="fw-bold">${d.name}</span>
-                    <button class="btn btn-sm btn-danger" onclick="deleteAccount('${id}')" ${id === 'default' ? 'disabled' : ''}>🗑</button>
+
+                <div class="border rounded p-2 mb-2 bg-white">
+
+                    <input
+                        id="accName_${id}"
+                        class="form-control mb-2"
+                        value="${d.name}"
+                    >
+
+                    <div class="d-flex gap-2">
+
+                        <button
+                            class="btn btn-sm btn-primary flex-fill"
+                            onclick="renameAccount('${id}')">
+                            ✏️ Rename
+                        </button>
+
+                        <button
+                            class="btn btn-sm btn-danger flex-fill"
+                            onclick="deleteAccount('${id}')"
+                            ${id === 'default' ? 'disabled' : ''}>
+                            🗑 Delete
+                        </button>
+
+                    </div>
+
                 </div>
+
             `);
+
         });
+
     });
 }
 
@@ -1058,6 +1089,7 @@ function createNewAccount() {
         loadAccountListManager();
     });
 }
+
 
 function deleteAccount(accId) {
     if(accId === 'default') return alert("Main हिसाब डिलीट नहीं हो सकता!");
@@ -1073,6 +1105,43 @@ function deleteAccount(accId) {
     loadAccountListManager();
 }
 
+function deleteAccount(accId) {
+    if(accId === 'default') return alert("Main हिसाब डिलीट नहीं हो सकता!");
+    if(!confirm("क्या आप यह हिसाब और इसकी सभी एंट्रीज डिलीट करना चाहते हैं?")) return;
+
+    db.ref("accounts/" + currentCustomerId + "/" + accId).remove();
+    db.ref("ledgers/" + currentCustomerId + "/" + accId).remove();
+
+    if(currentAccountId === accId) {
+        currentAccountId = 'default';
+        loadLedger();
+    }
+
+    loadAccountListManager();
+}
+
+/* 👇 यहीं नीचे डालो */
+
+function renameAccount(accId){
+
+    let newName = document
+        .getElementById("accName_" + accId)
+        .value
+        .trim();
+
+    if(!newName){
+        return alert("हिसाब का नाम लिखें!");
+    }
+
+    db.ref("accounts/" + currentCustomerId + "/" + accId)
+    .update({
+        name: newName
+    });
+
+    loadAccountDropdown();
+
+    alert("✔ हिसाब नाम बदल दिया गया");
+}
 // ========================
 
 function loadLedger(){
