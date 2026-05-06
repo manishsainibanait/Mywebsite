@@ -876,6 +876,7 @@ const db = firebase.database();
 let currentCustomerId = null;  
 let currentAccountId = 'default';
 let ledgerRef = null;
+let customerRef = null;
 
 function showCard(id){  
   customerListCard.style.display="none";  
@@ -889,10 +890,17 @@ advancedReportCard.style.display="none";
 }  
   
 function backToList(){
-    // 🔥 listener बंद करो
+
+    // 🔥 stop old listener
     if(ledgerRef){
       ledgerRef.off();
+      ledgerRef = null;
     }
+
+    // 🔥 clear ledger UI
+    ledgerTable.innerHTML = "";
+    ledgerFooter.innerHTML = "";
+    fasalSummary.innerHTML = "";
 
     showCard("customerListCard");
 
@@ -900,74 +908,114 @@ function backToList(){
         filterCustomers();
     });
 }
-function loadCustomers(callback){  
-  const ref = db.ref("customers");  
-  
-  ref.on("value", snap=>{
-      customerTable.innerHTML = "";  
-  
-      snap.forEach(c=>{  
-        let d = c.val();  
-        let id = c.key;  
-  
-          
-        let row = `  
-        <tr>  
-          <td class="check-col"><input value="${id}" class="customerCheckbox" type="checkbox"></td>  
-  
-          <td class="name-col">  
-           <span style="color:blue;cursor:pointer;font-weight:900"
-      onclick="openLedger('${id}'); speakName('${d.name}')">
-              ${(d.name || "").replace(/\s+\d+$/, "").replace(" ", "<br>")}  
-            </span>  
-          </td>  
-  
-          <td class="reg-col">${d.rn || ((d.name || "").match(/\d+$/) || [""])[0]}</td>  
-      <td>${d.father || ""}</td>  
-          <td>${d.village || ""}</td>  
-          <td>${d.phone || ""}</td>  
-          <td>${d.aadhar || ""}</td>  
-  
-          <td class="action-col">  
-            <button class="btn btn-sm btn-primary" onclick="editCustomer('${id}')">✏️</button>  
-            <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${id}')">🗑</button>  
-          </td>  
-        </tr>  
-        `;  
-        customerTable.insertAdjacentHTML("beforeend", row);  
-      });  
-  
-      document.getElementById("customerCount").innerText = snap.numChildren();  
-if(callback) callback();  
-  });  
-}  
+function loadCustomers(callback){
 
+  // OLD listener remove
+  if(customerRef){
+    customerRef.off();
+  }
+
+  customerRef = db.ref("customers");
+
+  customerRef.on("value", snap=>{
+
+      customerTable.innerHTML = "";
+
+      snap.forEach(c=>{
+
+        let d = c.val();
+        let id = c.key;
+
+        let row = `
+        <tr>
+          <td class="check-col">
+            <input value="${id}" class="customerCheckbox" type="checkbox">
+          </td>
+
+          <td class="name-col">
+            <span style="color:blue;cursor:pointer;font-weight:900"
+              onclick="openLedger('${id}'); speakName('${d.name}')">
+
+              ${(d.name || "")
+                .replace(/\s+\d+$/, "")
+                .replace(" ", "<br>")}
+
+            </span>
+          </td>
+
+          <td class="reg-col">
+            ${d.rn || ((d.name || "").match(/\d+$/) || [""])[0]}
+          </td>
+
+          <td>${d.father || ""}</td>
+          <td>${d.village || ""}</td>
+          <td>${d.phone || ""}</td>
+          <td>${d.aadhar || ""}</td>
+
+          <td class="action-col">
+            <button class="btn btn-sm btn-primary"
+              onclick="editCustomer('${id}')">✏️</button>
+
+            <button class="btn btn-sm btn-danger"
+              onclick="deleteCustomer('${id}')">🗑</button>
+          </td>
+        </tr>
+        `;
+
+        customerTable.insertAdjacentHTML("beforeend", row);
+      });
+
+      document.getElementById("customerCount").innerText =
+      snap.numChildren();
+
+      if(callback) callback();
+
+  });
+}
 // ========================
 // 🎯 NEW MULTI-HISAB LOGIC
 // ========================
 
 function openLedger(id){
+
+  // 🔥 OLD listener remove
+  if(ledgerRef){
+    ledgerRef.off();
+    ledgerRef = null;
+  }
+
   currentCustomerId = id;
-  currentAccountId = 'default'; // Reset to default when opening new customer
+  currentAccountId = 'default';
 
-  if(ledgerRef){ ledgerRef.off(); }
-  showCard("ledgerCard");
-
-  ledgerCustomerName.innerText = "लोड हो रहा है...";
+  // 🔥 FIRST CLEAR UI
   ledgerTable.innerHTML = "";
   ledgerFooter.innerHTML = "";
+  fasalSummary.innerHTML = "";
+  ledgerCustomerName.innerText = "लोड हो रहा है...";
+
+  // 🔥 THEN OPEN CARD
+  showCard("ledgerCard");
 
   db.ref("customers/" + id).once("value").then(s=>{
-    ledgerCustomerName.innerText = s.val().name;
-    
-    // Check for Migration and then Load
-    checkAndMigrateLedger(id, () => {
-        loadAccountDropdown();
-        loadLedger();
-    });
-  });
-}
 
+    if(!s.exists()) return;
+
+    ledgerCustomerName.innerText = s.val().name || "";
+
+    checkAndMigrateLedger(id, () => {
+
+      loadAccountDropdown();
+
+      // 🔥 small delay prevents old flash
+      setTimeout(()=>{
+        loadLedger();
+      },50);
+
+    });
+
+  });
+
+}
 function checkAndMigrateLedger(customerId, callback) {
     const rootRef = db.ref("ledgers/" + customerId);
     rootRef.once("value").then(snap => {
@@ -1146,6 +1194,9 @@ function renameAccount(accId){
 
 function loadLedger(){
   // 🔥 PATH UPDATED TO SUPPORT MULTI-ACCOUNT
+if(ledgerRef){
+   ledgerRef.off();
+}
   ledgerRef = db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId);
 
   ledgerRef.on("value", snap=>{
