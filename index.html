@@ -179,7 +179,7 @@ th.reg-col, td.reg-col {
 }  
   
 /* Popup */  
-#popupOverlay, #fasalPopupOverlay, #villagePopup, #changePassPopup {  
+#popupOverlay, #fasalPopupOverlay, #villagePopup, #changePassPopup, #accountPopupOverlay {  
     position:fixed; top:0; left:0; width:100%; height:100%;  
     background:rgba(0,0,0,0.5); display:none;  
     justify-content:center; align-items:center; z-index:3000;  
@@ -675,7 +675,22 @@ onclick="document.getElementById('excelUpload').click()">
  <div class="header">  
     📘 ग्राहक लेजर  <button class="btn btn-light float-end btn-sm" onclick="backToList()">🔙 वापस</button>
 
-</div>    <div class="sub-header" id="ledgerCustomerName"></div>    <div class="card-body">  <div class="d-flex gap-2 mb-3">  
+</div>    <div class="sub-header" id="ledgerCustomerName"></div>    <div class="card-body">  
+
+<div class="account-selector p-2 bg-light rounded mb-3 border">
+    <div class="row align-items-center">
+        <div class="col-8">
+            <select id="accountList" class="form-select fw-bold" onchange="switchAccount(this.value)">
+                <option value="default">पुराना हिसाब</option>
+            </select>
+        </div>
+        <div class="col-4">
+            <button class="btn btn-outline-primary btn-sm w-100" onclick="openAccountManager()">⚙ हिसाब</button>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex gap-2 mb-3">  
 
 <button class="btn btn-primary flex-fill" onclick="openTransactionPopup()">+ लेन-देन</button>  
 
@@ -811,7 +826,23 @@ placeholder="मजदूरी ₹" readonly>
 <button class="btn btn-danger w-100" onclick="closeFasalPopup()">रद्द</button>
 
   </div>  
-</div>  <script>  
+</div>  
+
+<div id="accountPopupOverlay">
+    <div id="popupBox">
+        <h5 class="text-center mb-3">⚙ हिसाब प्रबंधन</h5>
+        <div class="input-group mb-3">
+            <input id="newAccountName" type="text" class="form-control" placeholder="नये हिसाब का नाम">
+            <button class="btn btn-success" onclick="createNewAccount()">+ नया</button>
+        </div>
+        <hr>
+        <div id="accountListContainer" style="max-height:200px; overflow-y:auto;">
+            </div>
+        <button class="btn btn-secondary w-100 mt-3" onclick="closeAccountManager()">बंद करें</button>
+    </div>
+</div>
+
+<script>  
 window.onload = () => {  
     if(sessionStorage.getItem("isLoggedIn") === "true"){  
         loginScreen.style.display = "none";  
@@ -843,7 +874,9 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();  
   
 let currentCustomerId = null;  
-  let ledgerRef = null;
+let currentAccountId = 'default';
+let ledgerRef = null;
+
 function showCard(id){  
   customerListCard.style.display="none";  
   addCustomerCard.style.display="none";  
@@ -908,33 +941,143 @@ function loadCustomers(callback){
 if(callback) callback();  
   });  
 }  
-  
+
+// ========================
+// 🎯 NEW MULTI-HISAB LOGIC
+// ========================
+
 function openLedger(id){
   currentCustomerId = id;
+  currentAccountId = 'default'; // Reset to default when opening new customer
 
-  // 🛑 पुराना listener हटाओ
-  if(ledgerRef){
-    ledgerRef.off();
-  }
-
+  if(ledgerRef){ ledgerRef.off(); }
   showCard("ledgerCard");
 
-  // 🔄 साफ करो
   ledgerCustomerName.innerText = "लोड हो रहा है...";
   ledgerTable.innerHTML = "";
   ledgerFooter.innerHTML = "";
 
-  // 👇 पहले नाम लाओ
   db.ref("customers/" + id).once("value").then(s=>{
     ledgerCustomerName.innerText = s.val().name;
-
-    // 👇 फिर ledger load
-    loadLedger();
+    
+    // Check for Migration and then Load
+    checkAndMigrateLedger(id, () => {
+        loadAccountDropdown();
+        loadLedger();
+    });
   });
 }
-  
+
+function checkAndMigrateLedger(customerId, callback) {
+    const rootRef = db.ref("ledgers/" + customerId);
+    rootRef.once("value").then(snap => {
+        let hasFlatData = false;
+        snap.forEach(child => {
+            // If child doesn't have a 'name' field but is an object, 
+            // it might be a transaction entry.
+            if(child.val().date || child.val().startDate || child.val().isFasal) {
+                hasFlatData = true;
+            }
+        });
+
+        if(hasFlatData) {
+            console.log("Migrating old data to default account...");
+            const oldData = snap.val();
+            // Create default account and move data
+            db.ref("accounts/" + customerId + "/default").set({ name: "पुराना हिसाब" });
+            db.ref("ledgers/" + customerId + "/default").set(oldData).then(() => {
+                // Remove the old flat structure (be careful)
+                snap.forEach(child => {
+                    if(child.key !== 'default') {
+                        db.ref("ledgers/" + customerId + "/" + child.key).remove();
+                    }
+                });
+                callback();
+            });
+        } else {
+            // If no flat data, check if default account exists
+            db.ref("accounts/" + customerId + "/default").once("value").then(acc => {
+                if(!acc.exists()) {
+                    db.ref("accounts/" + customerId + "/default").set({ name: "पुराना हिसाब" });
+                }
+                callback();
+            });
+        }
+    });
+}
+
+function loadAccountDropdown() {
+    db.ref("accounts/" + currentCustomerId).on("value", snap => {
+        accountList.innerHTML = "";
+        snap.forEach(acc => {
+            let d = acc.val();
+            let id = acc.key;
+            accountList.insertAdjacentHTML("beforeend", `<option value="${id}" ${id === currentAccountId ? 'selected' : ''}>${d.name}</option>`);
+        });
+    });
+}
+
+function switchAccount(accId) {
+    currentAccountId = accId;
+    if(ledgerRef) ledgerRef.off();
+    loadLedger();
+}
+
+function openAccountManager() {
+    accountPopupOverlay.style.display = "flex";
+    loadAccountListManager();
+}
+
+function closeAccountManager() {
+    accountPopupOverlay.style.display = "none";
+}
+
+function loadAccountListManager() {
+    const container = document.getElementById("accountListContainer");
+    container.innerHTML = "लोड हो रहा है...";
+    db.ref("accounts/" + currentCustomerId).once("value").then(snap => {
+        container.innerHTML = "";
+        snap.forEach(acc => {
+            let d = acc.val();
+            let id = acc.key;
+            container.insertAdjacentHTML("beforeend", `
+                <div class="d-flex justify-content-between align-items-center p-2 border mb-2 rounded bg-white">
+                    <span class="fw-bold">${d.name}</span>
+                    <button class="btn btn-sm btn-danger" onclick="deleteAccount('${id}')" ${id === 'default' ? 'disabled' : ''}>🗑</button>
+                </div>
+            `);
+        });
+    });
+}
+
+function createNewAccount() {
+    let name = newAccountName.value.trim();
+    if(!name) return alert("हिसाब का नाम लिखें!");
+    db.ref("accounts/" + currentCustomerId).push({ name: name }).then(() => {
+        newAccountName.value = "";
+        loadAccountListManager();
+    });
+}
+
+function deleteAccount(accId) {
+    if(accId === 'default') return alert("Main हिसाब डिलीट नहीं हो सकता!");
+    if(!confirm("क्या आप यह हिसाब और इसकी सभी एंट्रीज डिलीट करना चाहते हैं?")) return;
+    
+    db.ref("accounts/" + currentCustomerId + "/" + accId).remove();
+    db.ref("ledgers/" + currentCustomerId + "/" + accId).remove();
+    
+    if(currentAccountId === accId) {
+        currentAccountId = 'default';
+        loadLedger();
+    }
+    loadAccountListManager();
+}
+
+// ========================
+
 function loadLedger(){
-  ledgerRef = db.ref("ledgers/" + currentCustomerId);
+  // 🔥 PATH UPDATED TO SUPPORT MULTI-ACCOUNT
+  ledgerRef = db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId);
 
   ledgerRef.on("value", snap=>{
       ledgerTable.innerHTML = "";  
@@ -1150,7 +1293,7 @@ function generateFasalSummary(all){
 
         fasalSummary.insertAdjacentHTML("beforeend", html);
     }
-}
+}  
   
 function openFasal(i){  
     const a = document.getElementById("fasalDetail"+i);  
@@ -1205,11 +1348,12 @@ function saveTransaction(){
         note: tNote.value
     };
 
+    // 🔥 PATH UPDATED
     if(window.editingTransactionId){
-        db.ref("ledgers/" + currentCustomerId + "/" + window.editingTransactionId).update(data);
+        db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + window.editingTransactionId).update(data);
         window.editingTransactionId = null;
     } else {
-        db.ref("ledgers/" + currentCustomerId).push(data);
+        db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId).push(data);
     }
 
     closeTransactionPopup();
@@ -1332,11 +1476,12 @@ if(type === "quintal"){
   note:fNote.value
 };
 
+  // 🔥 PATH UPDATED
   if(window.editingFasalId){
-      db.ref("ledgers/" + currentCustomerId + "/" + window.editingFasalId).update(data);
+      db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + window.editingFasalId).update(data);
       window.editingFasalId = null;
   } else {
-      db.ref("ledgers/" + currentCustomerId).push(data);
+      db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId).push(data);
   }
 
   closeFasalPopup();
@@ -1349,7 +1494,7 @@ setTimeout(()=>{
 
 function deleteLedgerEntry(id){  
   if(!confirm("हटाना चाहते हैं?")) return;  
-  db.ref("ledgers/" + currentCustomerId + "/" + id).remove();  
+  db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).remove();  
   loadLedger();  
 }
   
@@ -1444,7 +1589,8 @@ function saveEditedCustomer() {
 function deleteCustomer(id) {  
     if (!confirm("क्या ग्राहक हटाना है?")) return;  
     db.ref("customers/" + id).remove();  
-    db.ref("ledgers/" + id).remove();  
+    db.ref("ledgers/" + id).remove();
+    db.ref("accounts/" + id).remove();  
     loadCustomers();  
 }  
   
@@ -1458,7 +1604,8 @@ function deleteSelectedCustomers() {
     if (!confirm("चुने हुए ग्राहक हटाऊँ?")) return;  
     selected.forEach(id => {  
         db.ref("customers/" + id).remove();  
-        db.ref("ledgers/" + id).remove();  
+        db.ref("ledgers/" + id).remove();
+        db.ref("accounts/" + id).remove();  
     });  
     loadCustomers();  
 }  
@@ -1466,7 +1613,8 @@ function deleteSelectedCustomers() {
 function deleteAllCustomers() {  
     if (!confirm("❌ सभी ग्राहकों को हटाना है?")) return;  
     db.ref("customers").remove();  
-    db.ref("ledgers").remove();  
+    db.ref("ledgers").remove();
+    db.ref("accounts").remove();  
     loadCustomers();  
 }  
   
@@ -1522,13 +1670,16 @@ function toggleSummary() {
     }  
     db.ref("ledgers").once("value").then(snap => {  
         let sumC = 0, sumD = 0, sumI = 0;  
-        snap.forEach(c => {  
-            c.forEach(r => {  
+        snap.forEach(c => {
+          // Iterate through accounts
+          c.forEach(accSnap => {
+            accSnap.forEach(r => {  
                 let d = r.val();  
                 sumC += +d.credit || 0;  
                 sumD += +d.debit || 0;  
                 sumI += +d.interestAmount || 0;  
-            });  
+            });
+          });
         });  
         let bal = (sumD + sumI) - sumC;  
         box.innerHTML = `जमा: ₹${sumC}<br>निकासी: ₹${sumD}<br>ब्याज: ₹${sumI.toFixed(2)}<br>शेष: ₹${bal.toFixed(2)}`;  
@@ -1759,7 +1910,7 @@ async function fingerLogin() {
 }  
   
 function editFasal(id){  
-    db.ref("ledgers/" + currentCustomerId + "/" + id).once("value").then(s=>{  
+    db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).once("value").then(s=>{  
         let f = s.val();  
 
         if(!f.isFasal){
@@ -1844,7 +1995,7 @@ function calcInterest() {
 }  
 function editTransaction(id){  
     window.editingTransactionId = id;  
-    db.ref("ledgers/" + currentCustomerId + "/" + id).once("value").then(s=>{  
+    db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).once("value").then(s=>{  
         let d = s.val();  
         if(d.isFasal){  
             alert("यह फसल है, इसे फसल Edit में खोलें!");  
@@ -1960,10 +2111,6 @@ function finalPrint(){
   const currentScale = zoomInput.value;  
   const currentWidth = pc.style.width;
     
-  // 1. Reset for paper printing (A4 standard)
-  pc.style.transform = "scale(1)";  
-  pc.style.width = "100%";
-    
   // 2. Trigger Print  
   window.print();  
     
@@ -1992,24 +2139,27 @@ function generateReport(){
       let cname = c.val().name || "";  
       let cnameLower = cname.toLowerCase();  
       let p = db.ref("ledgers/" + cid).once("value").then(lsnap => {  
-        lsnap.forEach(e => {  
-          let d = e.val();  
-          let date = d.startDate || d.date || "";  
-          if(!date) return;  
-          let dObj = new Date(date);  
-          if(from && dObj < from) return;  
-          if(to && dObj > to) return;  
-          let detailMatch = (d.note || "").toLowerCase().includes(search);  
-          if(!search || cnameLower.includes(search) || detailMatch){  
-            all.push({  
-              date: date,  
-              name: cname,  
-              detail: d.note || (d.isFasal ? "Fasal" : "Transaction"),  
-              credit: d.credit || "",  
-              debit: d.debit || ""  
-            });  
-          }  
-        });  
+        // Multiple account support in report
+        lsnap.forEach(accSnap => {
+          accSnap.forEach(e => {
+            let d = e.val();  
+            let date = d.startDate || d.date || "";  
+            if(!date) return;  
+            let dObj = new Date(date);  
+            if(from && dObj < from) return;  
+            if(to && dObj > to) return;  
+            let detailMatch = (d.note || "").toLowerCase().includes(search);  
+            if(!search || cnameLower.includes(search) || detailMatch){  
+              all.push({  
+                date: date,  
+                name: cname,  
+                detail: d.note || (d.isFasal ? "Fasal" : "Transaction"),  
+                credit: d.credit || "",  
+                debit: d.debit || ""  
+              });  
+            }  
+          });
+        });
       });  
       promises.push(p);  
     });  
