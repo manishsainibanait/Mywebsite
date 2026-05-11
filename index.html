@@ -1054,14 +1054,15 @@ currentAccountId = savedAcc || 'default';
 
     checkAndMigrateLedger(id, () => {
 
-      loadAccountDropdown();
+  loadAccountDropdown();
 
-      // 🔥 small delay prevents old flash
-      setTimeout(()=>{
-        loadLedger();
-      },50);
+  setTimeout(()=>{
 
-    });
+    switchAccount(currentAccountId);
+
+  },100);
+
+});
 
   });
 
