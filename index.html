@@ -719,7 +719,10 @@ onclick="document.getElementById('excelUpload').click()">
 <button class="btn btn-warning flex-fill" onclick="openFasalManager()">🌾 फसल लिस्ट</button>  
 
 <button class="btn btn-secondary flex-fill" onclick="printLedger()">🖨 प्रिंट</button>
-
+<button class="btn btn-danger flex-fill"
+onclick="closeHisab()">
+🔒 हिसाब Close
+</button>
 </div>  <div class="fasal-box">  
     <div class="fasal-head" onclick="toggleFasalSummary()">📊 कुल फसल सारांश (Tap)</div>  
     <div id="fasalSummary" class="fasal-detail"></div>  
@@ -2576,59 +2579,166 @@ z-index:999999;
   Print Now  
 </button>
 
-  </div>    <div id="printContent"></div>    <script>
+  </div>    <div id="printContent"></div>   
+</div>
+ <script>
 
-let lastTap = 0;
+// ✅ DOUBLE TAP FIX
+
+let lastTapTime = 0;
 
 document.getElementById("ledgerCard")
 .addEventListener("touchend", function(e){
 
-    let now = new Date().getTime();
+    let currentTime = new Date().getTime();
+    let tapLength = currentTime - lastTapTime;
 
-    if(now - lastTap < 300){
+    if(tapLength < 300 && tapLength > 0){
+
+        e.preventDefault();
 
         backToList();
-
     }
 
-    lastTap = now;
+    lastTapTime = currentTime;
 
-});
+}, false);
 
 
-// 🔥 Double Tap → Summary Hide
+// ✅ SUMMARY DOUBLE TAP FIX
 
-let lastSummaryTap = 0;
+let lastSummaryTapTime = 0;
 
-document
-.getElementById("totalSummary")
-.addEventListener("touchend", function () {
+document.getElementById("totalSummary")
+.addEventListener("touchend", function(e){
 
-    let now = new Date().getTime();
+    let currentTime = new Date().getTime();
+    let tapLength = currentTime - lastSummaryTapTime;
 
-    if (now - lastSummaryTap < 300) {
+    if(tapLength < 300 && tapLength > 0){
+
+        e.preventDefault();
 
         totalSummary.style.display = "none";
-
     }
 
-    lastSummaryTap = now;
+    lastSummaryTapTime = currentTime;
 
-});
+}, false);
+function closeHisab(){
 
+  document.getElementById("closeHisabPopup").style.display = "flex";
+
+  document.getElementById("closeAmount").value = "";
+
+  setTimeout(()=>{
+    document.getElementById("closeAmount").focus();
+  },100);
+
+}
+
+function saveCloseHisab(){
+
+  let amount =
+  document.getElementById("closeAmount").value.trim();
+
+  if(amount === "" || isNaN(amount)){
+    return alert("सही राशि लिखें!");
+  }
+
+  let data = {
+
+    startDate: new Date()
+      .toISOString()
+      .split("T")[0],
+
+    endDate: "",
+
+    credit: Number(amount),
+
+    debit: 0,
+
+    interest: 0,
+
+    days: 0,
+
+    interestAmount: 0,
+
+    note: "🔒 हिसाब बंद",
+
+    isCloseEntry:true
+
+  };
+
+  db.ref(
+    "ledgers/" +
+    currentCustomerId +
+    "/" +
+    currentAccountId
+  ).push(data);
+
+  document.getElementById("closeHisabPopup").style.display = "none";
+
+  alert("✔ हिसाब बंद हो गया");
+
+}
 </script>
-    let now = new Date().getTime();
 
-    if(now - lastTap < 300){
+<!-- 🔒 CLOSE HISAB POPUP -->
+<div id="closeHisabPopup"
+style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.5);
+justify-content:center;
+align-items:center;
+z-index:999999;
+">
 
-        backToList();
+<div style="
+background:white;
+padding:20px;
+border-radius:12px;
+width:90%;
+max-width:350px;
+">
 
-    }
+<h4 class="text-center mb-3">
+🔒 हिसाब बंद
+</h4>
 
-    lastTap = now;
+<input
+id="closeAmount"
+type="number"
+inputmode="numeric"
+class="form-control mb-3"
+placeholder="राशि लिखें">
 
-});
+<button
+class="btn btn-success w-100 mb-2"
+onclick="saveCloseHisab()">
 
-</script>
+✔ Save
+
+</button>
+
+<button
+class="btn btn-danger w-100"
+onclick="
+document.getElementById('closeHisabPopup').style.display='none'
+">
+
+❌ Cancel
+
+</button>
+
+</div>
+</div>
+
+
 </body>  
 </html>
