@@ -985,7 +985,9 @@ function openLedger(id){
   }
 
   currentCustomerId = id;
-  currentAccountId = 'default';
+  let savedAcc = localStorage.getItem("lastAccount_" + id);
+
+currentAccountId = savedAcc || 'default';
 
   // 🔥 FIRST CLEAR UI
   ledgerTable.innerHTML = "";
@@ -1067,6 +1069,10 @@ function loadAccountDropdown() {
 
 function switchAccount(accId) {
     currentAccountId = accId;
+localStorage.setItem(
+  "lastAccount_" + currentCustomerId,
+  accId
+);
     if(ledgerRef) ledgerRef.off();
     loadLedger();
 }
@@ -2341,5 +2347,25 @@ z-index:999999;
 </button>
 
   </div>    <div id="printContent"></div>  </div>  
+<script>
+
+let lastTap = 0;
+
+document.getElementById("ledgerCard")
+.addEventListener("touchend", function(e){
+
+    let now = new Date().getTime();
+
+    if(now - lastTap < 300){
+
+        backToList();
+
+    }
+
+    lastTap = now;
+
+});
+
+</script>
 </body>  
 </html>
