@@ -467,7 +467,22 @@ th.reg-col, td.reg-col {
   left: 0;  
   width: 100%;  
 }  
-  
+  #accountPopupOverlay{
+  z-index:999999 !important;
+}
+
+#accountPopupOverlay #popupBox{
+  display:block !important;
+  visibility:visible !important;
+}
+
+#newAccountDate{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  position:relative !important;
+  z-index:999999 !important;
+}
 </style>  </head>  <body>  <div id="loginScreen" style="  
     width:100%; max-width:400px; margin:40px auto;  
     background:white; padding:25px; border-radius:15px;  
@@ -543,7 +558,12 @@ placeholder="फेवरेट नाम लिखें">
 </div>  
     <button class="btn btn-info w-100 mb-2 hide-duplicate" onclick="toggleSummary()">  
       🔍 कुल सारांश  
-    </button>  <div id="totalSummary"  
+    </button>
+<input id="interestNameSearch"
+class="form-control mb-2"
+placeholder="नाम से ब्याज खोजें..."
+oninput="toggleSummary()">
+  <div id="totalSummary"  
      class="alert alert-info text-center fw-bold mb-3"  
      style="display:none">  
   </div>  
@@ -732,7 +752,9 @@ onclick="document.getElementById('excelUpload').click()">
     <button class="back-3d-btn" onclick="backToList();event.stopPropagation();">🔙</button>  
   </div>    <div class="card-body">  <input id="reportSearch" class="form-control mb-2"  
        placeholder="नाम से खोजें...">  
-
+<input id="interestSearch"
+class="form-control mb-2"
+placeholder="ब्याज से खोजें...">
 <div class="row mb-2">  
   <div class="col-6">  
     <input type="date" id="fromDate" class="form-control">  
@@ -831,10 +853,33 @@ placeholder="मजदूरी ₹" readonly>
 <div id="accountPopupOverlay">
     <div id="popupBox">
         <h5 class="text-center mb-3">⚙ हिसाब प्रबंधन</h5>
-        <div class="input-group mb-3">
-            <input id="newAccountName" type="text" class="form-control" placeholder="नये हिसाब का नाम">
-            <button class="btn btn-success" onclick="createNewAccount()">+ नया</button>
-        </div>
+        <label class="fw-bold mb-1">
+📅 हिसाब तारीख
+</label>
+
+<input
+id="newAccountDate"
+type="date"
+class="form-control mb-3"
+style="height:45px; font-size:16px;">
+
+<div class="input-group mb-3">
+
+    <input
+    id="newAccountName"
+    type="text"
+    class="form-control"
+    placeholder="आगे कुछ लिखें">
+
+    <button
+    class="btn btn-success"
+    onclick="createNewAccount()">
+
+    + नया
+
+    </button>
+
+</div>
         <hr>
         <div id="accountListContainer" style="max-height:200px; overflow-y:auto;">
             </div>
@@ -1136,14 +1181,62 @@ function loadAccountListManager() {
 }
 
 function createNewAccount() {
-    let name = newAccountName.value.trim();
-    if(!name) return alert("हिसाब का नाम लिखें!");
-    db.ref("accounts/" + currentCustomerId).push({ name: name }).then(() => {
-        newAccountName.value = "";
-        loadAccountListManager();
-    });
-}
 
+    let rawDate =
+    document.getElementById("newAccountDate").value;
+
+    let text =
+    newAccountName.value.trim();
+
+    let name = "";
+
+    if(rawDate){
+
+        let d = new Date(rawDate);
+
+        let day = d.getDate();
+
+        let months = [
+            "Jan","Feb","Mar","Apr","May","Jun",
+            "Jul","Aug","Sep","Oct","Nov","Dec"
+        ];
+
+        let month = months[d.getMonth()];
+
+        let year =
+        d.getFullYear().toString().slice(-2);
+
+        name =
+        day + " " + month + " " + year;
+
+    }
+
+    if(text){
+
+        name += " - " + text;
+
+    }
+
+    if(!name.trim()){
+        return alert("तारीख या नाम लिखें!");
+    }
+
+    db.ref(
+      "accounts/" + currentCustomerId
+    ).push({
+        name: name
+    }).then(() => {
+
+        newAccountName.value = "";
+document.getElementById(
+"newAccountDate"
+).value = "";
+
+        loadAccountListManager();
+
+    });
+
+}
 
 function deleteAccount(accId) {
     if(accId === 'default') return alert("Main हिसाब डिलीट नहीं हो सकता!");
@@ -1788,31 +1881,152 @@ function handleExcelUpload(e) {
     reader.readAsArrayBuffer(file);  
 }  
   
-function toggleSummary() {  
-    let box = totalSummary;  
-    if (box.style.display == "block") {  
-        box.style.display = "none";  
-        return;  
-    }  
-    db.ref("ledgers").once("value").then(snap => {  
-        let sumC = 0, sumD = 0, sumI = 0;  
-        snap.forEach(c => {
-          // Iterate through accounts
-          c.forEach(accSnap => {
-            accSnap.forEach(r => {  
-                let d = r.val();  
-                sumC += +d.credit || 0;  
-                sumD += +d.debit || 0;  
-                sumI += +d.interestAmount || 0;  
-            });
-          });
-        });  
-        let bal = (sumD + sumI) - sumC;  
-        box.innerHTML = `जमा: ₹${sumC}<br>निकासी: ₹${sumD}<br>ब्याज: ₹${sumI.toFixed(2)}<br>शेष: ₹${bal.toFixed(2)}`;  
-        box.style.display = "block";  
-    });  
-}  
-  
+function toggleSummary() {
+
+    let box = totalSummary;
+
+    if (box.style.display == "block") {
+        box.style.display = "none";
+        return;
+    }
+
+    db.ref("ledgers").once("value").then(async snap => {
+
+        let total2025 = 0;
+        let total2026 = 0;
+
+        let html = "";
+let search =
+document.getElementById(
+"interestNameSearch"
+).value.toLowerCase();
+
+        let ledgers = snap.val() || {};
+
+        for (let cid in ledgers) {
+
+            let customerName = "Unknown";
+
+            let cs = await db
+                .ref("customers/" + cid)
+                .once("value");
+
+            if (cs.exists()) {
+                customerName = cs.val().name || "Unknown";
+            }
+
+            let interest2025 = 0;
+            let interest2026 = 0;
+
+            let customerData = ledgers[cid];
+
+            for (let acc in customerData) {
+
+                let entries = customerData[acc];
+
+                for (let key in entries) {
+
+                    let d = entries[key];
+
+                    let interest =
+                        +d.interestAmount || 0;
+
+                    let entryDate =
+                        d.startDate ||
+                        d.date ||
+                        "";
+
+                    if (!entryDate) continue;
+
+                    let yr =
+                        new Date(entryDate)
+                        .getFullYear();
+
+                    if (yr == 2025) {
+                        interest2025 += interest;
+                        total2025 += interest;
+                    }
+
+                    if (yr == 2026) {
+                        interest2026 += interest;
+                        total2026 += interest;
+                    }
+                }
+            }
+if(
+search &&
+!customerName.toLowerCase().includes(search)
+){
+    continue;
+}
+            html += `
+
+            <div style="
+                background:white;
+                border-radius:10px;
+                padding:10px;
+                margin-bottom:8px;
+                border-left:5px solid #0d6efd;
+                box-shadow:0 2px 5px rgba(0,0,0,0.1);
+            ">
+
+                <div style="
+                    font-weight:800;
+                    color:#0d47a1;
+                    font-size:16px;
+                    margin-bottom:6px;
+                ">
+                    👤 ${customerName}
+                </div>
+
+                <div style="
+                    color:#1b5e20;
+                    font-weight:700;
+                    margin-bottom:4px;
+                ">
+                    📅 2025 → ₹${interest2025.toFixed(2)}
+                </div>
+
+                <div style="
+                    color:#bf360c;
+                    font-weight:700;
+                ">
+                    📅 2026 → ₹${interest2026.toFixed(2)}
+                </div>
+
+            </div>
+
+            `;
+        }
+
+        box.innerHTML = `
+
+        <div style="
+            background:#e3f2fd;
+            padding:12px;
+            border-radius:12px;
+            margin-bottom:12px;
+            font-weight:800;
+            line-height:1.8;
+            color:#0d47a1;
+        ">
+
+            📈 कुल ब्याज 2025 → ₹${total2025.toFixed(2)}
+            <br>
+
+            📈 कुल ब्याज 2026 → ₹${total2026.toFixed(2)}
+
+        </div>
+
+        ${html}
+
+        `;
+
+        box.style.display = "block";
+
+    });
+
+}
 function openVillageManager() {  
     let html = `  
       <div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;">  
@@ -2255,6 +2469,10 @@ function generateReport(){
   let from = fromDate.value ? new Date(fromDate.value) : null;  
   let to = toDate.value ? new Date(toDate.value) : null;  
   let search = reportSearch.value.toLowerCase().trim();  
+let interestSearch =
+parseFloat(
+document.getElementById("interestSearch").value
+) || 0;
   let sort = sortType.value;  
   reportTable.innerHTML = "";  
   let all = [];  
@@ -2275,7 +2493,19 @@ function generateReport(){
             if(from && dObj < from) return;  
             if(to && dObj > to) return;  
             let detailMatch = (d.note || "").toLowerCase().includes(search);  
-            if(!search || cnameLower.includes(search) || detailMatch){  
+            let interestMatch =
+interestSearch === 0 ||
+(+d.interestAmount || 0) >= interestSearch;
+
+if(
+(
+!search ||
+cnameLower.includes(search) ||
+detailMatch
+)
+&&
+interestMatch
+){
               all.push({  
                 date: date,  
                 name: cname,  
@@ -2346,14 +2576,47 @@ z-index:999999;
   Print Now  
 </button>
 
-  </div>    <div id="printContent"></div>  </div>  
-<script>
+  </div>    <div id="printContent"></div>    <script>
 
 let lastTap = 0;
 
 document.getElementById("ledgerCard")
 .addEventListener("touchend", function(e){
 
+    let now = new Date().getTime();
+
+    if(now - lastTap < 300){
+
+        backToList();
+
+    }
+
+    lastTap = now;
+
+});
+
+
+// 🔥 Double Tap → Summary Hide
+
+let lastSummaryTap = 0;
+
+document
+.getElementById("totalSummary")
+.addEventListener("touchend", function () {
+
+    let now = new Date().getTime();
+
+    if (now - lastSummaryTap < 300) {
+
+        totalSummary.style.display = "none";
+
+    }
+
+    lastSummaryTap = now;
+
+});
+
+</script>
     let now = new Date().getTime();
 
     if(now - lastTap < 300){
