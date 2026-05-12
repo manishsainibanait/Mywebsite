@@ -1381,14 +1381,48 @@ ledgerTable.innerHTML = "";
 
 // LOOP
 entries.forEach(d=>{
-  let key = d.key;
 
-  totalC += +d.credit || 0;
-  totalD += +d.debit || 0;
+// 🔥 LIVE AUTO INTEREST
+if(
+  !d.isFasal &&
+  d.startDate &&
+  !d.endDate &&
+  (+d.debit || 0) > 0 &&
+  (+d.interest || 0) > 0
+){
+
+  let start = new Date(d.startDate);
+
+  let today = new Date();
+
+  let days = Math.floor(
+    (today - start) / (1000*60*60*24)
+  );
+
+  if(days < 0) days = 0;
+
+  let amount = +d.debit || 0;
+
+  let monthlyInterest =
+    (amount * (+d.interest || 0)) / 100;
+
+  let dailyInterest =
+    monthlyInterest / 30;
+
+  d.days = days;
+
+  d.interestAmount =
+    dailyInterest * days;
+}
+
+let key = d.key;
+
+totalC += +d.credit || 0;
+totalD += +d.debit || 0;
 
 totalI += +d.interestAmount || 0;
-  if(d.isFasal) allFasal.push(d);
 
+if(d.isFasal) allFasal.push(d);
   
 let row = `
 <tr style="${d.isFasal ?  
@@ -2468,7 +2502,7 @@ function editTransaction(id){
         tDays.value = d.days || 0;  
         tInterestAmount.value = d.interestAmount || 0;  
 document.getElementById("interestEnabled").checked =
-(+d.interestAmount || 0) > 0;
+d.interestEnabled !== false;
 calcInterest();
         tNote.value = d.note || "";  
     });  
@@ -2885,22 +2919,37 @@ document.getElementById('closeHisabPopup').style.display='none'
 });
 
 // 🔥 AUTO REFRESH
-setInterval(()=>{
+// ✅ LIVE INTEREST REALTIME FINAL
 
-  let popup =
-  document.getElementById("transactionPopupOverlay");
+[
+  "tDate",
+  "tEndDate",
+  "tDebit",
+  "tCredit",
+  "tInterest"
+].forEach(id=>{
 
-  if(
-    popup &&
-    popup.style.display === "flex"
-  ){
+  let el = document.getElementById(id);
 
-    calcDays();
-    calcInterest();
+  if(el){
+
+    el.addEventListener("input", updateLiveInterest);
+    el.addEventListener("change", updateLiveInterest);
 
   }
 
-}, 500);
+});
+
+document
+.getElementById("interestEnabled")
+.addEventListener("change", updateLiveInterest);
+
+function updateLiveInterest(){
+
+  calcDays();
+  calcInterest();
+
+}
 
 </script>
 </body>  
