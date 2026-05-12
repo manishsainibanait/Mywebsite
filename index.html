@@ -467,6 +467,47 @@ th.reg-col, td.reg-col {
   left: 0;  
   width: 100%;  
 }  
+#ledgerCard .table-responsive{
+  max-height: 70vh !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+#ledgerTableMain td{
+  padding: 8px !important;
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+}
+
+#ledgerTableMain th{
+  padding: 8px !important;
+  font-size: 16px !important;
+  line-height: 1.4 !important;
+  font-weight: 800 !important;
+}
+
+table{
+  margin-bottom:0 !important;
+}
+#ledgerCard thead th{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #ffe082 !important;
+}
+
+#ledgerCard{
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+#ledgerCard .card-body{
+  overflow: visible;
+  height: auto;
+}
   #accountPopupOverlay{
   z-index:999999 !important;
 }
@@ -728,7 +769,7 @@ onclick="closeHisab()">
     <div id="fasalSummary" class="fasal-detail"></div>  
 </div>  
 
-<div class="table-responsive mt-3">  
+<div class="table-responsive mt-3 ledger-scroll">
   <table class="table table-bordered text-center" id="ledgerTableMain">  
     <thead class="table-warning">
 
