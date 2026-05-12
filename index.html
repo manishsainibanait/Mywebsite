@@ -844,7 +844,21 @@ placeholder="ब्याज से खोजें...">
     <input id="tCredit" type="number" class="form-control mb-2" placeholder="जमा (₹)">  
     <input id="tDebit" type="number" class="form-control mb-2" placeholder="निकासी (₹)">  
     <input id="tInterest" type="number" class="form-control mb-2" placeholder="ब्याज (%)">  
-   <input id="tDays" type="number" class="form-control mb-2" placeholder="दिन" readonly>  <input id="tInterestAmount" type="number" class="form-control mb-2" placeholder="ब्याज राशि (₹)" readonly>  <textarea id="tNote" class="form-control mb-3" placeholder="नोट"></textarea>  <button class="btn btn-success w-100 mb-2" onclick="saveTransaction()">✔ सहेजें</button>  
+   <input id="tDays" type="number" class="form-control mb-2" placeholder="दिन" readonly>  <input id="tInterestAmount" type="number" class="form-control mb-2" placeholder="ब्याज राशि (₹)" readonly> 
+<div class="form-check mb-2">
+
+  <input
+    type="checkbox"
+    id="interestEnabled"
+    class="form-check-input"
+    checked>
+
+  <label class="form-check-label">
+    ब्याज लगाना है
+  </label>
+
+</div>
+ <textarea id="tNote" class="form-control mb-3" placeholder="नोट"></textarea>  <button class="btn btn-success w-100 mb-2" onclick="saveTransaction()">✔ सहेजें</button>  
 <button class="btn btn-danger w-100" onclick="closeTransactionPopup()">रद्द</button>
 
   </div>  
@@ -1580,51 +1594,93 @@ function closeTransactionPopup(){
 }  
   
 function saveTransaction(){
+
     let start = tDate.value || "";
     let end = tEndDate.value || "";
+
     let days = 0;
     let totalInterest = 0;
 
+    let enableInterest =
+    document.getElementById("interestEnabled").checked;
+
     if(start && end){
+
         let d1 = new Date(start);
         let d2 = new Date(end);
+
         days = Math.floor((d2 - d1) / (1000*60*60*24));
+
         if(days < 0){
             alert("End Date, Start Date के बाद होनी चाहिए!");
             return;
         }
+
         let amount = +tDebit.value || +tCredit.value || 0;
         let rate = +tInterest.value || 0;
+
         let monthlyInterest = (amount * rate) / 100;
         let dailyInterest = monthlyInterest / 30;
+
         totalInterest = dailyInterest * days;
     }
 
+    // ✅ ब्याज OFF
+    if(!enableInterest){
+        days = 0;
+        totalInterest = 0;
+    }
+
     let data = {
+
         startDate: start,
         endDate: end,
+
         credit: +tCredit.value || 0,
         debit: +tDebit.value || 0,
+
         interest: +tInterest.value || 0,
+
         days: days,
         interestAmount: totalInterest,
-        interestType: (+tDebit.value || 0) > 0 ? "debit" : "credit",
+
+        interestType:
+        (+tDebit.value || 0) > 0
+        ? "debit"
+        : "credit",
+
         note: tNote.value
     };
 
-    // 🔥 PATH UPDATED
+    // 🔥 SAVE
     if(window.editingTransactionId){
-        db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + window.editingTransactionId).update(data);
+
+        db.ref(
+          "ledgers/" +
+          currentCustomerId +
+          "/" +
+          currentAccountId +
+          "/" +
+          window.editingTransactionId
+        ).update(data);
+
         window.editingTransactionId = null;
+
     } else {
-        db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId).push(data);
+
+        db.ref(
+          "ledgers/" +
+          currentCustomerId +
+          "/" +
+          currentAccountId
+        ).push(data);
     }
 
     closeTransactionPopup();
 
     setTimeout(()=>{
-      loadLedger();
-    }, 300);
+        loadLedger();
+    },300);
 }
 ["fBori","fWeightPer","fExtraKG","fRate","fMajduri","fCut"]
 .forEach(id=>{
@@ -2338,12 +2394,7 @@ fExtraKG.value = f.extraKG || 0;
         window.editingFasalId = id;
     });
 }
-tDate.onchange = calcDays;  
-tEndDate.onchange = calcDays;  
-tInterest.oninput = calcInterest;  
-tDebit.oninput = calcInterest;  
-tCredit.oninput = calcInterest;     
-tDays.oninput = calcInterest;  
+
 function calcDays() {  
     let start = tDate.value;  
     let end = tEndDate.value;  
@@ -2365,19 +2416,41 @@ function calcDays() {
     calcInterest();  
 }  
   
-function calcInterest() {  
-    let amount = (+tDebit.value > 0) ? +tDebit.value : +tCredit.value;  
-    let rate = +tInterest.value || 0;  
-    let days = +tDays.value || 0;  
-    if(amount === 0 || rate === 0 || days === 0){  
-        tInterestAmount.value = "";  
-        return;  
-    }  
-    let monthlyInterest = (amount * rate) / 100;  
-    let dailyInterest = monthlyInterest / 30;  
-    let totalInterest = dailyInterest * days;  
-    tInterestAmount.value = totalInterest.toFixed(2);  
-}  
+function calcInterest() {
+
+    let enabled =
+    document.getElementById("interestEnabled").checked;
+
+    if(!enabled){
+        tInterestAmount.value = "0";
+        return;
+    }
+
+    let amount =
+    (+tDebit.value > 0)
+    ? +tDebit.value
+    : +tCredit.value;
+
+    let rate = +tInterest.value || 0;
+    let days = +tDays.value || 0;
+
+    if(amount === 0 || rate === 0 || days === 0){
+        tInterestAmount.value = "";
+        return;
+    }
+
+    let monthlyInterest =
+    (amount * rate) / 100;
+
+    let dailyInterest =
+    monthlyInterest / 30;
+
+    let totalInterest =
+    dailyInterest * days;
+
+    tInterestAmount.value =
+    totalInterest.toFixed(2);
+}
 function editTransaction(id){  
     window.editingTransactionId = id;  
     db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).once("value").then(s=>{  
@@ -2394,6 +2467,9 @@ function editTransaction(id){
         tInterest.value = d.interest || 0;  
         tDays.value = d.days || 0;  
         tInterestAmount.value = d.interestAmount || 0;  
+document.getElementById("interestEnabled").checked =
+(+d.interestAmount || 0) > 0;
+calcInterest();
         tNote.value = d.note || "";  
     });  
 }  
@@ -2781,6 +2857,51 @@ document.getElementById('closeHisabPopup').style.display='none'
 </div>
 </div>
 
+<script>
 
+// 🔥 LIVE INTEREST FIX
+
+[
+"tDate",
+"tEndDate",
+"tDebit",
+"tCredit",
+"tInterest"
+].forEach(id=>{
+
+  let el = document.getElementById(id);
+
+  if(el){
+
+    el.addEventListener("input", ()=>{
+
+      calcDays();
+      calcInterest();
+
+    });
+
+  }
+
+});
+
+// 🔥 AUTO REFRESH
+setInterval(()=>{
+
+  let popup =
+  document.getElementById("transactionPopupOverlay");
+
+  if(
+    popup &&
+    popup.style.display === "flex"
+  ){
+
+    calcDays();
+    calcInterest();
+
+  }
+
+}, 500);
+
+</script>
 </body>  
 </html>
