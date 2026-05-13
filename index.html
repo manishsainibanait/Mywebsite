@@ -2788,13 +2788,26 @@ detailMatch
 &&
 interestMatch
 ){
-              all.push({  
-                date: date,  
-                name: cname,  
-                detail: d.note || (d.isFasal ? "Fasal" : "Transaction"),  
-                credit: d.credit || "",  
-                debit: d.debit || ""  
-              });  
+              all.push({
+
+  date: date,
+
+  fullDate: date,
+
+  sortKey:
+  date + "_" + e.key,
+
+  name: cname,
+
+  detail:
+  d.note ||
+  (d.isFasal ? "Fasal" : "Transaction"),
+
+  credit: d.credit || "",
+
+  debit: d.debit || ""
+
+});
             }  
           });
         });
@@ -2806,25 +2819,56 @@ interestMatch
   });  
 }  
   
-function renderReport(data, sort){  
-  if(sort === "new"){  
-    data.sort((a,b)=> new Date(b.date) - new Date(a.date));  
-  }else{  
-    data.sort((a,b)=> new Date(a.date) - new Date(b.date));  
-  }  
-  reportTable.innerHTML = "";  
-  data.forEach(r=>{  
-    reportTable.insertAdjacentHTML("beforeend",`  
-      <tr>  
-        <td>${r.date}</td>  
-        <td>${r.name}</td>  
-        <td>${r.detail}</td>  
-        <td>${r.credit}</td>  
-        <td>${r.debit}</td>  
-      </tr>  
-    `);  
-  });  
-}  
+function renderReport(data, sort){
+
+  function safeDate(d){
+
+    if(!d) return 0;
+
+    // yyyy-mm-dd
+    if(/^\d{4}-\d{2}-\d{2}$/.test(d)){
+      return new Date(d).getTime();
+    }
+
+    // mm-dd
+    if(/^\d{2}-\d{2}$/.test(d)){
+      let year = new Date().getFullYear();
+      return new Date(year + "-" + d).getTime();
+    }
+
+    return new Date(d).getTime() || 0;
+  }
+
+  data.sort((a,b)=>{
+
+  if(sort === "new"){
+
+    return b.sortKey.localeCompare(a.sortKey);
+
+  }else{
+
+    return a.sortKey.localeCompare(b.sortKey);
+
+  }
+
+});
+  reportTable.innerHTML = "";
+
+  data.forEach(r=>{
+
+    reportTable.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td>${r.date || "-"}</td>
+        <td>${r.name || "-"}</td>
+        <td>${r.detail || "-"}</td>
+        <td>${r.credit || ""}</td>
+        <td>${r.debit || ""}</td>
+      </tr>
+    `);
+
+  });
+
+}
 </script>  <div id="printPreviewBox" style="  
 display:none;  
 position:fixed;  
