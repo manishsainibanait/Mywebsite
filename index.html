@@ -524,6 +524,42 @@ table{
   position:relative !important;
   z-index:999999 !important;
 }
+/* ===== NEW BANK COMBINED UNIQUE CSS ===== */
+.comb-view-summary{
+background:#fff;
+border:2px solid #512da8;
+border-radius:12px;
+padding:15px;
+margin-bottom:15px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.comb-view-row{
+display:flex;
+justify-content:space-between;
+margin-bottom:5px;
+font-size:14px;
+}
+
+.comb-view-table{
+width:100%;
+border-collapse:collapse;
+font-size:13px;
+table-layout:fixed;
+word-break:break-word;
+}
+
+.comb-view-table th,
+.comb-view-table td{
+padding:8px 4px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+.comb-view-table th{
+background:#f2f2f2;
+font-weight:bold;
+}
 </style>  </head>  <body>  <div id="loginScreen" style="  
     width:100%; max-width:400px; margin:40px auto;  
     background:white; padding:25px; border-radius:15px;  
@@ -587,6 +623,13 @@ placeholder="फेवरेट नाम लिखें">
 </button>  <ul class="dropdown-menu">
 
 <li><a class="dropdown-item" href="#" onclick="openReport()">📊 Advanced Report</a></li>  
+<li>
+<a class="dropdown-item fw-bold text-primary"
+href="#"
+onclick="openCombinedLedgerView()">
+🏦 Bank + Kharch Combined View
+</a>
+</li>
       <li><a class="dropdown-item" href="#" onclick="openVillageManager()">🏡 गाँव प्रबंधन</a></li>  
       <li><a class="dropdown-item" href="#" onclick="toggleSummary()">🔍 कुल सारांश</a></li>  
       <li><a class="dropdown-item" href="#" onclick="deleteSelectedCustomers()">🗑 चुने हुए ग्राहक हटाएं</a></li>  
@@ -791,6 +834,66 @@ onclick="closeHisab()">
       </table>  
     </div>    </div>  
 </div>  </div>  
+<div id="combinedViewCard" class="card" style="display:none">
+
+<div class="header">
+🏦 Bank + Kharch Combined
+<button class="back-3d-btn" onclick="backToList()">🔙</button>
+</div>
+
+<div class="card-body">
+
+<div class="alert alert-warning py-1 text-center"
+style="font-size:12px;">
+यह डेटा केवल पढ़ने के लिए है।
+</div>
+
+<input type="text"
+id="combSearch"
+class="form-control mb-2"
+placeholder="नाम से खोजें...">
+
+<div class="row mb-2">
+
+<div class="col-6">
+<input type="date" id="combFrom" class="form-control">
+</div>
+
+<div class="col-6">
+<input type="date" id="combTo" class="form-control">
+</div>
+
+</div>
+
+<div id="combSummaryArea"></div>
+
+<div class="table-responsive" style="max-height:50vh;">
+
+<table class="comb-view-table">
+
+<thead>
+<tr>
+<th>तारीख</th>
+<th>विवरण</th>
+<th>Type</th>
+<th>जमा</th>
+<th>निकासी</th>
+</tr>
+</thead>
+
+<tbody id="combTableBody"></tbody>
+
+</table>
+
+</div>
+
+<button class="btn btn-secondary w-100 mt-3"
+onclick="printCombinedLedgerView()">
+🖨️ रिपोर्ट प्रिंट करें
+</button>
+
+</div>
+</div>
 <div id="advancedReportCard" class="card" style="display:none">    <div class="header">  
     📊 Advanced Report  
     <button class="back-3d-btn" onclick="backToList();event.stopPropagation();">🔙</button>  
@@ -975,7 +1078,25 @@ const firebaseConfig = {
 };  
 firebase.initializeApp(firebaseConfig);  
 const db = firebase.database();  
-  
+  const bankFirebaseConfig = {
+apiKey: "AIzaSyADn_HUkP4ZfTOQ46eoQdXKIY7VAKd6odI",
+authDomain: "debit-4db50.firebaseapp.com",
+databaseURL: "https://debit-4db50-default-rtdb.asia-southeast1.firebasedatabase.app/",
+projectId: "debit-4db50",
+storageBucket: "debit-4db50.appspot.com",
+messagingSenderId: "495330105885",
+appId: "1:495330105885:web:18436900b881a1ee6b84f4"
+};
+
+const bankAppInstance =
+firebase.initializeApp(
+bankFirebaseConfig,
+"bankApp"
+);
+
+const bankDb = bankAppInstance.database();
+
+let bankDataMaster = [];
 let currentCustomerId = null;  
 let currentAccountId = 'default';
 let ledgerRef = null;
@@ -987,7 +1108,7 @@ function showCard(id){
   ledgerCard.style.display="none";  
 advancedReportCard.style.display="none";  
   loginScreen.style.display="none";  
-  document.getElementById("appContent").style.display = "block";  
+ document.getElementById("combinedViewCard").style.display="none"; document.getElementById("appContent").style.display = "block";  
   
   document.getElementById(id).style.display="block";  
 }  
@@ -1004,7 +1125,13 @@ function backToList(){
     ledgerTable.innerHTML = "";
     ledgerFooter.innerHTML = "";
     fasalSummary.innerHTML = "";
+if(window.bankKhataRef){
+window.bankKhataRef.off();
+}
 
+if(window.kharchKhataRef){
+window.kharchKhataRef.off();
+}
     showCard("customerListCard");
 
     loadCustomers(() => {
@@ -2950,7 +3077,241 @@ function updateLiveInterest(){
   calcInterest();
 
 }
+function openCombinedLedgerView(){
 
+customerListCard.style.display="none";
+addCustomerCard.style.display="none";
+ledgerCard.style.display="none";
+advancedReportCard.style.display="none";
+
+document.getElementById("combinedViewCard").style.display="block";
+
+loadCombinedLedgerData();
+}
+
+function loadCombinedLedgerData(){
+
+// OLD listener remove
+if(window.bankKhataRef){
+window.bankKhataRef.off();
+}
+
+if(window.kharchKhataRef){
+window.kharchKhataRef.off();
+}
+
+window.bankKhataRef =
+bankDb.ref("bankKhata");
+
+window.kharchKhataRef =
+bankDb.ref("kharchKhata");
+
+function refreshCombined(){
+
+let combined=[];
+
+window.bankKhataRef.once("value").then(snap1=>{
+
+const d1=snap1.val()||{};
+
+Object.values(d1).forEach(e=>{
+
+combined.push({
+...e,
+type:"Bank"
+});
+
+});
+
+window.kharchKhataRef.once("value").then(snap2=>{
+
+const d2=snap2.val()||{};
+
+Object.values(d2).forEach(e=>{
+
+combined.push({
+...e,
+type:"Kharch"
+});
+
+});
+
+combined.sort((a,b)=>
+(b.date||"")
+.localeCompare(a.date||"")
+);
+
+bankDataMaster = combined;
+
+renderCombinedLedgerView();
+
+});
+
+});
+
+}
+
+// LIVE refresh
+window.bankKhataRef.on("value", refreshCombined);
+
+window.kharchKhataRef.on("value", refreshCombined);
+
+refreshCombined();
+
+}
+
+function renderCombinedLedgerView(){
+
+const q = document.getElementById("combSearch")
+.value.toLowerCase().trim();
+
+const from =
+document.getElementById("combFrom").value;
+
+const to =
+document.getElementById("combTo").value;
+
+const tbody =
+document.getElementById("combTableBody");
+
+const summaryArea =
+document.getElementById("combSummaryArea");
+
+let html = "";
+
+let bCr=0,bDb=0,kCr=0,kDb=0;
+
+bankDataMaster.forEach(e=>{
+
+let dt = e.date || "";
+
+if((from && dt < from) ||
+(to && dt > to)) return;
+
+let desc =
+(e.desc || "").toLowerCase();
+
+if(q==="" || desc.includes(q)){
+
+if(e.type==="Bank"){
+
+bCr += Number(e.credit || 0);
+bDb += Number(e.debit || 0);
+
+}else{
+
+kCr += Number(e.credit || 0);
+kDb += Number(e.debit || 0);
+
+}
+
+html += `
+<tr>
+
+<td>
+${e.date
+? e.date.split('-').reverse().join('-')
+: '-'}
+</td>
+
+<td class="text-start fw-bold">
+${e.desc || "-"}
+</td>
+
+<td>${e.type}</td>
+
+<td class="text-primary">
+${e.credit || '-'}
+</td>
+
+<td class="text-danger">
+${e.debit || '-'}
+</td>
+
+</tr>
+`;
+
+}
+
+});
+
+tbody.innerHTML = html;
+
+if(q!==""){
+
+summaryArea.innerHTML = `
+
+<div class="comb-view-summary">
+
+<div class="fw-bold border-bottom mb-1">
+Customer: ${q.toUpperCase()}
+</div>
+
+<div class="comb-view-row">
+
+<span>
+Bank Cr/Db: ${bCr}/${bDb}
+</span>
+
+<span>
+Kharch Cr/Db: ${kCr}/${kDb}
+</span>
+
+</div>
+
+<div class="text-end fw-bold text-success">
+
+Net Balance:
+₹${((bCr+kCr)-(bDb+kDb)).toFixed(2)}
+
+</div>
+
+</div>
+`;
+
+}else{
+
+summaryArea.innerHTML = "";
+
+}
+
+}
+
+function printCombinedLedgerView(){
+
+let html=`
+
+<h2 class="text-center">
+Saini Trading Company
+</h2>
+
+<h4 class="text-center">
+Combined Bank & Kharch Report
+</h4>
+
+${document.getElementById("combSummaryArea").innerHTML}
+
+<table class="comb-view-table" border="1">
+
+${document.querySelector(".comb-view-table").innerHTML}
+
+</table>
+`;
+
+openPrintPreviewManual(html);
+}
+
+document.getElementById("combSearch")
+.addEventListener("input",
+renderCombinedLedgerView);
+
+document.getElementById("combFrom")
+.addEventListener("input",
+renderCombinedLedgerView);
+
+document.getElementById("combTo")
+.addEventListener("input",
+renderCombinedLedgerView);
 </script>
 </body>  
 </html>
