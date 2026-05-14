@@ -571,6 +571,62 @@ font-weight:bold;
   font-size:13px !important;
   padding:8px 6px !important;
 }
+#combinedViewCard{
+position:fixed !important;
+
+top:
+40%;
+left:50%;
+
+transform:translate(-50%,-50%);
+
+width:95%;
+max-width:700px;
+
+height:85vh;
+
+min-width:320px;
+min-height:300px;
+
+max-width:98vw;
+max-height:95vh;
+
+overflow:hidden;
+
+background:#fff;
+
+border-radius:25px;
+
+box-shadow:0 10px 35px rgba(0,0,0,.45);
+
+z-index:999999;
+
+display:none;
+
+touch-action:none;
+
+animation:combinedPopup .25s ease;
+}
+#combinedViewCard .card-body{
+flex:1;
+overflow-y:auto;
+overflow-x:hidden;
+padding-bottom:120px;
+min-height:0;
+}
+@keyframes combinedPopup{
+
+from{
+opacity:0;
+transform:translate(-50%,-45%) scale(.9);
+}
+
+to{
+opacity:1;
+transform:translate(-50%,-50%) scale(1);
+}
+
+}
 </style>  </head>  <body>  <div id="loginScreen" style="  
     width:100%; max-width:400px; margin:40px auto;  
     background:white; padding:25px; border-radius:15px;  
@@ -3136,21 +3192,46 @@ function updateLiveInterest(){
   calcInterest();
 
 }
-function openCombinedLedgerView(source = "menu"){
+function openCombinedLedgerView(mode="ledger"){
 
-// source save
-window.combinedOpenSource = source;
+window.combinedMode = mode;
 
-customerListCard.style.display="none";
-addCustomerCard.style.display="none";
-ledgerCard.style.display="none";
-advancedReportCard.style.display="none";
+let combinedCard =
+document.getElementById(
+"combinedViewCard"
+);
 
-document.getElementById("combinedViewCard").style.display="block";
+document.body.appendChild(combinedCard);
+
+combinedCard.style.display = "block";
+
+
+
+document.body.style.overflow = "hidden";
 
 loadCombinedLedgerData();
+
 }
 
+function backToLedgerFromCombined(){
+
+document.getElementById(
+"combinedViewCard"
+).style.display = "none";
+
+document.body.style.overflow = "auto";
+
+if(window.combinedMode === "ledger"){
+
+ledgerCard.style.display = "block";
+
+}else{
+
+customerListCard.style.display = "block";
+
+}
+
+}
 function loadCombinedLedgerData(){
 
 // OLD listener remove
@@ -3373,28 +3454,169 @@ renderCombinedLedgerView);
 
 
 
-function backToLedgerFromCombined(){
 
-document.getElementById("combinedViewCard").style.display = "none";
+const popup = document.getElementById("combinedViewCard");
+const header = popup.querySelector(".header");
 
-customerListCard.style.display = "none";
-addCustomerCard.style.display = "none";
-ledgerCard.style.display = "none";
-advancedReportCard.style.display = "none";
+/* ===== RESIZE BUTTON ===== */
 
-// 🔥 where opened from
-if(window.combinedOpenSource === "ledger"){
+const resizeBtn = document.createElement("div");
+const dragBar = document.createElement("div");
 
-ledgerCard.style.display = "block";
+dragBar.style.cssText = `
+position:absolute;
+left:50%;
+bottom:5px;
+transform:translateX(-50%);
+width:80px;
+height:8px;
+border-radius:20px;
+background:#999;
+z-index:999999;
+cursor:grab;
+`;
 
-}else{
+popup.appendChild(dragBar);
+resizeBtn.innerHTML = "↘";
 
-customerListCard.style.display = "block";
+resizeBtn.style.cssText = `
+position:absolute;
+right:10px;
+bottom:10px;
+width:42px;
+height:42px;
+border-radius:50%;
+background:#0d6efd;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+font-weight:bold;
+z-index:999999;
+cursor:nwse-resize;
+touch-action:none;
+box-shadow:0 4px 12px rgba(0,0,0,.35);
+`;
+
+popup.appendChild(resizeBtn);
+
+/* ===== DRAG SYSTEM ===== */
+
+let isDragging = false;
+
+let startX,startY;
+let startLeft,startTop;
+
+[header, dragBar].forEach(el=>{
+
+el.addEventListener("pointerdown",e=>{
+
+isDragging = true;
+
+popup.style.transform = "none";
+
+startX = e.clientX;
+startY = e.clientY;
+
+const rect = popup.getBoundingClientRect();
+
+startLeft = rect.left;
+startTop = rect.top;
+
+document.addEventListener("pointermove",dragMove);
+document.addEventListener("pointerup",stopDrag);
+
+});
+});
+function dragMove(e){
+
+if(!isDragging) return;
+
+let newLeft =
+startLeft + (e.clientX - startX);
+
+let newTop =
+startTop + (e.clientY - startY);
+
+/* screen limit */
+
+newLeft = Math.max(
+0,
+Math.min(window.innerWidth - popup.offsetWidth,newLeft)
+);
+
+newTop = Math.max(
+-500,
+Math.min(window.innerHeight - popup.offsetHeight,newTop)
+);
+
+popup.style.left = newLeft + "px";
+popup.style.top = newTop + "px";
 
 }
 
+function stopDrag(){
+
+isDragging = false;
+
+document.removeEventListener("pointermove",dragMove);
+document.removeEventListener("pointerup",stopDrag);
+
 }
 
+/* ===== RESIZE SYSTEM ===== */
+
+let isResizing = false;
+
+let startWidth,startHeight;
+
+resizeBtn.addEventListener("pointerdown",e=>{
+
+e.stopPropagation();
+
+isResizing = true;
+
+startX = e.clientX;
+startY = e.clientY;
+
+startWidth = popup.offsetWidth;
+startHeight = popup.offsetHeight;
+
+document.addEventListener("pointermove",resizeMove);
+document.addEventListener("pointerup",stopResize);
+
+});
+
+function resizeMove(e){
+
+if(!isResizing) return;
+
+let width =
+startWidth + (e.clientX - startX);
+
+let height =
+startHeight + (e.clientY - startY);
+
+/* MIN MAX */
+
+width = Math.max(320,Math.min(window.innerWidth-10,width));
+
+height = Math.max(300,Math.min(window.innerHeight-10,height));
+
+popup.style.width = width + "px";
+popup.style.height = height + "px";
+
+}
+
+function stopResize(){
+
+isResizing = false;
+
+document.removeEventListener("pointermove",resizeMove);
+document.removeEventListener("pointerup",stopResize);
+
+}
 
 </script>
 </body>  
