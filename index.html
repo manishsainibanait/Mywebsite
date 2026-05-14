@@ -560,6 +560,17 @@ text-align:center;
 background:#f2f2f2;
 font-weight:bold;
 }
+/* ✅ Ledger buttons full visible */
+.ledger-btn-wrap{
+  flex-wrap:wrap !important;
+}
+
+.ledger-btn-wrap .btn{
+  flex:1 1 30% !important;
+  min-width:95px !important;
+  font-size:13px !important;
+  padding:8px 6px !important;
+}
 </style>  </head>  <body>  <div id="loginScreen" style="  
     width:100%; max-width:400px; margin:40px auto;  
     background:white; padding:25px; border-radius:15px;  
@@ -669,7 +680,7 @@ oninput="toggleSummary()">
   </div>  
 </div>  
 
-<div class="d-flex gap-2 mb-3">  
+<div class="d-flex gap-2 mb-3 ledger-btn-wrap">
 <button class="btn btn-danger flex-fill hide-duplicate" onclick="deleteSelectedCustomers()">  
     🗑 चुने हुए हटाएं  
   </button>  
@@ -794,8 +805,7 @@ onclick="document.getElementById('excelUpload').click()">
     </div>
 </div>
 
-<div class="d-flex gap-2 mb-3">  
-
+<div class="d-flex gap-2 mb-3 ledger-btn-wrap">
 <button class="btn btn-primary flex-fill" onclick="openTransactionPopup()">+ लेन-देन</button>  
 
 <button class="btn btn-success flex-fill" onclick="openFasalPopup()">🌾 फसल जोड़ें</button>  
@@ -803,6 +813,10 @@ onclick="document.getElementById('excelUpload').click()">
 <button class="btn btn-warning flex-fill" onclick="openFasalManager()">🌾 फसल लिस्ट</button>  
 
 <button class="btn btn-secondary flex-fill" onclick="printLedger()">🖨 प्रिंट</button>
+<button class="btn btn-info flex-fill"
+onclick="openCombinedLedgerView()">
+🏦 Combined
+</button>
 <button class="btn btn-danger flex-fill"
 onclick="closeHisab()">
 🔒 हिसाब Close
@@ -838,7 +852,7 @@ onclick="closeHisab()">
 
 <div class="header">
 🏦 Bank + Kharch Combined
-<button class="back-3d-btn" onclick="backToList()">🔙</button>
+<button class="back-3d-btn" onclick="backToLedgerFromCombined()">🔙</button>
 </div>
 
 <div class="card-body">
@@ -3353,9 +3367,21 @@ document.getElementById("combFrom")
 .addEventListener("input",
 renderCombinedLedgerView);
 
-document.getElementById("combTo")
-.addEventListener("input",
-renderCombinedLedgerView);
+
+
+function backToLedgerFromCombined(){
+
+  document.getElementById("combinedViewCard").style.display = "none";
+
+  customerListCard.style.display = "none";
+  addCustomerCard.style.display = "none";
+  advancedReportCard.style.display = "none";
+
+  ledgerCard.style.display = "block";
+
+}
+
+
 </script>
 </body>  
 </html>
