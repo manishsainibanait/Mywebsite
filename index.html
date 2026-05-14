@@ -637,7 +637,8 @@ placeholder="फेवरेट नाम लिखें">
 <li>
 <a class="dropdown-item fw-bold text-primary"
 href="#"
-onclick="openCombinedLedgerView()">
+onclick="openCombinedLedgerView('menu')"
+>
 🏦 Bank + Kharch Combined View
 </a>
 </li>
@@ -814,7 +815,7 @@ onclick="document.getElementById('excelUpload').click()">
 
 <button class="btn btn-secondary flex-fill" onclick="printLedger()">🖨 प्रिंट</button>
 <button class="btn btn-info flex-fill"
-onclick="openCombinedLedgerView()">
+onclick="openCombinedLedgerView('ledger')">
 🏦 Combined
 </button>
 <button class="btn btn-danger flex-fill"
@@ -3135,7 +3136,10 @@ function updateLiveInterest(){
   calcInterest();
 
 }
-function openCombinedLedgerView(){
+function openCombinedLedgerView(source = "menu"){
+
+// source save
+window.combinedOpenSource = source;
 
 customerListCard.style.display="none";
 addCustomerCard.style.display="none";
@@ -3371,13 +3375,23 @@ renderCombinedLedgerView);
 
 function backToLedgerFromCombined(){
 
-  document.getElementById("combinedViewCard").style.display = "none";
+document.getElementById("combinedViewCard").style.display = "none";
 
-  customerListCard.style.display = "none";
-  addCustomerCard.style.display = "none";
-  advancedReportCard.style.display = "none";
+customerListCard.style.display = "none";
+addCustomerCard.style.display = "none";
+ledgerCard.style.display = "none";
+advancedReportCard.style.display = "none";
 
-  ledgerCard.style.display = "block";
+// 🔥 where opened from
+if(window.combinedOpenSource === "ledger"){
+
+ledgerCard.style.display = "block";
+
+}else{
+
+customerListCard.style.display = "block";
+
+}
 
 }
 
