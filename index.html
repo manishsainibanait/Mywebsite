@@ -608,11 +608,24 @@ touch-action:none;
 animation:combinedPopup .25s ease;
 }
 #combinedViewCard .card-body{
+height:calc(85vh - 70px);
+display:flex;
+flex-direction:column;
+overflow:hidden;
+padding:10px;
+}
+#combinedViewCard .table-responsive{
 flex:1;
-overflow-y:auto;
-overflow-x:hidden;
-padding-bottom:120px;
+height:100%;
 min-height:0;
+overflow-y:auto !important;
+overflow-x:auto !important;
+-webkit-overflow-scrolling:touch;
+}
+
+.comb-view-table td{
+white-space:normal !important;
+word-break:break-word;
 }
 @keyframes combinedPopup{
 
@@ -938,7 +951,7 @@ placeholder="नाम से खोजें...">
 
 <div id="combSummaryArea"></div>
 
-<div class="table-responsive" style="max-height:50vh;">
+<div class="table-responsive">
 
 <table class="comb-view-table">
 
