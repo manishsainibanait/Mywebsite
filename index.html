@@ -640,6 +640,26 @@ transform:translate(-50%,-50%) scale(1);
 }
 
 }
+/* ✅ FINAL PRINT PREVIEW TOP FIX */
+#printPreviewBox{
+  display:none;
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  background:#fff !important;
+  z-index:2147483647 !important;
+  overflow:auto !important;
+}
+
+#printPreviewBox *{
+  position:relative;
+  z-index:2147483647 !important;
+}
+
+#combinedViewCard{
+  z-index:9999 !important;
+}
 </style>  </head>  <body>  <div id="loginScreen" style="  
     width:100%; max-width:400px; margin:40px auto;  
     background:white; padding:25px; border-radius:15px;  
@@ -2796,6 +2816,7 @@ pc.style.width = (100 / defaultZoom) + "%";
   
 function closePrintPreview(){  
   document.getElementById("printPreviewBox").style.display = "none";  
+
 }  
 
 /* ✅ UPDATED ZOOM HANDLER (RESPONSIVE FIX) */
@@ -2953,40 +2974,65 @@ function renderReport(data, sort){
   });
 
 }
-</script>  <div id="printPreviewBox" style="  
-display:none;  
-position:fixed;  
-top:0;left:0;width:100%;height:100%;  
-background:white;  
-z-index:999999;  
-">    <div style="  
-    display:flex;  
-    align-items:center;  
-    justify-content:space-between;  
-    padding:10px;  
-    background:#1976d2;  
-    color:white;  
-    position: sticky;
-    top: 0;
-    z-index: 1000000;
-  ">  
-    <button onclick="closePrintPreview()" style="  
-      background:red;color:white;  
-      border:none;padding:8px 12px;border-radius:6px;">  
-      Cancel  
-    </button>  <div>  
-  Zoom:  
-  <input type="range" id="zoomRange" min="0.1" max="2" step="0.1"  
-         value="1" oninput="setZoom(this.value)">  
-</div>  
+</script>  <div id="printPreviewBox" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#fff;
+z-index:2147483647;
+overflow:auto;
+">
 
-<button onclick="finalPrint()" style="  
-  background:green;color:white;  
-  border:none;padding:8px 12px;border-radius:6px;">  
-  Print Now  
+<div style="
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:10px;
+background:#1976d2;
+color:white;
+position:sticky;
+top:0;
+z-index:1000000;
+">
+
+<button onclick="closePrintPreview()" style="
+background:red;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:6px;
+">
+Cancel
 </button>
 
-  </div>    <div id="printContent"></div>   
+<div>
+Zoom:
+<input type="range"
+id="zoomRange"
+min="0.1"
+max="2"
+step="0.1"
+value="1"
+oninput="setZoom(this.value)">
+</div>
+
+<button onclick="finalPrint()" style="
+background:green;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:6px;
+">
+Print Now
+</button>
+
+</div>
+
+<div id="printContent"></div>
+
 </div>
  <script>
 
@@ -3221,7 +3267,9 @@ combinedCard.style.display = "block";
 
 
 document.body.style.overflow = "hidden";
-
+document.getElementById("combSearch").value = "";
+document.getElementById("combFrom").value = "";
+document.getElementById("combTo").value = "";
 loadCombinedLedgerData();
 
 }
@@ -3231,9 +3279,11 @@ function backToLedgerFromCombined(){
 document.getElementById(
 "combinedViewCard"
 ).style.display = "none";
-
+document.getElementById("printPreviewBox").style.display = "none";
 document.body.style.overflow = "auto";
-
+document.getElementById("combSearch").value = "";
+document.getElementById("combTableBody").innerHTML = "";
+document.getElementById("combSummaryArea").innerHTML = "";
 if(window.combinedMode === "ledger"){
 
 ledgerCard.style.display = "block";
@@ -3318,8 +3368,12 @@ refreshCombined();
 
 function renderCombinedLedgerView(){
 
-const q = document.getElementById("combSearch")
+const q =
+document.getElementById("combSearch")
 .value.toLowerCase().trim();
+
+const searchText =
+q.replace(/\s+/g," ").trim();
 
 const from =
 document.getElementById("combFrom").value;
@@ -3333,6 +3387,10 @@ document.getElementById("combTableBody");
 const summaryArea =
 document.getElementById("combSummaryArea");
 
+/* ✅ RESET OLD DATA */
+tbody.innerHTML = "";
+summaryArea.innerHTML = "";
+
 let html = "";
 
 let bCr=0,bDb=0,kCr=0,kDb=0;
@@ -3341,13 +3399,22 @@ bankDataMaster.forEach(e=>{
 
 let dt = e.date || "";
 
-if((from && dt < from) ||
-(to && dt > to)) return;
+if(
+(from && dt < from) ||
+(to && dt > to)
+) return;
 
-let desc =
-(e.desc || "").toLowerCase();
+/* ✅ FULL SEARCH */
+let fullText =
+JSON.stringify(e)
+.toLowerCase()
+.replace(/\s+/g," ")
+.trim();
 
-if(q==="" || desc.includes(q)){
+if(
+searchText === "" ||
+fullText.includes(searchText)
+){
 
 if(e.type==="Bank"){
 
@@ -3371,7 +3438,7 @@ ${e.date
 </td>
 
 <td class="text-start fw-bold">
-${e.desc || "-"}
+${e.desc || e.name || "-"}
 </td>
 
 <td>${e.type}</td>
@@ -3391,9 +3458,20 @@ ${e.debit || '-'}
 
 });
 
-tbody.innerHTML = html;
+/* ✅ TABLE UPDATE */
+tbody.innerHTML = html || `
+<tr>
+<td colspan="5"
+style="padding:20px;
+font-weight:bold;
+color:red">
+❌ कोई रिकॉर्ड नहीं मिला
+</td>
+</tr>
+`;
 
-if(q!==""){
+/* ✅ SUMMARY */
+if(searchText !== ""){
 
 summaryArea.innerHTML = `
 
@@ -3425,17 +3503,12 @@ Net Balance:
 </div>
 `;
 
-}else{
-
-summaryArea.innerHTML = "";
-
 }
 
 }
-
 function printCombinedLedgerView(){
 
-let html=`
+let html = `
 
 <h2 class="text-center">
 Saini Trading Company
@@ -3447,16 +3520,13 @@ Combined Bank & Kharch Report
 
 ${document.getElementById("combSummaryArea").innerHTML}
 
-<table class="comb-view-table" border="1">
+${document.querySelector(".comb-view-table").outerHTML}
 
-${document.querySelector(".comb-view-table").innerHTML}
-
-</table>
 `;
 
 openPrintPreviewManual(html);
-}
 
+}
 document.getElementById("combSearch")
 .addEventListener("input",
 renderCombinedLedgerView);
@@ -3487,6 +3557,8 @@ border-radius:20px;
 background:#999;
 z-index:999999;
 cursor:grab;
+touch-action:none;
+pointer-events:auto;
 `;
 
 popup.appendChild(dragBar);
@@ -3494,8 +3566,8 @@ resizeBtn.innerHTML = "↘";
 
 resizeBtn.style.cssText = `
 position:absolute;
-right:10px;
-bottom:10px;
+right:20px;
+bottom:25px;
 width:42px;
 height:42px;
 border-radius:50%;
@@ -3507,11 +3579,12 @@ justify-content:center;
 font-size:22px;
 font-weight:bold;
 z-index:999999;
-cursor:nwse-resize;
 touch-action:none;
+user-select:none;
+-webkit-user-select:none;
+cursor:nwse-resize;
 box-shadow:0 4px 12px rgba(0,0,0,.35);
 `;
-
 popup.appendChild(resizeBtn);
 
 /* ===== DRAG SYSTEM ===== */
@@ -3525,6 +3598,8 @@ let startLeft,startTop;
 
 el.addEventListener("pointerdown",e=>{
 
+e.preventDefault();
+
 isDragging = true;
 
 popup.style.transform = "none";
@@ -3537,10 +3612,20 @@ const rect = popup.getBoundingClientRect();
 startLeft = rect.left;
 startTop = rect.top;
 
-document.addEventListener("pointermove",dragMove);
-document.addEventListener("pointerup",stopDrag);
+document.addEventListener(
+"pointermove",
+dragMove,
+{ passive:false }
+);
+
+document.addEventListener(
+"pointerup",
+stopDrag,
+{ once:true }
+);
 
 });
+
 });
 function dragMove(e){
 
@@ -3630,7 +3715,26 @@ document.removeEventListener("pointermove",resizeMove);
 document.removeEventListener("pointerup",stopResize);
 
 }
+// ✅ COMBINED DOUBLE TAP CLOSE
 
+let lastCombinedTap = 0;
+
+document.getElementById("combinedViewCard")
+.addEventListener("touchend", function(e){
+
+let now = new Date().getTime();
+
+if(now - lastCombinedTap < 300){
+
+e.preventDefault();
+
+backToLedgerFromCombined();
+
+}
+
+lastCombinedTap = now;
+
+}, false);
 </script>
 </body>  
 </html>
