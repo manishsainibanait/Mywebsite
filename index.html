@@ -3,7 +3,7 @@
 <meta charset="UTF-8">  
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 <title>सैनी ट्रेडिंग कंपनी</title>  <link rel="manifest" href="manifest.json">  
-<meta name="theme-color" content="#0d6efd">  <script>  
+<meta name="theme-color" content="#1e3a8a">  <script>  
 if ('serviceWorker' in navigator) {  
   window.addEventListener('load', ()=> {  
     navigator.serviceWorker.register('service-worker.js');  
@@ -11,8 +11,74 @@ if ('serviceWorker' in navigator) {
 }  
 </script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">  
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">  <style>  
+/* ===== PREMIUM MODERN CORE STYLES ===== */  
+body { 
+    background: #f1f5f9; 
+    padding: 20px; 
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif; 
+    color: #334155;
+}  
+
+.card { 
+    border: none;
+    border-radius: 16px; 
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); 
+    margin-bottom: 25px; 
+    background: #ffffff;
+    overflow: hidden;
+}  
+
+.header {  
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);  
+    color: white;  
+    text-align: center;  
+    padding: 16px;  
+    font-weight: 700;  
+    font-size: 1.35rem;  
+    position: relative;  
+    letter-spacing: 0.5px;
+    box-shadow: inset 0 -3px 0px rgba(0,0,0,0.1);
+}  
+
+.sub-header { 
+    background: linear-gradient(135deg, #f59e0b, #d97706); 
+    color: white;
+    padding: 8px; 
+    text-align: center;  
+    font-weight: 600; 
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+}  
+
+.btn { 
+    border-radius: 10px; 
+    font-weight: 600; 
+    padding: 10px 16px;
+    transition: all 0.2s ease;
+}  
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* Form inputs & select premium styling */
+.form-control, .form-select {
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-weight: 500;
+    color: #1e293b;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
 /* ===== ADVANCED REPORT FONT BIG + BOLD ===== */  
-  
 #advancedReportCard table {  
   font-size: 14px !important;  
 }  
@@ -29,7 +95,7 @@ if ('serviceWorker' in navigator) {
 /* नाम bold */  
 #advancedReportCard td:nth-child(2){  
   font-weight: 700 !important;  
-  color: #0d47a1;  
+  color: #1e3a8a;  
 }  
   
 /* पैसे bold */  
@@ -37,170 +103,158 @@ if ('serviceWorker' in navigator) {
 #advancedReportCard td:nth-child(5){  
   font-weight: 800 !important;  
 }  
+
 /* ===== PROFESSIONAL COLOURFUL SEARCH + FILTER ===== */  
-  
-/* 🔵 नाम से खोजें */  
-#searchBox{  
-  border:2px solid #60a5fa;  
-  border-radius:10px;  
-  padding:10px;  
-  font-weight:600;  
-  background:#f0f7ff;  
+#searchBox {  
+  border: 2px solid #93c5fd;  
+  border-radius: 12px;  
+  padding: 12px;  
+  font-weight: 600;  
+  background: #f0f7ff;  
 }  
-#searchBox:focus{  
-  outline:none;  
-  border-color:#2563eb;  
-  box-shadow:0 0 0 3px rgba(37,99,235,.25);  
-  background:white;  
+#searchBox:focus {  
+  border-color: #2563eb;  
+  background: white;  
 }  
   
-/* 🟡 गाँव filter */  
-#villageFilter{  
-  border:2px solid #facc15;  
-  border-radius:10px;  
-  padding:10px;  
-  font-weight:600;  
-  background:#fffbea;  
+#villageFilter {  
+  border: 2px solid #fde047;  
+  border-radius: 12px;  
+  padding: 12px;  
+  font-weight: 600;  
+  background: #ffffec;  
 }  
-#villageFilter:focus{  
-  outline:none;  
-  border-color:#eab308;  
-  box-shadow:0 0 0 3px rgba(234,179,8,.25);  
-  background:white;  
+#villageFilter:focus {  
+  border-color: #ca8a04;  
+  background: white;  
 }  
   
 /* ===== TABLE PROFESSIONAL LOOK ===== */  
-thead th{  
-  background:linear-gradient(180deg,#eaf2ff,#dbeafe);  
-  color:#1e3a8a;  
-  font-weight:700;  
-  position:sticky;  
-  top:0;  
-  z-index:20;  
+.table {
+    margin-bottom: 0 !important;
+}
+
+thead th {  
+  background: linear-gradient(180deg, #f8fafc, #e2e8f0) !important;  
+  color: #1e3a8a !important;  
+  font-weight: 700 !important;  
+  position: sticky;  
+  top: 0;  
+  z-index: 20;  
+  border-bottom: 2px solid #cbd5e1 !important;
+  padding: 12px 8px !important;
 }  
-/* GLOBAL */  
-body { background:#f8fafc; padding:20px; font-family:'Poppins',sans-serif; }  
-.card { border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.12); margin-bottom:20px; }  
-.header {  
-    background:#0d6efd;  
-    color:white;  
-    text-align:center;  
-    padding:12px;  
-    border-radius:15px 15px 0 0;  
-    font-weight:600;  
-    font-size:1.2rem;  
-    position: relative;  
-}  
-.sub-header { background:#ffc107; padding:6px; text-align:center;  
-              font-weight:600; border-radius:0 0 15px 15px; }  
-.btn { border-radius:8px; font-weight:600; }  
-table { font-size:0.9rem; }  
-  
+
+#customerTableMain td {
+    padding: 12px 8px !important;
+    font-weight: 500;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
+}
+
 /* 🌾 फसल Display बॉक्स */  
 .fasal-note-box {  
-    background:#fff8d6; padding:12px; border-radius:10px;  
-    border-left:6px solid #f4c542; line-height:1.4;  
-    white-space:pre-line; font-size:14px;  
+    background: #fef9c3; padding: 14px; border-radius: 12px;  
+    border-left: 6px solid #eab308; line-height: 1.5;  
+    white-space: pre-line; font-size: 14px;  
+    color: #713f12;
 }  
   
-/* 🌾 Multi-Fasal Collapsible	UI */  
+/* 🌾 Multi-Fasal Collapsible UI */  
 .fasal-box {  
-    background:#fff8d6; border:2px solid #f4c542;  
-    padding:12px; border-radius:12px; margin-top:6px;  
-    white-space:pre-line;  
+    background: #fef9c3; border: 1.5px solid #fef08a;  
+    padding: 14px; border-radius: 14px; margin-top: 10px;  
+    white-space: pre-line;  
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }  
 .fasal-head {  
-    background:#ffe8a3; padding:6px 10px; border-radius:6px;  
-    cursor:pointer; font-weight:600;  
+    background: #fef08a; padding: 8px 14px; border-radius: 8px;  
+    cursor: pointer; font-weight: 700;  
+    color: #713f12;
 }  
-.fasal-detail { display:none; }  
+.fasal-detail { display: none; }  
+
 /* === 3D METAL BLUE BACK BUTTON === */  
 .back-3d-btn {  
     position: absolute;  
     top: 50%;  
-    right: 12px;  
-  
+    right: 14px;  
     transform: translateY(-50%);  
-z-index: 999999 !important;  
-pointer-events: auto !important;  
+    z-index: 999999 !important;  
+    pointer-events: auto !important;  
     padding: 10px 22px;  
     border-radius: 40px;  
-  
-    background: linear-gradient(145deg, #6eb0ff, #2b7cff);  
-    border: 4px solid #dcdcdc;  
-  
+    background: linear-gradient(145deg, #3b82f6, #1d4ed8);  
+    border: 3px solid #f8fafc;  
     box-shadow:  
-        inset 0 4px 7px rgba(255,255,255,0.9),  
-        inset 0 -4px 7px rgba(0,0,0,0.25),  
-        0 6px 14px rgba(0,0,0,0.35),  
-        0 0 6px rgba(255,255,255,0.8);  
-  
+        inset 0 4px 6px rgba(255,255,255,0.4),  
+        inset 0 -4px 6px rgba(0,0,0,0.15),  
+        0 4px 10px rgba(0,0,0,0.2);  
     display: flex;  
     align-items: center;  
     justify-content: center;  
-  
     color: white;  
-    font-size: 22px;  
+    font-size: 20px;  
     font-weight: 700;  
-  
-    height: 45px;  
-    width: 85px;  
-  
+    height: 42px;  
+    width: 80px;  
     cursor: pointer;  
-    transition: 0.2s ease;  
+    transition: all 0.2s ease;  
 }  
   
 .back-3d-btn:active {  
-    transform: translateY(-50%) scale(0.96);  
+    transform: translateY(-50%) scale(0.94);  
 }  
+
 /* Customer table freeze columns */  
 th.check-col, td.check-col {  
-    position:sticky; left:0; background:white; z-index:30;  
+    position: sticky; left: 0; background: white !important; z-index: 30;  
 }  
-th.name-col{  
-    position:sticky;  
-    left:35px;  
-    background:linear-gradient(180deg,#eaf2ff,#dbeafe);  
-    color:#1e3a8a;  
-    z-index:31;  
+th.name-col {  
+    position: sticky;  
+    left: 35px;  
+    background: linear-gradient(180deg, #f8fafc, #e2e8f0) !important;  
+    color: #1e3a8a;  
+    z-index: 31;  
 }  
   
-td.name-col{  
-    position:sticky;  
-    left:35px;  
-    background:white;  
-    z-index:29;  
-    white-space:normal; line-height:1.1;  
-    min-width:95px; max-width:95px;  
+td.name-col {  
+    position: sticky;  
+    left: 35px;  
+    background: white !important;  
+    z-index: 29;  
+    white-space: normal; line-height: 1.2;  
+    min-width: 95px; max-width: 95px;  
 }  
 th.reg-col, td.reg-col {  
-    width:55px !important; text-align:center; font-weight:bold;  
+    width: 55px !important; text-align: center; font-weight: bold;  
 }  
   
-/* Popup */  
-#popupOverlay, #fasalPopupOverlay, #villagePopup, #changePassPopup, #accountPopupOverlay {  
-    position:fixed; top:0; left:0; width:100%; height:100%;  
-    background:rgba(0,0,0,0.5); display:none;  
-    justify-content:center; align-items:center; z-index:3000;  
+/* Popup Overlay Styling Modernized */  
+#popupOverlay, #fasalPopupOverlay, #villagePopup, #changePassPopup, #accountPopupOverlay, #transactionPopupOverlay {  
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;  
+    background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);  
+    display: none; justify-content: center; align-items: center; z-index: 3000;  
 }  
-#popupBox {  
-    background:white; padding:20px; border-radius:12px;  
-    width:90%; max-width:420px;  
+#popupBox, #villagePopupBox, #fasalPopupBox {  
+    background: #ffffff; padding: 24px; border-radius: 18px;  
+    width: 90%; max-width: 420px;  
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid #e2e8f0;
 }  
 
 /* ✅ UPDATED PRINT UI FIXES */
 #printPreviewBox {
-  overflow: auto !important; /* Main box will scroll, not the table */
+  overflow: auto !important; 
 }
 
 #printContent {
   width: 100%;
   transform-origin: top left;
-  overflow: visible !important; /* Force content to show fully */
+  overflow: visible !important;  
   height: auto !important;
 }
 
-/* Force table to behave inside preview */
 #printContent .table-responsive {
   overflow: visible !important;
   max-height: none !important;
@@ -210,7 +264,7 @@ th.reg-col, td.reg-col {
 
 #printContent table {
   width: 100% !important;
-  margin-bottom: 50px; /* Space at bottom */
+  margin-bottom: 50px; 
 }
 
 /* ✅ UPDATED STRICT PRINT SYSTEM CSS */  
@@ -241,7 +295,7 @@ th.reg-col, td.reg-col {
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
-    transform: scale(1) !important; /* Reset zoom for actual paper */
+    transform: scale(1) !important; 
     overflow: visible !important;
     height: auto !important;
   }  
@@ -269,7 +323,7 @@ th.reg-col, td.reg-col {
   th.check-col, td.check-col, th.name-col, td.name-col, .action-col {  
     position: static !important;  
     background: white !important;  
-    display: none !important; /* Hide UI columns in print */
+    display: none !important; 
   }  
   .print-title {  
     text-align: center;  
@@ -282,7 +336,7 @@ th.reg-col, td.reg-col {
 }  
   
 .hide-duplicate{  
-  display:none !important;  
+  display: none !important;  
 }  
 /* ☰ MENU click fix */  
 .dropdown{  
@@ -290,86 +344,86 @@ th.reg-col, td.reg-col {
   z-index: 9999;  
 }  
 #searchBox::placeholder{  
-  color:#374151;  
+  color: #64748b;  
 }  
 #customerTable tr:hover{  
-  background:#f1f5ff;  
+  background: #f8fafc;  
 }  
 #villageFilter option{  
-  font-weight:600;  
+  font-weight: 600;  
 }  
 .customer-count-card{  
-  display:flex;  
-  align-items:center;  
-  gap:14px;  
-  margin:12px;  
-  padding:14px 18px;  
-  background:linear-gradient(135deg,#e0f2ff,#f8fbff);  
-  border-radius:14px;  
-  box-shadow:0 4px 12px rgba(0,0,0,0.15);  
-  border-left:6px solid #0d6efd;  
+  display: flex;  
+  align-items: center;  
+  gap: 14px;  
+  margin: 12px;  
+  padding: 14px 18px;  
+  background: linear-gradient(135deg, #e0f2ff, #f8fbff);  
+  border-radius: 14px;  
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);  
+  border-left: 6px solid #0d6efd;  
 }  
   
 .cc-icon{  
-  width:46px;  
-  height:46px;  
-  border-radius:50%;  
-  background:#0d6efd;  
-  display:flex;  
-  align-items:center;  
-  justify-content:center;  
-  font-size:22px;  
-  color:white;  
+  width: 46px;  
+  height: 46px;  
+  border-radius: 50%;  
+  background: #0d6efd;  
+  display: flex;  
+  align-items: center;  
+  justify-content: center;  
+  font-size: 22px;  
+  color: white;  
 }  
   
 .cc-label{  
-  font-size:14px;  
-  color:#1e3a8a;  
-  font-weight:600;  
+  font-size: 14px;  
+  color: #1e3a8a;  
+  font-weight: 600;  
 }  
   
 .cc-number{  
-  font-size:22px;  
-  font-weight:800;  
-  color:#0d6efd;  
+  font-size: 22px;  
+  font-weight: 800;  
+  color: #0d6efd;  
 }  
 .count-header{  
-  background:#eaf2ff;  
-  color:#1e3a8a;  
-  font-weight:700;  
-  text-align:center;  
-  padding:8px;  
-  border-bottom:2px solid #0d6efd;  
-  font-size:15px;  
+  background: #eaf2ff;  
+  color: #1e3a8a;  
+  font-weight: 700;  
+  text-align: center;  
+  padding: 8px;  
+  border-bottom: 2px solid #0d6efd;  
+  font-size: 15px;  
 }  
 .count-sub{  
-  background:#f1f5ff;  
-  color:#1e3a8a;  
-  font-size:14px;  
-  font-weight:600;  
-  border-top:1px solid #dbeafe;  
+  background: #f1f5ff;  
+  color: #1e3a8a;  
+  font-size: 14px;  
+  font-weight: 600;  
+  border-top: 1px solid #dbeafe;  
 }  
 /* ===== PROFESSIONAL MENU BUTTON ===== */  
 .menu-btn{  
-  background: linear-gradient(135deg,#1e88e5,#0d47a1);  
-  color:white;  
-  border:none;  
-  border-radius:12px;  
-  padding:8px 14px;  
-  font-weight:700;  
-  display:flex;  
-  align-items:center;  
-  gap:6px;  
-  box-shadow:0 3px 8px rgba(0,0,0,0.25);  
+  background: linear-gradient(135deg, #2563eb, #1e3a8a);  
+  color: white;  
+  border: none;  
+  border-radius: 12px;  
+  padding: 10px 18px;  
+  font-weight: 700;  
+  display: flex;  
+  align-items: center;  
+  gap: 8px;  
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);  
 }  
   
 .menu-btn:focus,  
 .menu-btn:active{  
-  box-shadow:0 0 0 3px rgba(30,136,229,.35);  
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);  
 }  
   
 .menu-btn i{  
-  font-size:18px;  
+  font-size: 18px;  
 }  
 /* ❌ Popup ke andar main menu hide */  
 #villagePopup .main-menu {  
@@ -395,47 +449,47 @@ th.reg-col, td.reg-col {
 /* ===== COMPACT FULL SCREEN REPORT ===== */  
   
 #advancedReportCard{  
-  height:100% !important;  
-  overflow:auto !important;  
+  height: 100% !important;  
+  overflow: auto !important;  
 }  
   
 #advancedReportCard .card-body{  
-  padding:8px !important;  
+  padding: 12px !important;  
 }  
   
 #advancedReportCard input,  
 #advancedReportCard select{  
-  padding:6px !important;  
-  font-size:12px !important;  
+  padding: 8px !important;  
+  font-size: 13px !important;  
 }  
   
 #advancedReportCard button{  
-  padding:6px !important;  
-  font-size:13px !important;  
+  padding: 10px !important;  
+  font-size: 14px !important;  
 }  
   
 #advancedReportCard table{  
-  font-size:14px !important;  
+  font-size: 14px !important;  
 }  
   
 #advancedReportCard th,  
 #advancedReportCard td{  
-  padding:4px !important;  
+  padding: 8px !important;  
 }  
   
 #advancedReportCard .header{  
-  padding:8px !important;  
-  font-size:16px !important;  
+  padding: 12px !important;  
+  font-size: 1.2rem !important;  
 }  
   
 #advancedReportCard .table-responsive{  
-  height:60vh !important;  
-  overflow-y:auto !important;  
+  height: 65vh !important;  
+  overflow-y: auto !important;  
 }  
   
 /* ===== FULL SCREEN ADVANCED REPORT ===== */  
 #advancedReportCard{  
- position: static !important;  
+  position: fixed !important;  
   top: 0;  
   left: 0;  
   width: 100%;  
@@ -453,49 +507,37 @@ th.reg-col, td.reg-col {
   top: 0;  
   z-index: 1000;  
 }  
-  
-/* table full visible */  
-#advancedReportCard .table-responsive{  
-  height:60vh !important;  
-  overflow-y:auto !important;  
-}  
-/* ===== FULL SCREEN ADVANCED REPORT ===== */  
-#advancedReportCard{  
-  position: fixed !important;  
-  top: 0;  
-  left: 0;  
-  width: 100%;  
-}  
+
 #ledgerCard .table-responsive{
-  max-height: 70vh !important;
+  max-height: 68vh !important;
   overflow-y: auto !important;
   overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
 }
 #ledgerTableMain td{
-  padding: 8px !important;
-  font-size: 15px !important;
+  padding: 10px !important;
+  font-size: 14px !important;
   line-height: 1.4 !important;
   font-weight: 600 !important;
 }
 
 #ledgerTableMain th{
-  padding: 8px !important;
-  font-size: 16px !important;
+  padding: 12px 10px !important;
+  font-size: 15px !important;
   line-height: 1.4 !important;
   font-weight: 800 !important;
 }
 
-table{
-  margin-bottom:0 !important;
-}
 #ledgerCard thead th{
   position: sticky;
   top: 0;
   z-index: 50;
-  background: #ffe082 !important;
+  background: linear-gradient(180deg, #fef08a, #fde047) !important;
+  color: #713f12 !important;
+  border-bottom: 2px solid #eab308 !important;
 }
 
 #ledgerCard{
@@ -506,214 +548,228 @@ table{
 #ledgerCard .card-body{
   overflow: visible;
   height: auto;
+  padding: 16px;
 }
-  #accountPopupOverlay{
-  z-index:999999 !important;
+#accountPopupOverlay{
+  z-index: 999999 !important;
 }
 
 #accountPopupOverlay #popupBox{
-  display:block !important;
-  visibility:visible !important;
+  display: block !important;
+  visibility: visible !important;
 }
 
 #newAccountDate{
-  display:block !important;
-  visibility:visible !important;
-  opacity:1 !important;
-  position:relative !important;
-  z-index:999999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 999999 !important;
 }
-/* ===== NEW BANK COMBINED UNIQUE CSS ===== */
+
+/* ===== HIGHLY COMPACT VIEW SYSTEM FOR VERTICAL SPACE SAVE ===== */
 .comb-view-summary{
-background:#fff;
-border:2px solid #512da8;
-border-radius:12px;
-padding:15px;
-margin-bottom:15px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
+background: #ffffff;
+border: 2px solid #6366f1;
+border-radius: 14px;
+padding: 6px 12px !important; 
+margin-bottom: 6px !important;
+box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
 }
 
 .comb-view-row{
-display:flex;
-justify-content:space-between;
-margin-bottom:5px;
-font-size:14px;
+display: flex;
+justify-content: space-between;
+margin-bottom: 3px;
+font-size: 13px;
+font-weight: 600;
 }
 
 .comb-view-table{
-width:100%;
-border-collapse:collapse;
-font-size:13px;
-table-layout:fixed;
-word-break:break-word;
+width: 100%;
+border-collapse: collapse;
+font-size: 13px;
+table-layout: fixed;
+word-break: break-word;
 }
 
 .comb-view-table th,
 .comb-view-table td{
-padding:8px 4px;
-border:1px solid #ddd;
-text-align:center;
+padding: 6px 4px !important; 
+border: 1px solid #e2e8f0;
+text-align: center;
+font-size: 13px !important;
+line-height: 1.25 !important;
 }
 
 .comb-view-table th{
-background:#f2f2f2;
-font-weight:bold;
+background: #f1f5f9;
+font-weight: 700;
+color: #1e293b;
+padding: 8px 4px !important;
 }
+
+#combinedViewCard .form-control, #combinedViewCard .form-select,
+#mandiAppProViewCard .form-control, #mandiAppProViewCard .form-select {
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    margin-bottom: 6px !important;
+}
+
 /* ✅ Ledger buttons full visible */
 .ledger-btn-wrap{
-  flex-wrap:wrap !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
 }
 
 .ledger-btn-wrap .btn{
-  flex:1 1 30% !important;
-  min-width:95px !important;
-  font-size:13px !important;
-  padding:8px 6px !important;
+  flex: 1 1 22% !important;
+  min-width: 90px !important;
+  font-size: 13px !important;
+  padding: 10px 6px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
+
 #combinedViewCard{
-position:fixed !important;
-
-top:
-40%;
-left:50%;
-
-transform:translate(-50%,-50%);
-
-width:95%;
-max-width:700px;
-
-height:85vh;
-
-min-width:320px;
-min-height:300px;
-
-max-width:98vw;
-max-height:95vh;
-
-overflow:hidden;
-
-background:#fff;
-
-border-radius:25px;
-
-box-shadow:0 10px 35px rgba(0,0,0,.45);
-
-z-index:999999;
-
-display:none;
-
-touch-action:none;
-
-animation:combinedPopup .25s ease;
+position: fixed !important;
+width: 95%;
+max-width: 700px;
+height: 85vh;
+min-width: 320px;
+min-height: 300px;
+max-width: 98vw;
+max-height: 95vh;
+overflow: hidden;
+background: #fff;
+border-radius: 24px;
+box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+z-index: 999999;
+display: none;
+animation: combinedPopup .25s ease;
+border: 1px solid #e2e8f0;
 }
 #combinedViewCard .card-body{
-height:calc(85vh - 70px);
-display:flex;
-flex-direction:column;
-overflow:hidden;
-padding:10px;
+height: calc(85vh - 70px);
+display: flex;
+flex-direction: column;
+overflow: hidden;
+padding: 16px;
 }
 #combinedViewCard .table-responsive{
-flex:1;
-height:100%;
-min-height:0;
-overflow-y:auto !important;
-overflow-x:auto !important;
--webkit-overflow-scrolling:touch;
+flex: 1;
+height: 100%;
+min-height: 0;
+overflow-y: auto !important;
+overflow-x: auto !important;
+-webkit-overflow-scrolling: touch;
+border-radius: 12px;
+border: 1px solid #e2e8f0;
 }
 
 .comb-view-table td{
-white-space:normal !important;
-word-break:break-word;
+white-space: normal !important;
+word-break: break-word;
+font-weight: 600;
 }
 @keyframes combinedPopup{
-
-from{
-opacity:0;
-transform:translate(-50%,-45%) scale(.9);
-}
-
-to{
-opacity:1;
-transform:translate(-50%,-50%) scale(1);
-}
-
+from{ opacity: 0; }
+to{ opacity: 1; }
 }
 /* ✅ FINAL PRINT PREVIEW TOP FIX */
 #printPreviewBox{
-  display:none;
-  position:fixed !important;
-  inset:0 !important;
-  width:100vw !important;
-  height:100vh !important;
-  background:#fff !important;
-  z-index:2147483647 !important;
-  overflow:auto !important;
+  display: none;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #fff !important;
+  z-index: 2147483647 !important;
+  overflow: auto !important;
 }
 
 #printPreviewBox *{
-  position:relative;
-  z-index:2147483647 !important;
+  position: relative;
+  z-index: 2147483647 !important;
 }
 
 #combinedViewCard{
-  z-index:9999 !important;
+  z-index: 9999 !important;
+}
+
+/* Dropdown styling sleek update */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border-radius: 12px;
+    padding: 8px;
+}
+.dropdown-item {
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: 600;
+    color: #475569;
+}
+.dropdown-item:hover {
+    background-color: #f1f5f9;
+    color: #1e3a8a;
 }
 </style>  </head>  <body>  <div id="loginScreen" style="  
-    width:100%; max-width:400px; margin:40px auto;  
-    background:white; padding:25px; border-radius:15px;  
-    box-shadow:0 4px 10px rgba(0,0,0,0.25);">    <h2 class="text-center fw-bold text-primary mb-1">Saini Trading Company App</h2>  
-  <hr>    <h3 class="text-center mb-3">🔐 लॉगिन</h3>  <input id="loginPass" type="password"  
+    width: 100%; max-width: 400px; margin: 60px auto;  
+    background: white; padding: 30px; border-radius: 20px;  
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);">    <h2 class="text-center fw-bold text-primary mb-1" style="color:#1e3a8a !important;">Saini Trading Company App</h2>  
+  <hr>    <h3 class="text-center mb-4 fw-bold text-secondary">🔐 लॉगिन</h3>  <input id="loginPass" type="password"  
 class="form-control mb-3"  
-placeholder="पासवर्ड दर्ज करें">
+placeholder="पासवर्ड दर्ज करें" style="height: 50px;">
 
-<button class="btn btn-primary w-100 mb-2" onclick="loginNow()">लॉगिन</button>
-<button class="btn btn-danger w-100 mb-2" onclick="showForgot()">❓ पासवर्ड भूल गए?</button>
+<button class="btn btn-primary w-100 mb-3 btn-lg" onclick="loginNow()" style="background: linear-gradient(135deg, #2563eb, #1e3a8a);">लॉगिन</button>
+<button class="btn btn-light border w-100 mb-2" onclick="showForgot()">❓ पासवर्ड भूल गए?</button>
 
-<button class="btn btn-warning w-100 mb-2" onclick="registerFinger()">🔑 फिंगर प्रिंट रजिस्टर</button>
-<button class="btn btn-success w-100" onclick="fingerLogin()">🔒 फिंगर लॉगिन</button>
+<div class="row g-2 mt-2">
+  <div class="col-6"><button class="btn btn-outline-warning w-100 btn-sm" onclick="registerFinger()">🔑 फिंगर रजिस्टर</button></div>
+  <div class="col-6"><button class="btn btn-success w-100 btn-sm" onclick="fingerLogin()">🔒 फिंगर लॉगिन</button></div>
+</div>
 
 </div>  <div id="forgotBox" style="  
-    display:none; width:100%; max-width:400px;  
-    margin:40px auto; background:white; padding:20px;  
-    border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.25);">    <h4 class="text-center mb-3">🔑 पासवर्ड रीसेट</h4>  <input id="favName" class="form-control mb-2"  
+    display: none; width: 100%; max-width: 400px;  
+    margin: 40px auto; background: white; padding: 25px;  
+    border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">    <h4 class="text-center mb-3 fw-bold">🔑 पासवर्ड रीसेट</h4>  <input id="favName" class="form-control mb-3"  
 placeholder="फेवरेट नाम लिखें">
 
-<button class="btn btn-success w-100" onclick="resetPass()">Reset करें</button>
-<button class="btn btn-secondary w-100 mt-2" onclick="hideForgot()">वापस</button>
+<button class="btn btn-success w-100 mb-2" onclick="resetPass()">Reset करें</button>
+<button class="btn btn-secondary w-100" onclick="hideForgot()">वापस</button>
 
 </div>  <div id="changePassPopup">  
     <div id="popupBox">  
-        <h4 class="text-center mb-3">🔐 पासवर्ड बदलें</h4>  
+        <h4 class="text-center mb-3 fw-bold">🔐 पासवर्ड बदलें</h4>  
         <input id="currPass" type="password" class="form-control mb-2" placeholder="पुराना पासवर्ड">  
         <input id="newPass" type="password" class="form-control mb-2" placeholder="नया पासवर्ड">  
         <input id="confPass" type="password" class="form-control mb-3" placeholder="नया पासवर्ड कन्फर्म करें">  
         <button class="btn btn-success w-100 mb-2" onclick="submitChangePassword()">पासवर्ड बदलें</button>  
         <button class="btn btn-secondary w-100" onclick="closeChangePass()">बंद करें</button>  
     </div>  
-</div>  <div id="appContent">  <div id="customerListCard" class="card" style="display:none">  
-  <div class="header">  <button onclick="logoutNow()" class="btn btn-light btn-sm" style="float:left">  
+</div>  <div id="appContent">  <div id="customerListCard" class="card" style="display: none">  
+  <div class="header">  <button onclick="logoutNow()" class="btn btn-light btn-sm fw-bold" style="float: left; padding: 4px 10px;">  
   🚪 Logout  
 </button>  
 
 सैनी ट्रेडिंग कंपनी  
 
-<span id="mainDate" style="float:right; font-size:14px;"></span>
+<span id="mainDate" style="float: right; font-size: 14px; font-weight: 500; opacity: 0.9;"></span>
 
   </div>  <div class="sub-header">  
   ग्राहक सूची  
   <span style="  
-    font-weight:700;  
-    font-size:16px;  
-    color:#0d47a1;  
-    margin-left:6px;  
+    font-weight: 700;  
+    font-size: 16px;  
+    color: #ffffff;  
+    margin-left: 6px;  
   ">  
     (कुल ग्राहक :  
-    <span id="customerCount" style="color:#c62828;font-weight:800;">  
+    <span id="customerCount" style="color: #fff700; font-weight: 800;">  
       0  
     </span>)  
   </span>  
-</div>    <div class="d-flex justify-content-start px-3 mt-2 mb-4">  
+</div>    <div class="d-flex justify-content-start px-3 mt-3 mb-3">  
   <div class="dropdown">  
     <button class="menu-btn dropdown-toggle"  
         type="button"  
@@ -751,20 +807,20 @@ onclick="openMandiAppProView()"
     <button class="btn btn-info w-100 mb-2 hide-duplicate" onclick="toggleSummary()">  
       🔍 कुल सारांश  
     </button>
-<input id="interestNameSearch"
-class="form-control mb-2"
-placeholder="नाम से ब्याज खोजें..."
-oninput="toggleSummary()">
+<div class="px-3"><input id="interestNameSearch"
+class="form-control mb-3"
+placeholder="🔍 नाम से ब्याज खोजें..."
+oninput="toggleSummary()"></div>
   <div id="totalSummary"  
-     class="alert alert-info text-center fw-bold mb-3"  
-     style="display:none">  
+     class="alert alert-info text-center fw-bold mb-3 mx-3"  
+     style="display: none; border-radius:12px;">  
   </div>  
 
 <button class="btn btn-dark w-100 mb-3 hide-duplicate" onclick="openVillageManager()">  
   🏡 गाँव प्रबंधन (Edit / Delete)  
 </button>  
 
-<div class="row mb-3 mt-2">  
+<div class="row mb-3 mt-2 px-3 g-2">  
   <div class="col-6">  
     <input id="searchBox"  
            class="form-control"  
@@ -777,23 +833,23 @@ oninput="toggleSummary()">
   </div>  
 </div>  
 
-<div class="d-flex gap-2 mb-3 ledger-btn-wrap">
+<div class="d-flex gap-2 mb-3 ledger-btn-wrap px-3">
 <button class="btn btn-danger flex-fill hide-duplicate" onclick="deleteSelectedCustomers()">  
     🗑 चुने हुए हटाएं  
   </button>  
 
 </div>  
 
-<button class="btn btn-success w-100 mb-3 hide-duplicate" onclick="openAddCustomer()">  
-  + नया ग्राहक जोड़ें  
-</button>
+<div class="px-3"><button class="btn btn-success w-100 mb-3 btn-lg shadow-sm" onclick="openAddCustomer()" style="background:linear-gradient(135deg, #10b981, #059669);">  
+  ➕ नया ग्राहक जोड़ें  
+</button></div>
 
   <button class="btn btn-secondary w-100 mb-3 hide-duplicate" onclick="printCustomers()">  
       🖨 ग्राहक सूची प्रिंट करें  
     </button>  <input type="file" id="excelUpload"  
        accept=".xlsx,.xls,.csv"  
        class="form-control mb-3"  
-       style="display:none">
+       style="display: none">
 
 <button class="btn btn-warning w-100 mb-3 hide-duplicate"  
 onclick="document.getElementById('excelUpload').click()">
@@ -801,8 +857,8 @@ onclick="document.getElementById('excelUpload').click()">
 </button>
 
 <div id="customerTableContainer"  
-     class="table-responsive"  
-     style="max-height:65vh; overflow-y:auto;">  
+     class="table-responsive px-3"  
+     style="max-height: 65vh; overflow-y: auto;">  
 
   <table class="table table-bordered text-center align-middle" id="customerTableMain">  
   <thead>  
@@ -825,8 +881,8 @@ onclick="document.getElementById('excelUpload').click()">
 
 </div>
 
-  </div>  <div id="addCustomerCard" class="card" style="display:none">  
-  <div class="header" id="formHeader">➕ नया ग्राहक जोड़ें</div>    <div class="card-body">  <input id="cName"   class="form-control mb-2" placeholder="नाम">  
+  </div>  <div id="addCustomerCard" class="card" style="display: none">  
+  <div class="header" id="formHeader">➕ नया ग्राहक जोड़ें</div>    <div class="card-body p-4">  <input id="cName"   class="form-control mb-2" placeholder="नाम">  
 <input id="cFather" class="form-control mb-2" placeholder="पुत्र का नाम">  
 
 <div class="input-group mb-2">  
@@ -843,16 +899,16 @@ onclick="document.getElementById('excelUpload').click()">
 <input id="cAadhar" class="form-control mb-3" placeholder="आधार नंबर">
 
 <input id="cRN" class="form-control mb-3" placeholder="रजिस्टर नंबर (R.N.)">  
-    <button class="btn btn-success w-100 mb-2" onclick="saveEditedCustomer()">  
+    <button class="btn btn-success w-100 mb-2 btn-lg" onclick="saveEditedCustomer()">  
 ✔ सहेजें  
 </button>  <button class="btn btn-secondary w-100" onclick="backToList()">  
 🔙 वापस  
 </button>  
   </div>  
 </div>  <div id="villagePopup">  
-  <div id="fasalPopupBox">  <h4 class="text-center mb-3">🏡 गाँव प्रबंधन</h4>  
+  <div id="fasalPopupBox">  <h4 class="text-center mb-3 fw-bold">🏡 गाँव प्रबंधन</h4>  
 
-<ul id="villageList" class="list-group mb-3"></ul>  
+<ul id="villageList" class="list-group mb-3" style="max-height:200px; overflow-y:auto;"></ul>  
 
 <button class="btn btn-success w-100 mb-2" onclick="addNewVillage()">  
   + नया गाँव जोड़ें  
@@ -864,18 +920,18 @@ onclick="document.getElementById('excelUpload').click()">
 
   </div>  
 </div>  
-<div id="fasalManagerPopup" style="display:none;  
-    position:fixed;top:0;left:0;width:100%;height:100%;  
-    background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:3000;">    <div style="background:white;padding:20px;border-radius:12px;  
-      width:90%;max-width:400px;">  <h4 class="text-center mb-3">🌾 फसल प्रबंधन</h4>  
+<div id="fasalManagerPopup" style="display: none;  
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;  
+    background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 3000;">    <div style="background: white; padding: 24px; border-radius: 18px;  
+      width: 90%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">  <h4 class="text-center mb-3 fw-bold">🌾 फसल प्रबंधन</h4>  
 
-<input id="newFasalName" class="form-control mb-2" placeholder="नई फसल का नाम">  
+<input id="newFasalName" class="form-control mb-3" placeholder="नई फसल का नाम">  
 
 <button class="btn btn-success w-100 mb-3" onclick="addNewFasal()">  
   + जोड़ें  
 </button>  
 
-<div id="fasalList" style="max-height:300px;overflow-y:auto;"></div>  
+<div id="fasalList" style="max-height: 250px; overflow-y: auto;" class="border rounded p-2 bg-light"></div>  
 
 <button class="btn btn-danger w-100 mt-3" onclick="closeFasalManager()">  
   ❌ बंद करें  
@@ -883,44 +939,44 @@ onclick="document.getElementById('excelUpload').click()">
 
   </div>  
 </div>  
-<div id="ledgerCard" class="card" style="display:none">  
+<div id="ledgerCard" class="card" style="display: none">  
  <div class="header">  
-    📘 ग्राहक लेजर  <button class="btn btn-light float-end btn-sm" onclick="backToList()">🔙 वापस</button>
+    📘 ग्राहक लेजर  <button class="btn btn-light float-end btn-sm fw-bold" onclick="backToList()" style="padding: 4px 10px;">🔙 वापस</button>
 
-</div>    <div class="sub-header" id="ledgerCustomerName"></div>    <div class="card-body">  
+</div>    <div class="sub-header" id="ledgerCustomerName" style="font-size:1.15rem; font-weight:700; background:linear-gradient(135deg,#3b82f6,#1d4ed8);"></div>    <div class="card-body">  
 
-<div class="account-selector p-2 bg-light rounded mb-3 border">
+<div class="account-selector p-3 bg-light rounded mb-3 border" style="border-radius:12px !important;">
     <div class="row align-items-center">
         <div class="col-8">
-            <select id="accountList" class="form-select fw-bold" onchange="switchAccount(this.value)">
+            <select id="accountList" class="form-select fw-bold" onchange="switchAccount(this.value)" style="border:1.5px solid #3b82f6;">
                 <option value="default">पुराना हिसाब</option>
             </select>
         </div>
         <div class="col-4">
-            <button class="btn btn-outline-primary btn-sm w-100" onclick="openAccountManager()">⚙ हिसाब</button>
+            <button class="btn btn-primary btn-sm w-100" onclick="openAccountManager()" style="height:44px; font-weight:700;">⚙ हिसाब</button>
         </div>
     </div>
 </div>
 
 <div class="d-flex gap-2 mb-3 ledger-btn-wrap">
-<button class="btn btn-primary flex-fill" onclick="openTransactionPopup()">+ लेन-देन</button>  
+<button class="btn btn-primary flex-fill" onclick="openTransactionPopup()" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">+ लेन-देन</button>  
 
-<button class="btn btn-success flex-fill" onclick="openFasalPopup()">🌾 फसल जोड़ें</button>  
+<button class="btn btn-success flex-fill" onclick="openFasalPopup()" style="background:linear-gradient(135deg,#10b981,#059669);">🌾 फसल जोड़ें</button>  
 
-<button class="btn btn-warning flex-fill" onclick="openFasalManager()">🌾 फसल लिस्ट</button>  
+<button class="btn btn-warning text-white flex-fill" onclick="openFasalManager()" style="background:linear-gradient(135deg,#f59e0b,#d97706);">🌾 लिस्ट</button>  
 
 <button class="btn btn-secondary flex-fill" onclick="printLedger()">🖨 प्रिंट</button>
-<button class="btn btn-info flex-fill"
-onclick="openCombinedLedgerView('ledger')">
+<button class="btn btn-info text-white flex-fill"
+onclick="openCombinedLedgerView('ledger')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);">
 🏦 Combined
 </button>
 <button class="btn btn-danger flex-fill"
-onclick="closeHisab()">
-🔒 हिसाब Close
+onclick="closeHisab()" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+🔒 Close हिसाब
 </button>
 <button class="btn btn-dark flex-fill" onclick="exportLedgerToExcel()">📥 Excel</button>
 </div>  <div class="fasal-box">  
-    <div class="fasal-head" onclick="toggleFasalSummary()">📊 कुल फसल सारांश (Tap)</div>  
+    <div class="fasal-head text-center" onclick="toggleFasalSummary()">📊 कुल फसल सारांश (Tap)</div>  
     <div id="fasalSummary" class="fasal-detail"></div>  
 </div>  
 
@@ -946,7 +1002,7 @@ onclick="closeHisab()">
       </table>  
     </div>    </div>  
 </div>  </div>  
-<div id="combinedViewCard" class="card" style="display:none">
+<div id="combinedViewCard" class="card" style="display: none">
 
 <div class="header">
 🏦 Bank + Kharch Combined
@@ -955,17 +1011,17 @@ onclick="closeHisab()">
 
 <div class="card-body">
 
-<div class="alert alert-warning py-1 text-center"
-style="font-size:12px;">
+<div class="alert alert-warning py-2 text-center fw-bold"
+style="font-size: 13px; border-radius:10px;">
 यह डेटा केवल पढ़ने के लिए है।
 </div>
 
 <input type="text"
 id="combSearch"
-class="form-control mb-2"
+class="form-control mb-3"
 placeholder="नाम से खोजें...">
 
-<div class="row mb-2">
+<div class="row mb-3 g-2">
 
 <div class="col-6">
 <input type="date" id="combFrom" class="form-control">
@@ -999,14 +1055,14 @@ placeholder="नाम से खोजें...">
 
 </div>
 
-<button class="btn btn-secondary w-100 mt-3"
+<button class="btn btn-secondary w-100 mt-3 btn-lg"
 onclick="printCombinedLedgerView()">
 🖨️ रिपोर्ट प्रिंट करें
 </button>
 
 </div>
 </div>
-<div id="advancedReportCard" class="card" style="display:none">    <div class="header">  
+<div id="advancedReportCard" class="card" style="display: none">    <div class="header">  
     📊 Advanced Report  
     <button class="back-3d-btn" onclick="backToList();event.stopPropagation();">🔙</button>  
   </div>    <div class="card-body">  <input id="reportSearch" class="form-control mb-2"  
@@ -1014,7 +1070,7 @@ onclick="printCombinedLedgerView()">
 <input id="interestSearch"
 class="form-control mb-2"
 placeholder="ब्याज से खोजें...">
-<div class="row mb-2">  
+<div class="row mb-2 g-2">  
   <div class="col-6">  
     <input type="date" id="fromDate" class="form-control">  
   </div>  
@@ -1023,13 +1079,13 @@ placeholder="ब्याज से खोजें...">
   </div>  
 </div>  
 
-<select id="sortType" class="form-select mb-2">  
+<select id="sortType" class="form-select mb-3">  
   <option value="new">Newest → Oldest</option>  
   <option value="old">Oldest → Newest</option>  
 </select>  
 
-<button class="btn btn-primary w-100 mb-3"  
-        onclick="generateReport()">OK / Generate</button>  
+<button class="btn btn-primary w-100 mb-3 btn-lg"  
+        onclick="generateReport()" style="background: linear-gradient(135deg,#2563eb,#1e3a8a);">OK / Generate Report</button>  
 
 <div class="table-responsive">  
   <table class="table table-bordered text-center">  
@@ -1048,42 +1104,41 @@ placeholder="ब्याज से खोजें...">
 
   </div>  
 </div>  
- <div id="transactionPopupOverlay"  
-     style="position:fixed; top:0; left:0; width:100%; height:100%;  
-            background:rgba(0,0,0,0.5); display:none;  
-            justify-content:center; align-items:center; z-index:2000;">  
-  <div id="popupBox">  <h5 class="text-center mb-3">🧾 नया लेन-देन</h5>
+ <div id="transactionPopupOverlay">  
+  <div id="popupBox">  <h5 class="text-center mb-3 fw-bold text-primary">🧾 नया लेन-देन</h5>
 
-<input id="tDate" type="date" class="form-control mb-2" placeholder="शुरू तारीख़">  
-    <input id="tEndDate" type="date" class="form-control mb-2" placeholder="अंतिम तारीख़">  
-    <input id="tCredit" type="number" class="form-control mb-2" placeholder="जमा (₹)">  
-    <input id="tDebit" type="number" class="form-control mb-2" placeholder="निकासी (₹)">  
-    <input id="tInterest" type="number" class="form-control mb-2" placeholder="ब्याज (%)">  
-   <input id="tDays" type="number" class="form-control mb-2" placeholder="दिन" readonly>  <input id="tInterestAmount" type="number" class="form-control mb-2" placeholder="ब्याज राशि (₹)" readonly> 
-<div class="form-check mb-2">
+<div class="row g-2 mb-2">
+    <div class="col-6"><small class="fw-bold">शुरू तारीख़</small><input id="tDate" type="date" class="form-control"></div>
+    <div class="col-6"><small class="fw-bold">अंतिम तारीख़</small><input id="tEndDate" type="date" class="form-control"></div>
+</div>
+<input id="tCredit" type="number" class="form-control mb-2" placeholder="जमा राशि (₹)">  
+<input id="tDebit" type="number" class="form-control mb-2" placeholder="निकासी राशि (₹)">  
+<input id="tInterest" type="number" class="form-control mb-2" placeholder="ब्याज (%)">  
+<div class="row g-2 mb-2">
+    <div class="col-6"><small class="fw-bold">कुल दिन</small><input id="tDays" type="number" class="form-control" readonly></div>
+    <div class="col-6"><small class="fw-bold">ब्याज राशि (₹)</small><input id="tInterestAmount" type="number" class="form-control" readonly style="font-weight:700; color:#dc2626;"></div>
+</div>
+<div class="form-check mb-3 mt-2">
 
   <input
     type="checkbox"
     id="interestEnabled"
     class="form-check-input"
-    checked>
+    checked style="width:18px; height:18px;">
 
-  <label class="form-check-label">
+  <label class="form-check-label fw-bold ms-1">
     ब्याज लगाना है
   </label>
 
 </div>
- <textarea id="tNote" class="form-control mb-3" placeholder="नोट"></textarea>  <button class="btn btn-success w-100 mb-2" onclick="saveTransaction()">✔ सहेजें</button>  
-<button class="btn btn-danger w-100" onclick="closeTransactionPopup()">रद्द</button>
+ <textarea id="tNote" class="form-control mb-3" placeholder="कोई नोट / विवरण लिखें"></textarea>  <button class="btn btn-success w-100 mb-2" onclick="saveTransaction()">✔ सहेजें</button>  
+<button class="btn btn-danger w-100" onclick="closeTransactionPopup()">रद्द करें</button>
 
   </div>  
-</div>  <div id="fasalPopupOverlay"  
-     style="position:fixed; top:0; left:0; width:100%; height:100%;  
-            background:rgba(0,0,0,0.5); display:none;  
-            justify-content:center; align-items:center; z-index:2000;">  
-  <div id="popupBox">  <h5 class="text-center mb-3">🌾 नई फसल जोड़ें</h5>
+</div>  <div id="fasalPopupOverlay">  
+  <div id="popupBox" style="max-width: 460px;">  <h5 class="text-center mb-3 fw-bold text-success">🌾 नई फसल जोड़ें</h5>
 
-<input id="fDate" type="date" class="form-control mb-2">  <select id="fName" class="form-select mb-2">  
+<small class="fw-bold">तारीख</small><input id="fDate" type="date" class="form-control mb-2">  <select id="fName" class="form-select mb-2 fw-bold">  
   <option value="">फसल चुनें</option>  
   <option>सरसों</option>  
   <option>गेहूं</option>  
@@ -1093,29 +1148,29 @@ placeholder="ब्याज से खोजें...">
   <option>मूंगफली</option>  
 </select>  
 
-<div class="row">  
+<div class="row g-2 mb-2">  
   <div class="col-6">  
-    <input id="fBori" type="number" class="form-control mb-2" placeholder="बोरियाँ">  
+    <input id="fBori" type="number" class="form-control" placeholder="बोरियाँ">  
   </div>  
   <div class="col-6">  
-    <input id="fWeightPer" type="number" class="form-control mb-2" placeholder="1 बोरी KG">  
+    <input id="fWeightPer" type="number" class="form-control" placeholder="1 बोरी KG">  
   </div>  
 </div>
 
 <input id="fExtraKG" type="number" class="form-control mb-2" placeholder="अतिरिक्त KG">  
-    <input id="fTotalQ" class="form-control mb-2" placeholder="कुल क्विंटल" readonly>  <input id="fRate" type="number" class="form-control mb-2" placeholder="भाव ₹/Q">  
-<input id="fMajduri" type="number" class="form-control mb-2" placeholder="मजदूरी ₹/Q">  
-<input id="fCut" type="number" class="form-control mb-2" placeholder="कटौती ₹ (सीधा)">
+    <input id="fTotalQ" class="form-control mb-2 fw-bold text-success" placeholder="कुल क्विंटल" readonly style="background:#f0fdf4;">  <input id="fRate" type="number" class="form-control mb-2" placeholder="भाव ₹/Q">  
+<input id="fMajduri" type="number" class="form-control mb-2" placeholder="मजदूरी दर">  
+<input id="fCut" type="number" class="form-control mb-2" placeholder="अन्य कटौती ₹ (सीधा)">
 <select id="majType" class="form-select mb-2">
   <option value="quintal">मजदूरी / क्विंटल (₹/Q)</option>
   <option value="bag">मजदूरी / बोरी (₹/Bag)</option>
 </select>
-<input id="fMajduriTotal" 
-class="form-control mb-2" 
-placeholder="मजदूरी ₹" readonly>
-<input id="fNetAmount" class="form-control fw-bold mb-2" placeholder="शुद्ध राशि" readonly>  
+<div class="row g-2 mb-2">
+    <div class="col-6"><small class="fw-bold">कुल मजदूरी</small><input id="fMajduriTotal" class="form-control" readonly></div>
+    <div class="col-6"><small class="fw-bold">शुद्ध राशि (₹)</small><input id="fNetAmount" class="form-control fw-bold text-primary" readonly style="background:#eff6ff; font-size:16px;"></div>
+</div>
 
-<textarea id="fNote" class="form-control mb-3" placeholder="नोट"></textarea>  
+<textarea id="fNote" class="form-control mb-3" placeholder="फसल नोट विवरण"></textarea>  
 
 <button class="btn btn-success w-100 mb-2" onclick="saveFasal()">✔ सहेजें</button>  
 <button class="btn btn-danger w-100" onclick="closeFasalPopup()">रद्द</button>
@@ -1125,7 +1180,7 @@ placeholder="मजदूरी ₹" readonly>
 
 <div id="accountPopupOverlay">
     <div id="popupBox">
-        <h5 class="text-center mb-3">⚙ हिसाब प्रबंधन</h5>
+        <h5 class="text-center mb-3 fw-bold">⚙ हिसाब प्रबंधन</h5>
         <label class="fw-bold mb-1">
 📅 हिसाब तारीख
 </label>
@@ -1134,7 +1189,7 @@ placeholder="मजदूरी ₹" readonly>
 id="newAccountDate"
 type="date"
 class="form-control mb-3"
-style="height:45px; font-size:16px;">
+style="height: 45px; font-size: 16px;">
 
 <div class="input-group mb-3">
 
@@ -1142,7 +1197,7 @@ style="height:45px; font-size:16px;">
     id="newAccountName"
     type="text"
     class="form-control"
-    placeholder="आगे कुछ लिखें">
+    placeholder="आगे कुछ लिखें (उदा. सीजन)">
 
     <button
     class="btn btn-success"
@@ -1154,31 +1209,30 @@ style="height:45px; font-size:16px;">
 
 </div>
         <hr>
-        <div id="accountListContainer" style="max-height:200px; overflow-y:auto;">
+        <div id="accountListContainer" style="max-height: 220px; overflow-y: auto;" class="p-1">
             </div>
         <button class="btn btn-secondary w-100 mt-3" onclick="closeAccountManager()">बंद करें</button>
     </div>
 </div>
 
-<!-- 🌾 MANDI APP PRO MONITOR PANEL -->
-<div id="mandiAppProViewCard" style="display:none; position:fixed !important; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; max-width:850px; height:85vh; background:white; border-radius:25px; box-shadow:0 10px 35px rgba(0,0,0,.45); z-index:2147483640; overflow:hidden; display:none; flex-direction:column; animation:combinedPopup .25s ease;">
-  <div class="header" style="background: linear-gradient(135deg, #1e88e5, #0d47a1); position: relative; padding:12px; font-weight:700; color:white; text-align:center;">
+<div id="mandiAppProViewCard" style="display: none; position: fixed !important; width: 95%; max-width: 850px; height: 85vh; background: white; border-radius: 25px; box-shadow: 0 10px 35px rgba(0,0,0,.45); z-index: 2147483640; overflow: hidden; display: none; flex-direction: column; border: 1px solid #e2e8f0;">
+  <div class="header" style="background: linear-gradient(135deg, #10b981, #047857); position: relative; padding: 12px; font-weight: 700; color: white; text-align: center;">
     🌾 Mandi App Pro Data Monitor
     <button class="back-3d-btn" onclick="closeMandiAppProView()">X</button>
   </div>
-  <div class="card-body" style="height:calc(85vh - 70px); display:flex; flex-direction:column; padding:12px; overflow:hidden;">
-    <div class="row g-2 mb-2">
+  <div class="card-body" style="height: calc(85vh - 70px); display: flex; flex-direction: column; padding: 14px; overflow: hidden;">
+    <div class="row g-2 mb-3">
       <div class="col-6">
-        <select id="mandiSeasonSelect" class="form-select fw-bold" style="border:2px solid #2563eb;" onchange="loadMandiEntries()"></select>
+        <select id="mandiSeasonSelect" class="form-select fw-bold" style="border: 2px solid #10b981;" onchange="loadMandiEntries()"></select>
       </div>
       <div class="col-6">
         <input type="text" id="mandiSearchInput" class="form-control" placeholder="🔍 नाम/गाँव से खोजें..." oninput="filterMandiEntries()">
       </div>
     </div>
-    <div id="mandiSummaryText" class="alert alert-success py-2 text-center mb-2 fw-bold" style="font-size:13px; margin-bottom:10px;">लोड हो रहा है...</div>
-    <div class="table-responsive" style="flex:1; height:100%; overflow-y:auto !important; overflow-x:auto !important; border:1px solid #ddd; border-radius:10px;">
-      <table class="table table-bordered table-striped text-center align-middle" style="font-size:13px; margin:0; width:100%;">
-        <thead style="background:#eaf2ff; color:#1e3a8a; position:sticky; top:0; z-index:10;">
+    <div id="mandiSummaryText" class="alert alert-success py-2 text-center mb-2 fw-bold" style="font-size: 14px; border-radius:10px;">लोड हो रहा है...</div>
+    <div class="table-responsive" style="flex: 1; height: 100%; overflow-y: auto !important; overflow-x: auto !important; border: 1px solid #e2e8f0; border-radius: 12px;">
+      <table class="table table-bordered table-striped text-center align-middle" style="font-size: 13px; margin: 0; width: 100%;">
+        <thead style="background: #f0fdf4; color: #047857; position: sticky; top: 0; z-index: 10;">
           <tr>
             <th>तारीख</th>
             <th>ग्राहक</th>
@@ -1285,7 +1339,6 @@ window.kharchKhataRef.off();
     });
 }
 
-// ✅ FIXED: Aadhaar card dynamic variable column binding fully restored
 function loadCustomers(callback){
 
   if(customerRef){
@@ -2141,7 +2194,6 @@ function saveCustomer() {
   
 let editingCustomerId = null;  
   
-// ✅ FIXED: Aadhaar dynamic text loader in edit function fully restored
 function editCustomer(id) {  
     editingCustomerId = id;  
     db.ref("customers/" + id).once("value").then(s => {  
@@ -2656,7 +2708,6 @@ fExtraKG.value = f.extraKG || 0;
     });
 }
 
-// REST OVERVIEW LOGIC MAINTAINED STRICTLY
 function calcDays() {  
     let start = tDate.value;  
     let end = tEndDate.value;  
@@ -2803,14 +2854,12 @@ function openPrintPreviewManual(customHtml){
 document.getElementById("zoomRange").value = defaultZoom;
 
 pc.style.transform = "scale(" + defaultZoom + ")";
-pc.style.width = (100 / defaultZoom) + "%";
-  
+pc.style.width = (100 / defaultZoom) + "%";  
   pc.style.height = "auto";
 }  
   
 function closePrintPreview(){  
   document.getElementById("printPreviewBox").style.display = "none";  
-
 }  
 
 function setZoom(val){  
@@ -3116,7 +3165,6 @@ function saveCloseHisab(){
 }
 </script>
 
-<!-- 🔒 CLOSE HISAB POPUP -->
 <div id="closeHisabPopup"
 style="
 display:none;
@@ -3225,27 +3273,23 @@ function updateLiveInterest(){
   calcInterest();
 
 }
+
 function openCombinedLedgerView(mode="ledger"){
+  window.combinedMode = mode;
+  let combinedCard = document.getElementById("combinedViewCard");
+  document.body.appendChild(combinedCard);
+  combinedCard.style.display = "block";
 
-window.combinedMode = mode;
+  combinedCard.style.transform = "none";
+  combinedCard.style.margin = "0";
+  combinedCard.style.left = Math.max(0, (window.innerWidth - combinedCard.offsetWidth) / 2) + "px";
+  combinedCard.style.top = Math.max(0, (window.innerHeight - combinedCard.offsetHeight) / 2) + "px";
 
-let combinedCard =
-document.getElementById(
-"combinedViewCard"
-);
-
-document.body.appendChild(combinedCard);
-
-combinedCard.style.display = "block";
-
-
-
-document.body.style.overflow = "hidden";
-document.getElementById("combSearch").value = "";
-document.getElementById("combFrom").value = "";
-document.getElementById("combTo").value = "";
-loadCombinedLedgerData();
-
+  document.body.style.overflow = "hidden";
+  document.getElementById("combSearch").value = "";
+  document.getElementById("combFrom").value = "";
+  document.getElementById("combTo").value = "";
+  loadCombinedLedgerData();
 }
 
 function backToLedgerFromCombined(){
@@ -3545,7 +3589,7 @@ justify-content:center;
 font-size:22px;
 font-weight:bold;
 z-index:999999;
-touch-action:none;
+touch-select:none;
 user-select:none;
 -webkit-user-select:none;
 cursor:nwse-resize;
@@ -3553,144 +3597,104 @@ box-shadow:0 4px 12px rgba(0,0,0,.35);
 `;
 popup.appendChild(resizeBtn);
 
-let isDragging = false;
+/* ===== 🎯 DRAG & RESIZE RE-ENGINEERED FOR INSTANT DELTA MOVE RESPONSE ===== */
+header.style.touchAction = "none";
+dragBar.style.touchAction = "none";
+resizeBtn.style.touchAction = "none";
 
-let startX,startY;
-let startLeft,startTop;
+function setupDragEngine(handle) {
+    handle.addEventListener("pointerdown", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        handle.setPointerCapture(e.pointerId);
+        
+        let currentX = e.clientX;
+        let currentY = e.clientY;
+        
+        function onPointerMove(ev) {
+            let deltaX = ev.clientX - currentX;
+            let deltaY = ev.clientY - currentY;
+            
+            let rect = popup.getBoundingClientRect();
+            let newLeft = rect.left + deltaX;
+            let newTop = rect.top + deltaY;
+            
+            newLeft = Math.max(0, Math.min(window.innerWidth - popup.offsetWidth, newLeft));
+            // ✅ ALLOW GOING UP PAST TOP BOUNDARY UP TO -500 PX
+            newTop = Math.max(-500, Math.min(window.innerHeight - popup.offsetHeight, newTop));
+            
+            popup.style.left = newLeft + "px";
+            popup.style.top = newTop + "px";
+            
+            currentX = ev.clientX;
+            currentY = ev.clientY;
+        }
+        
+        function onPointerUp(ev) {
+            handle.releasePointerCapture(ev.pointerId);
+            handle.removeEventListener("pointermove", onPointerMove);
+            handle.removeEventListener("pointerup", onPointerUp);
+            handle.removeEventListener("pointercancel", onPointerUp);
+        }
+        
+        handle.addEventListener("pointermove", onPointerMove);
+        handle.addEventListener("pointerup", onPointerUp);
+        handle.addEventListener("pointercancel", onPointerUp);
+    });
+}
 
-[header, dragBar].forEach(el=>{
+setupDragEngine(header);
+setupDragEngine(dragBar);
 
-el.addEventListener("pointerdown",e=>{
-
-e.preventDefault();
-
-isDragging = true;
-
-popup.style.transform = "none";
-
-startX = e.clientX;
-startY = e.clientY;
-
-const rect = popup.getBoundingClientRect();
-
-startLeft = rect.left;
-startTop = rect.top;
-
-document.addEventListener(
-"pointermove",
-dragMove,
-{ passive:false }
-);
-
-document.addEventListener(
-"pointerup",
-stopDrag,
-{ once:true }
-);
-
+/* ===== ↘ RESIZE ENGINE WITH DYNAMIC DELTA TRACKING ===== */
+resizeBtn.addEventListener("pointerdown", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    resizeBtn.setPointerCapture(e.pointerId);
+    
+    let currentX = e.clientX;
+    let currentY = e.clientY;
+    
+    function onResizeMove(ev) {
+        let deltaX = ev.clientX - currentX;
+        let deltaY = ev.clientY - currentY;
+        
+        let newWidth = popup.offsetWidth + deltaX;
+        let newHeight = popup.offsetHeight + deltaY;
+        
+        newWidth = Math.max(320, Math.min(window.innerWidth - 10, newWidth));
+        newHeight = Math.max(300, Math.min(window.innerHeight - 10, newHeight));
+        
+        popup.style.width = newWidth + "px";
+        popup.style.height = newHeight + "px";
+        
+        currentX = ev.clientX;
+        currentY = ev.clientY;
+    }
+    
+    function onResizeUp(ev) {
+        resizeBtn.releasePointerCapture(ev.pointerId);
+        resizeBtn.removeEventListener("pointermove", onResizeMove);
+        resizeBtn.removeEventListener("pointerup", onResizeUp);
+        resizeBtn.removeEventListener("pointercancel", onResizeUp);
+    }
+    
+    resizeBtn.addEventListener("pointermove", onResizeMove);
+    resizeBtn.addEventListener("pointerup", onResizeUp);
+    resizeBtn.addEventListener("pointercancel", onResizeUp);
 });
-
-});
-function dragMove(e){
-
-if(!isDragging) return;
-
-let newLeft =
-startLeft + (e.clientX - startX);
-
-let newTop =
-startTop + (e.clientY - startY);
-
-newLeft = Math.max(
-0,
-Math.min(window.innerWidth - popup.offsetWidth,newLeft)
-);
-
-newTop = Math.max(
--500,
-Math.min(window.innerHeight - popup.offsetHeight,newTop)
-);
-
-popup.style.left = newLeft + "px";
-popup.style.top = newTop + "px";
-
-}
-
-function stopDrag(){
-
-isDragging = false;
-
-document.removeEventListener("pointermove",dragMove);
-document.removeEventListener("pointerup",stopDrag);
-
-}
-
-let isResizing = false;
-
-let startWidth,startHeight;
-
-resizeBtn.addEventListener("pointerdown",e=>{
-
-e.stopPropagation();
-
-isResizing = true;
-
-startX = e.clientX;
-startY = e.clientY;
-
-startWidth = popup.offsetWidth;
-startHeight = popup.offsetHeight;
-
-document.addEventListener("pointermove",resizeMove);
-document.addEventListener("pointerup",stopResize);
-
-});
-
-function resizeMove(e){
-
-if(!isResizing) return;
-
-let width =
-startWidth + (e.clientX - startX);
-
-let height =
-startHeight + (e.clientY - startY);
-
-width = Math.max(320,Math.min(window.innerWidth-10,width));
-
-height = Math.max(300,Math.min(window.innerHeight-10,height));
-
-popup.style.width = width + "px";
-popup.style.height = height + "px";
-
-}
-
-function stopResize(){
-
-isResizing = false;
-
-document.removeEventListener("pointermove",resizeMove);
-document.removeEventListener("pointerup",stopResize);
-
-}
 
 let lastCombinedTap = 0;
-
 document.getElementById("combinedViewCard")
 .addEventListener("touchend", function(e){
-
 let now = new Date().getTime();
-
 if(now - lastCombinedTap < 300){
-
 e.preventDefault();
-
 backToLedgerFromCombined();
-
 }
-
 lastCombinedTap = now;
-
 }, false);
 </script>
 
@@ -3727,6 +3731,12 @@ function openMandiAppProView() {
     let card = document.getElementById("mandiAppProViewCard");
     document.body.appendChild(card);
     card.style.display = "flex";
+
+    card.style.transform = "none";
+    card.style.margin = "0";
+    card.style.left = Math.max(0, (window.innerWidth - card.offsetWidth) / 2) + "px";
+    card.style.top = Math.max(0, (window.innerHeight - card.offsetHeight) / 2) + "px";
+
     document.body.style.overflow = "hidden";
     document.getElementById("mandiSearchInput").value = "";
     document.getElementById("mandiSummaryText").innerText = "सीजन लोड हो रहे हैं...";
