@@ -1820,32 +1820,181 @@ function handleExcelUpload(e) {
   
 function toggleSummary() {
     let box = totalSummary;
-    if (box.style.display == "block") { box.style.display = "none"; return; }
+
+    if (box.style.display == "block") {
+        box.style.display = "none";
+        return;
+    }
+
     db.ref("ledgers").once("value").then(async snap => {
-        let total2025 = 0; let total2026 = 0; let html = "";
-        let search = document.getElementById("interestNameSearch").value.toLowerCase();
+
+        let total2025 = 0;
+        let total2026 = 0;
+
+        let totalDebit = 0;
+        let totalCredit = 0;
+
+        let html = "";
+
+        let search = document
+            .getElementById("interestNameSearch")
+            .value
+            .toLowerCase();
+
         let ledgers = snap.val() || {};
 
         for (let cid in ledgers) {
+
             let customerName = "Unknown";
+
             let cs = await db.ref("customers/" + cid).once("value");
-            if (cs.exists()) { customerName = cs.val().name || "Unknown"; }
-            let interest2025 = 0; let interest2026 = 0; let customerData = ledgers[cid];
+
+            if (cs.exists()) {
+                customerName = cs.val().name || "Unknown";
+            }
+
+            let interest2025 = 0;
+            let interest2026 = 0;
+
+            let customerData = ledgers[cid];
 
             for (let acc in customerData) {
+
                 let entries = customerData[acc];
+
                 for (let key in entries) {
-                    let d = entries[key]; let interest = +d.interestAmount || 0; let entryDate = d.startDate || d.date || "";
+
+                    let d = entries[key];
+
+                    let interest =
+                        +d.interestAmount || 0;
+
+                    let credit =
+                        +d.credit || 0;
+
+                    let debit =
+                        +d.debit || 0;
+
+                    totalCredit += credit;
+                    totalDebit += debit;
+
+                    let entryDate =
+                        d.startDate || d.date || "";
+
                     if (!entryDate) continue;
-                    let yr = new Date(entryDate).getFullYear();
-                    if (yr == 2025) { interest2025 += interest; total2025 += interest; }
-                    if (yr == 2026) { interest2026 += interest; total2026 += interest; }
+
+                    let yr =
+                        new Date(entryDate).getFullYear();
+
+                    if (yr == 2025) {
+                        interest2025 += interest;
+                        total2025 += interest;
+                    }
+
+                    if (yr == 2026) {
+                        interest2026 += interest;
+                        total2026 += interest;
+                    }
                 }
             }
-            if(search && !customerName.toLowerCase().includes(search)){ continue; }
-            html += `<div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;border-left:5px solid #0d6efd;box-shadow:0 2px 5px rgba(0,0,0,0.1);"><div style="font-weight:800;color:#0d47a1;font-size:16px;margin-bottom:6px;">👤 ${customerName}</div><div style="color:#1b5e20;font-weight:700;margin-bottom:4px;">📅 2025 → ₹${interest2025.toFixed(2)}</div><div style="color:#bf360c;font-weight:700;">📅 2026 → ₹${interest2026.toFixed(2)}</div></div>`;
+
+            if (
+                search &&
+                !customerName.toLowerCase().includes(search)
+            ) {
+                continue;
+            }
+
+            html += `
+            <div style="
+                background:white;
+                border-radius:10px;
+                padding:10px;
+                margin-bottom:8px;
+                border-left:5px solid #0d6efd;
+                box-shadow:0 2px 5px rgba(0,0,0,0.1);
+            ">
+
+            <div style="
+                font-weight:800;
+                color:#0d47a1;
+                font-size:16px;
+                margin-bottom:6px;
+            ">
+                👤 ${customerName}
+            </div>
+
+            <div style="
+                color:#1b5e20;
+                font-weight:700;
+                margin-bottom:4px;
+            ">
+                📅 2025 → ₹${interest2025.toFixed(2)}
+            </div>
+
+            <div style="
+                color:#bf360c;
+                font-weight:700;
+            ">
+                📅 2026 → ₹${interest2026.toFixed(2)}
+            </div>
+
+            </div>
+            `;
         }
-        box.innerHTML = `<div style="background:#e3f2fd;padding:12px;border-radius:12px;margin-bottom:12px;font-weight:800;line-height:1.8;color:#0d47a1;">📈 कुल ब्याज 2025 → ₹${total2025.toFixed(2)}<br>📈 कुल ब्याज 2026 → ₹${total2026.toFixed(2)}</div>${html}`;
+
+        let balance = totalCredit - totalDebit;
+
+        box.innerHTML = `
+
+<div style="
+display:flex;
+justify-content:end;
+margin-bottom:10px;
+">
+
+<button
+onclick="
+document.getElementById('totalSummary').style.display='none'
+"
+style="
+background:red;
+color:white;
+border:none;
+padding:6px 14px;
+border-radius:8px;
+font-weight:700;
+">
+❌ Close
+</button>
+
+</div>
+
+<div style="
+background:#e3f2fd;
+padding:12px;
+border-radius:12px;
+margin-bottom:12px;
+font-weight:800;
+line-height:1.9;
+color:#0d47a1;
+">
+
+💰 कुल Credit → ₹${totalCredit.toFixed(2)}<br>
+
+💸 कुल Debit → ₹${totalDebit.toFixed(2)}<br>
+
+⚖️ Balance → ₹${balance.toFixed(2)}<br><br>
+
+📈 कुल ब्याज 2025 → ₹${total2025.toFixed(2)}<br>
+
+📈 कुल ब्याज 2026 → ₹${total2026.toFixed(2)}
+
+</div>
+
+${html}
+`;
+
         box.style.display = "block";
     });
 }
@@ -2014,6 +2163,26 @@ function generateReport(){
 </script>  <div id="printPreviewBox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:2147483647;overflow:auto;"><div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:#1976d2;color:white;position:sticky;top:0;z-index:1000000;"><button onclick="closePrintPreview()" style="background:red;color:white;border:none;padding:8px 12px;border-radius:6px;">Cancel</button><div>Zoom: <input type="range" id="zoomRange" min="0.1" max="2" step="0.1" value="1" oninput="setZoom(this.value)"></div><button onclick="finalPrint()" style="background:green;color:white;border:none;padding:8px 12px;border-radius:6px;">Print Now</button></div><div id="printContent"></div></div>  
 <script>
 let lastTapTime = 0;
+
+let combinedTapTime = 0;
+
+document.getElementById("combinedViewCard")
+.addEventListener("touchend", function(e){
+
+    let currentTime = new Date().getTime();
+    let tapLength = currentTime - combinedTapTime;
+
+    if(tapLength < 300 && tapLength > 0){
+
+        e.preventDefault();
+
+        backToLedgerFromCombined();
+
+    }
+
+    combinedTapTime = currentTime;
+
+}, false);
 document.getElementById("ledgerCard").addEventListener("touchend", function(e){
     let currentTime = new Date().getTime(); let tapLength = currentTime - lastTapTime;
     if(tapLength < 300 && tapLength > 0){ e.preventDefault(); backToList(); }
