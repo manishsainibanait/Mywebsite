@@ -886,7 +886,7 @@ onclick="document.getElementById('excelUpload').click()">
 <input id="cRN" class="form-control mb-3" placeholder="रजिस्टर नंबर (R.N.)">  
     <button class="btn btn-success w-100 mb-2 btn-lg" onclick="saveEditedCustomer()">  
 ✔ सहेजें  
-</button>  <button class="btn btn-secondary w-100" onclick="backToList()">  
+</button>  <button class="btn btn-secondary w-100" onclick="handleBackAction()">  
 🔙 वापस  
 </button>  
   </div>  
@@ -926,7 +926,7 @@ onclick="document.getElementById('excelUpload').click()">
 </div>  
 <div id="ledgerCard" class="card" style="display: none">  
  <div class="header">  
-    📘 ग्राहक लेजर  <button class="btn btn-light float-end btn-sm fw-bold" onclick="backToList()" style="padding: 4px 10px;">🔙 वापस</button>
+    📘 ग्राहक लेजर  <button class="btn btn-light float-end btn-sm fw-bold" onclick="handleBackAction()" style="padding: 4px 10px;">🔙 वापस</button>
 
 </div>    <div class="sub-header" id="ledgerCustomerName" style="font-size:1.15rem; font-weight:700; background:linear-gradient(135deg,#3b82f6,#1d4ed8);"></div>    <div class="card-body">  
 
@@ -977,7 +977,7 @@ onclick="closeHisab()" style="background:linear-gradient(135deg,#ef4444,#dc2626)
     <th>दिन</th>  
     <th>ब्याज राशि</th>  
 <th>कटौती</th>
-    <th>فصل</th>  
+    <th>फसल</th>  
     <th>नोट</th>  
     <th class="action-col">कार्य</th>  
   </tr>  
@@ -1235,7 +1235,7 @@ placeholder="ब्याज से खोजें...">
             <th>बोरी</th>
             <th>अतिरिक्त</th>
             <th>क्विंटल (Qtl)</th>
-            <th>हिساب डिटेल्स</th>
+            <th>हिसाब डिटेल्स</th>
           </tr>
         </thead>
         <tbody id="mandiTableBody"></tbody>
@@ -1246,6 +1246,7 @@ placeholder="ब्याज से खोजें...">
 
 <script>  
 let globalFirstAppNames = new Set();
+let isNavigatedFromReport = false; // Flag to trace navigation path
 
 window.onload = () => {  
     if(sessionStorage.getItem("isLoggedIn") === "true"){  
@@ -1318,6 +1319,20 @@ function backToList(){
     if(window.kharchKhataRef){ window.kharchKhataRef.off(); }
     showCard("customerListCard");
     loadCustomers(() => { filterCustomers(); });
+}
+
+// Unified back button handler to redirect cleanly based on where user came from
+function handleBackAction() {
+    if (isNavigatedFromReport) {
+        isNavigatedFromReport = false;
+        if(ledgerRef){
+          ledgerRef.off();
+          ledgerRef = null;
+        }
+        showCard("advancedReportCard");
+    } else {
+        backToList();
+    }
 }
 
 function loadCustomers(callback){
@@ -1431,6 +1446,12 @@ function switchAccount(accId) {
     localStorage.setItem("lastAccount_" + currentCustomerId, accId);
     if(ledgerRef) ledgerRef.off();
     loadLedger();
+}
+
+// Redirect and view from advanced report click functionality
+function viewLedgerFromReport(customerId) {
+    isNavigatedFromReport = true;
+    openLedger(customerId);
 }
 
 function openAccountManager() {
@@ -1761,7 +1782,7 @@ function saveCustomer() {
     if (!cName.value) return alert("नाम लिखें!");  
     let obj = { name: cName.value, father: cFather.value, village: cVillage.value, phone: cPhone.value, aadhar: cAadhar.value, rn: cRN.value };  
     db.ref("customers").push(obj);  
-    cName.value = ""; cFather.value = ""; cVillage.value = ""; cPhone.value = ""; cAadhar.value = ""; backToList();  
+    cName.value = ""; cFather.value = ""; cVillage.value = ""; cPhone.value = ""; cAadhar.value = ""; handleBackAction();  
 }  
   
 let editingCustomerId = null;  
@@ -1777,7 +1798,7 @@ function saveEditedCustomer() {
     if (!editingCustomerId) return saveCustomer();  
     let obj = { name: cName.value, father: cFather.value, village: cVillage.value, phone: cPhone.value, aadhar: cAadhar.value, rn: cRN.value };  
     db.ref("customers/" + editingCustomerId).update(obj);  
-    editingCustomerId = null; backToList();  
+    editingCustomerId = null; handleBackAction();  
 }  
   
 function deleteCustomer(id) {  
@@ -2005,7 +2026,7 @@ function openVillageManager() {
 }  
 function closeVillagePopup() { villagePopup.style.display = "none"; }  
 function addVillage() {  
-    let v = document.getElementById("newVillage").value.trim(); if (!v) return alert("गाँव का नाम लिखें!");  
+    let v = document.getElementById("newVillage").value.trim(); if (!v) return alert("गाँव का name लिखें!");  
     db.ref("settings/villages").push(v); document.getElementById("newVillage").value = ""; loadVillageList(); loadVillageDropdown(); loadFasalDropdown();  
 }  
 function loadVillageList() {  
@@ -2149,7 +2170,7 @@ function generateReport(){
             let d = e.val(); let date = d.startDate || d.date || ""; if(!date) return;  
             if(from && new Date(date) < from) return; if(to && new Date(date) > to) return;  
             if((!search || cname.toLowerCase().includes(search) || (d.note || "").toLowerCase().includes(search)) && (interestSearch === 0 || (+d.interestAmount || 0) >= interestSearch)){  
-              all.push({ date: date, sortKey: date + "_" + e.key, name: cname, detail: d.note || (d.isFasal ? "Fasal" : "Transaction"), credit: d.credit || "", debit: d.debit || "" });  
+              all.push({ cid: cid, date: date, sortKey: date + "_" + e.key, name: cname, detail: d.note || (d.isFasal ? "Fasal" : "Transaction"), credit: d.credit || "", debit: d.debit || "" });  
             }  
           }); });  
       }); promises.push(p);  
@@ -2157,7 +2178,10 @@ function generateReport(){
     await Promise.all(promises);  
     all.sort((a,b)=>{ return sort === "new" ? b.sortKey.localeCompare(a.sortKey) : a.sortKey.localeCompare(b.sortKey); });  
     reportTable.innerHTML = "";  
-    all.forEach(r=>{ reportTable.insertAdjacentHTML("beforeend", `<tr><td>${r.date}</td><td>${r.name}</td><td>${r.detail}</td><td>${r.credit}</td><td>${r.debit}</td></tr>`); });  
+    all.forEach(r=>{ 
+        // Rows are now clickable with pointer cursor styling to redirect cleanly to individual customer ledger
+        reportTable.insertAdjacentHTML("beforeend", `<tr onclick="viewLedgerFromReport('${r.cid}')" style="cursor:pointer;"><td>${r.date}</td><td style="color:#2563eb; font-weight:bold;">${r.name}</td><td>${r.detail}</td><td>${r.credit}</td><td>${r.debit}</td></tr>`); 
+    });  
   });  
 }  
 </script>  <div id="printPreviewBox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:2147483647;overflow:auto;"><div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:#1976d2;color:white;position:sticky;top:0;z-index:1000000;"><button onclick="closePrintPreview()" style="background:red;color:white;border:none;padding:8px 12px;border-radius:6px;">Cancel</button><div>Zoom: <input type="range" id="zoomRange" min="0.1" max="2" step="0.1" value="1" oninput="setZoom(this.value)"></div><button onclick="finalPrint()" style="background:green;color:white;border:none;padding:8px 12px;border-radius:6px;">Print Now</button></div><div id="printContent"></div></div>  
@@ -2185,7 +2209,7 @@ document.getElementById("combinedViewCard")
 }, false);
 document.getElementById("ledgerCard").addEventListener("touchend", function(e){
     let currentTime = new Date().getTime(); let tapLength = currentTime - lastTapTime;
-    if(tapLength < 300 && tapLength > 0){ e.preventDefault(); backToList(); }
+    if(tapLength < 300 && tapLength > 0){ e.preventDefault(); handleBackAction(); }
     lastTapTime = currentTime;
 }, false);
 
