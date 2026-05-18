@@ -1557,7 +1557,27 @@ function openLedger(id){
 
   db.ref("customers/" + id).once("value").then(s=>{
     if(!s.exists()) return;
-    ledgerCustomerName.innerText = s.val().name || "";
+    let d = s.val() || {};
+
+let shortName = (d.name || "").split(" ").slice(0,2).join(" ");
+let shortFather = (d.father || "").split(" ").slice(0,2).join(" ");
+let shortVillage = d.village || "-";
+
+if(shortVillage.length > 10){
+   shortVillage = shortVillage.substring(0,10) + "..";
+}
+
+ledgerCustomerName.innerHTML = `
+👤 ${shortName}
+<br>
+<span style="
+font-size:12px;
+font-weight:600;
+opacity:.95;
+">
+👨 ${shortFather} | 🏡 ${shortVillage}
+</span>
+`;
     checkAndMigrateLedger(id, () => {
        loadAccountDropdown();
        setTimeout(()=>{ switchAccount(currentAccountId); },100);
