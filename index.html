@@ -2326,6 +2326,7 @@ function generateReport(){
     let promises = [];  
     csnap.forEach(c => {  
       let cid = c.key; let cname = c.val().name || "";  
+let cvillage = c.val().village || "";
 let crn = c.val().rn || "";
       let p = db.ref("ledgers/" + cid).once("value").then(lsnap => {  
         lsnap.forEach(accSnap => { accSnap.forEach(e => {  
@@ -2337,6 +2338,7 @@ let crn = c.val().rn || "";
   date: date,
   sortKey: date + "_" + e.key,
   name: cname,
+village: cvillage,
   rn: crn,
   detail: d.note || (d.isFasal ? "Fasal" : "Transaction"),
   credit: d.credit || "",
@@ -2379,6 +2381,19 @@ ${(r.name || "")
    return "";
 })
 .join(" ")}
+<div style="
+font-size:8px;
+color:#64748b;
+font-weight:800;
+line-height:1;
+margin-top:2px;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+">
+🏡 ${(r.village || "-").length > 10 
+? (r.village || "-").substring(0,10) + ".." 
+: (r.village || "-")}
 
 </td>
 <td style="font-weight:700; color:#dc2626;">${r.rn || "-"}</td>
