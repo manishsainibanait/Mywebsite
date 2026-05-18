@@ -698,6 +698,152 @@ to{ opacity: 1; }
     font-size: 14px !important;
     margin-bottom: 8px !important;
 }
+/* PERFECT ADVANCED REPORT MOBILE FIT */
+
+#advancedReportCard .table-responsive{
+    overflow-x: auto !important;
+    width: 100% !important;
+}
+
+#advancedReportCard table{
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+}
+
+/* ALL CELLS */
+#advancedReportCard th,
+#advancedReportCard td{
+    padding: 6px 3px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    word-break: break-word !important;
+    line-height: 1.15 !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+}
+
+/* DATE COLUMN */
+
+#advancedReportCard th:nth-child(1),
+#advancedReportCard td:nth-child(1){
+
+    width: 58px !important;
+    min-width: 58px !important;
+    max-width: 58px !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+
+    color: #0f766e !important;
+
+    line-height: 1.05 !important;
+
+    white-space: normal !important;
+    word-break: break-word !important;
+
+    padding: 4px 2px !important;
+
+    #advancedReportCard th:nth-child(1),
+#advancedReportCard td:nth-child(1){
+
+    width: 58px !important;
+    min-width: 58px !important;
+    max-width: 58px !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+
+    color: #0f766e !important;
+
+    line-height: 1.05 !important;
+
+    white-space: normal !important;
+    word-break: break-word !important;
+
+    padding: 4px 2px !important;
+
+    text-align:center !important;
+    vertical-align:middle !important;
+}
+}
+/* NAME */
+#advancedReportCard th:nth-child(2),
+#advancedReportCard td:nth-child(2){
+
+    width: 82px !important;
+min-width: 82px !important;
+max-width: 82px !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+
+    color: #2563eb !important;
+
+    line-height: 1.05 !important;
+
+    word-break: break-word !important;
+}
+
+/* RN */
+#advancedReportCard th:nth-child(3),
+#advancedReportCard td:nth-child(3){
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    color: #dc2626 !important;
+
+    padding-left: 1px !important;
+    padding-right: 1px !important;
+
+    line-height: 1 !important;
+}
+
+/* VIVRAN */
+#advancedReportCard th:nth-child(4),
+#advancedReportCard td:nth-child(4){
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+
+    font-size: 8px !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+
+    line-height: 1.05 !important;
+
+    padding: 3px 1px !important;
+}
+
+/* JAMA */
+#advancedReportCard th:nth-child(5),
+#advancedReportCard td:nth-child(5){
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    color: #15803d !important;
+
+    line-height: 1.1 !important;
+}
+
+/* NIKASI */
+#advancedReportCard th:nth-child(6),
+#advancedReportCard td:nth-child(6){
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    color: #b91c1c !important;
+
+    line-height: 1.1 !important;
+}
 </style>  </head>  <body>  <div id="loginScreen" style="  
     width: 100%; max-width: 400px; margin: 60px auto;  
     background: white; padding: 30px; border-radius: 20px;  
@@ -1078,6 +1224,7 @@ placeholder="ब्याज से खोजें...">
       <tr>  
         <th>तारीख</th>  
         <th>नाम</th>  
+<th>R.N.</th>
         <th>विवरण</th>  
         <th>जमा</th>  
         <th>निकासी</th>  
@@ -1356,7 +1503,21 @@ function loadCustomers(callback){
           <td class="name-col">
             <span style="color:blue;cursor:pointer;font-weight:900"
               onclick="openLedger('${id}'); speakName('${d.name}')">
-              ${(d.name || "").replace(/\s+\d+$/, "").replace(" ", "<br>")}
+         ${(d.name || "")
+.replace(/\s+\d+$/, "")
+.replace(/\s+/g," ")
+.trim()
+.split(" ")
+.map((w,i,arr)=>{
+   if(i%2===0 && arr[i+1]){
+      return w + "<br>" + arr[i+1];
+   }
+   if(i%2===0){
+      return w;
+   }
+   return "";
+})
+.join(" ")}
             </span>
           </td>
           <td class="reg-col">
@@ -2165,12 +2326,22 @@ function generateReport(){
     let promises = [];  
     csnap.forEach(c => {  
       let cid = c.key; let cname = c.val().name || "";  
+let crn = c.val().rn || "";
       let p = db.ref("ledgers/" + cid).once("value").then(lsnap => {  
         lsnap.forEach(accSnap => { accSnap.forEach(e => {  
             let d = e.val(); let date = d.startDate || d.date || ""; if(!date) return;  
             if(from && new Date(date) < from) return; if(to && new Date(date) > to) return;  
             if((!search || cname.toLowerCase().includes(search) || (d.note || "").toLowerCase().includes(search)) && (interestSearch === 0 || (+d.interestAmount || 0) >= interestSearch)){  
-              all.push({ cid: cid, date: date, sortKey: date + "_" + e.key, name: cname, detail: d.note || (d.isFasal ? "Fasal" : "Transaction"), credit: d.credit || "", debit: d.debit || "" });  
+              all.push({
+  cid: cid,
+  date: date,
+  sortKey: date + "_" + e.key,
+  name: cname,
+  rn: crn,
+  detail: d.note || (d.isFasal ? "Fasal" : "Transaction"),
+  credit: d.credit || "",
+  debit: d.debit || ""
+}); 
             }  
           }); });  
       }); promises.push(p);  
@@ -2180,7 +2351,41 @@ function generateReport(){
     reportTable.innerHTML = "";  
     all.forEach(r=>{ 
         // Rows are now clickable with pointer cursor styling to redirect cleanly to individual customer ledger
-        reportTable.insertAdjacentHTML("beforeend", `<tr onclick="viewLedgerFromReport('${r.cid}')" style="cursor:pointer;"><td>${r.date}</td><td style="color:#2563eb; font-weight:bold;">${r.name}</td><td>${r.detail}</td><td>${r.credit}</td><td>${r.debit}</td></tr>`); 
+        reportTable.insertAdjacentHTML("beforeend",
+`<tr onclick="viewLedgerFromReport('${r.cid}')" style="cursor:pointer;">
+<td style="white-space:normal !important; line-height:1.05 !important;">
+${formatShortDate(r.date)}
+</td>
+<td style="
+color:#2563eb;
+font-weight:bold;
+line-height:1.05;
+word-break:break-word;
+font-size:11px;
+">
+
+${(r.name || "")
+.replace(/\s+\d+$/, "")
+.replace(/\s+/g," ")
+.trim()
+.split(" ")
+.map((w,i,arr)=>{
+   if(i%2===0 && arr[i+1]){
+      return w + "<br>" + arr[i+1];
+   }
+   if(i%2===0){
+      return w;
+   }
+   return "";
+})
+.join(" ")}
+
+</td>
+<td style="font-weight:700; color:#dc2626;">${r.rn || "-"}</td>
+<td>${r.detail}</td>
+<td>${r.credit}</td>
+<td>${r.debit}</td>
+</tr>`);
     });  
   });  
 }  
@@ -2344,6 +2549,20 @@ function renderMandiEntries() {
     document.getElementById("mandiSummaryText").innerText = `कुल रिकॉर्ड: ${count} | कुल बोरी: ${Math.floor(totalKgRaw / currentDefaultBW)} | Extra: ${totalKgRaw % currentDefaultBW} Kg | कुल क्विंटल: ${totalQtl.toFixed(2)} Qtl`;
 }
 function filterMandiEntries() { renderMandiEntries(); }
+function formatShortDate(dateStr){
+
+    if(!dateStr) return "-";
+
+    let d = new Date(dateStr);
+
+    let day = d.getDate();
+
+    let month = d.getMonth() + 1;
+
+    let year = d.getFullYear().toString().slice(-2);
+
+    return `${day}-${month}<br>${year}`;
+}
 </script>
 </body>  
 </html>
