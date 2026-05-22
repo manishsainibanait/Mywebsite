@@ -744,29 +744,10 @@ to{ opacity: 1; }
 
     padding: 4px 2px !important;
 
-    #advancedReportCard th:nth-child(1),
-#advancedReportCard td:nth-child(1){
-
-    width: 58px !important;
-    min-width: 58px !important;
-    max-width: 58px !important;
-
-    font-size: 12px !important;
-    font-weight: 900 !important;
-
-    color: #0f766e !important;
-
-    line-height: 1.05 !important;
-
-    white-space: normal !important;
-    word-break: break-word !important;
-
-    padding: 4px 2px !important;
-
     text-align:center !important;
     vertical-align:middle !important;
 }
-}
+
 /* NAME */
 #advancedReportCard th:nth-child(2),
 #advancedReportCard td:nth-child(2){
@@ -843,6 +824,72 @@ max-width: 82px !important;
     color: #b91c1c !important;
 
     line-height: 1.1 !important;
+}
+
+/* UNIQUE CSS FOR DEBIT CREDIT CUSTOMER-WISE SUMMARY REPORT VIEW */
+.rep-summary-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+.rep-summary-item {
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+.rep-summary-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e3a8a;
+    border-bottom: 2px dashed #e2e8f0;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+}
+.summary-section-header {
+    background: #f1f5f9;
+    padding: 8px 12px;
+    font-weight: 800;
+    font-size: 14px;
+    color: #1e3a8a;
+    border-radius: 8px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    border-left: 5px solid #2563eb;
+}
+.filter-toggle-btn {
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 6px 12px;
+    border: 2px solid #cbd5e1;
+    background-color: white;
+    color: #475569;
+}
+.filter-toggle-btn.active-debit {
+    background-color: #ef4444 !important;
+    color: white !important;
+    border-color: #dc2626 !important;
+}
+.filter-toggle-btn.active-credit {
+    background-color: #22c55e !important;
+    color: white !important;
+    border-color: #16a34a !important;
+}
+.grand-summary-banner {
+    background: linear-gradient(135deg, #1e3a8a, #0d47a1);
+    color: white;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 800;
+    text-align: center;
+    font-size: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 </style>  </head>  <body>  <div id="loginScreen" style="  
     width: 100%; max-width: 400px; margin: 60px auto;  
@@ -1004,7 +1051,7 @@ onclick="document.getElementById('excelUpload').click()">
         <th>गाँव</th>  
         <th>मोबाइल</th>  
         <th>आधार</th>  
-        <th class="action-col">कार्य</th>  
+        <th class="action-col"> कार्य</th>  
       </tr>  
     </thead>  
     <tbody id="customerTable"></tbody>  
@@ -1037,19 +1084,7 @@ onclick="document.getElementById('excelUpload').click()">
 </button>  
   </div>  
 </div>  <div id="villagePopup">  
-  <div id="fasalPopupBox">  <h4 class="text-center mb-3 fw-bold">🏡 गाँव प्रबंधन</h4>  
-
-<ul id="villageList" class="list-group mb-3" style="max-height:200px; overflow-y:auto;"></ul>  
-
-<button class="btn btn-success w-100 mb-2" onclick="addNewVillage()">  
-  + नया गाँव जोड़ें  
-</button>  
-
-<button class="btn btn-secondary w-100" onclick="closeVillageManager()">  
-  बंद करें  
-</button>
-
-  </div>  
+  <div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;"><h5 class="text-center mb-3">🏡 गाँव प्रबंधन</h5><input id="newVillage" class="form-control mb-2" placeholder="नया गाँव जोड़ें"><button class="btn btn-success w-100 mb-3" onclick="addVillage()">✔ जोड़ें</button><div id="villageList" style="max-height:300px;overflow-y:auto;"></div><button onclick="closeVillagePopup()" class="btn btn-danger w-100 mt-3">❌ बंद</button></div>
 </div>  
 <div id="fasalManagerPopup" style="display: none;  
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;  
@@ -1196,35 +1231,43 @@ onclick="printCombinedLedgerView()">
 <div id="advancedReportCard" class="card" style="display: none">    <div class="header">  
     📊 Advanced Report  
     <button class="back-3d-btn" onclick="backToList();event.stopPropagation();">🔙</button>  
-  </div>    <div class="card-body">  <input id="reportSearch" class="form-control mb-2"  
-       placeholder="नाम से खोजें...">  
-<input id="interestSearch"
-class="form-control mb-2"
-placeholder="ब्याज से खोजें...">
-<div class="row mb-2 g-2">  
-  <div class="col-6">  
-    <input type="date" id="fromDate" class="form-control">  
+  </div>    <div class="card-body">  
+<div class="row mb-2 g-2">
+  <div class="col-6">
+    <button class="btn btn-outline-primary w-100 fw-bold btn-sm active" id="btnShowEntries" onclick="switchReportTab('entries')">📜 लेन-देन सूची</button>
+  </div>
+  <div class="col-6">
+    <button class="btn btn-outline-success w-100 fw-bold btn-sm" id="btnShowSummary" onclick="switchReportTab('summary')">👥 खातावार रिपोर्ट (Debit/Credit)</button>
+  </div>
+</div>
+<div>
+  <input id="reportSearch" class="form-control mb-2" placeholder="नाम या गाँव से खोजें..." oninput="onFilterInputTriggered()">  
+  <input id="interestSearch" class="form-control mb-2" placeholder="ब्याज से खोजें...">
+  <div class="row mb-2 g-2">  
+    <div class="col-6">  
+      <input type="date" id="fromDate" class="form-control" onchange="onFilterInputTriggered()">  
+    </div>  
+    <div class="col-6">  
+      <input type="date" id="toDate" class="form-control" onchange="onFilterInputTriggered()">  
+    </div>  
   </div>  
-  <div class="col-6">  
-    <input type="date" id="toDate" class="form-control">  
-  </div>  
-</div>  
 
-<select id="sortType" class="form-select mb-3">  
-  <option value="new">Newest → Oldest</option>  
-  <option value="old">Oldest → Newest</option>  
-</select>  
+  <select id="sortType" class="form-select mb-3">  
+    <option value="new">Newest → Oldest</option>  
+    <option value="old">Oldest → Newest</option>  
+  </select>  
+</div>
 
 <button class="btn btn-primary w-100 mb-3 btn-lg"  
         onclick="generateReport()" style="background: linear-gradient(135deg,#2563eb,#1e3a8a);">OK / Generate Report</button>  
 
-<div class="table-responsive">  
-  <table class="table table-bordered text-center">  
-    <thead>  
+<div id="reportDataContainer" class="table-responsive">  
+  <table class="table table-bordered text-center" id="reportMainTable">  
+    <thead id="reportTableHeader">  
       <tr>  
         <th>तारीख</th>  
         <th>नाम</th>  
-<th>R.N.</th>
+        <th>R.N.</th>
         <th>विवरण</th>  
         <th>जमा</th>  
         <th>निकासी</th>  
@@ -1232,6 +1275,18 @@ placeholder="ब्याज से खोजें...">
     </thead>  
     <tbody id="reportTable"></tbody>  
   </table>  
+</div>
+
+<div id="reportSummaryContainer" style="display:none;">
+  <div class="row g-2 mb-3">
+     <div class="col-6"><button class="btn w-100 filter-toggle-btn active-debit" id="btnFilterDebit" onclick="setSummaryFilterMode('debit')">🔴 Keval Debit Dekhein</button></div>
+     <div class="col-6"><button class="btn w-100 filter-toggle-btn" id="btnFilterCredit" onclick="setSummaryFilterMode('credit')">🟢 Keval Credit Dekhein</button></div>
+  </div>
+
+  <div id="grandSummaryTotalBanner" class="grand-summary-banner">कुल लोड हो रहा है...</div>
+
+  <div class="mb-2"><button class="btn btn-secondary w-100 fw-bold" onclick="printSummaryReport()">🖨️ Summary Report प्रिंट करें</button></div>
+  <div id="reportSummaryList" style="max-height: 44vh; overflow-y: auto; padding-right: 5px;"></div>
 </div>
 
   </div>  
@@ -1269,7 +1324,6 @@ placeholder="ब्याज से खोजें...">
   </div>  
 </div>  
 
-<!-- TASK 1 FIXED: UPDATED CALCULATOR STRUCTURE FOR PERFECT DEVICE DISPLAY -->
 <div id="fasalPopupOverlay">  
   <div id="popupBox">  
     <h5 class="text-center mb-2 fw-bold text-success">🌾 नई फसल जोड़ें</h5>
@@ -1382,7 +1436,7 @@ placeholder="ब्याज से खोजें...">
             <th>बोरी</th>
             <th>अतिरिक्त</th>
             <th>क्विंटल (Qtl)</th>
-            <th>हिसाब डिटेल्स</th>
+            <th>हिساب डिटेल्स</th>
           </tr>
         </thead>
         <tbody id="mandiTableBody"></tbody>
@@ -1394,6 +1448,9 @@ placeholder="ब्याज से खोजें...">
 <script>  
 let globalFirstAppNames = new Set();
 let isNavigatedFromReport = false; // Flag to trace navigation path
+let activeReportTab = 'entries'; // State tracking for advanced report layout
+let lastCalculatedSummaryData = []; // Store list for print configuration
+let summaryFilterMode = 'debit'; // Toggle state for summary filter list
 
 window.onload = () => {  
     if(sessionStorage.getItem("isLoggedIn") === "true"){  
@@ -1562,13 +1619,14 @@ function openLedger(id){
 let shortName = (d.name || "").split(" ").slice(0,2).join(" ");
 let shortFather = (d.father || "").split(" ").slice(0,2).join(" ");
 let shortVillage = d.village || "-";
+let crn = d.rn || "-";
 
 if(shortVillage.length > 10){
    shortVillage = shortVillage.substring(0,10) + "..";
 }
 
 ledgerCustomerName.innerHTML = `
-👤 ${shortName}
+👤 ${shortName} <span class="badge bg-warning text-dark ms-2" style="font-size:12px;">R.N. ${crn}</span>
 <br>
 <span style="
 font-size:12px;
@@ -1629,7 +1687,6 @@ function switchAccount(accId) {
     loadLedger();
 }
 
-// Redirect and view from advanced report click functionality
 function viewLedgerFromReport(customerId) {
     isNavigatedFromReport = true;
     openLedger(customerId);
@@ -1690,7 +1747,7 @@ function createNewAccount() {
 
 function deleteAccount(accId) {
     if(accId === 'default') return alert("Main हिसाब डिलीट नहीं हो सकता!");
-    if(!confirm("क्या आप यह हिसाब और इसकी सभी एंट्रीज डिलीट करना चाहते हैं?")) return;
+    if(!confirm("क्या आप यह हिसाब और इसकी सभी entries डिलीट करना चाहते हैं?")) return;
     db.ref("accounts/" + currentCustomerId + "/" + accId).remove();
     db.ref("ledgers/" + currentCustomerId + "/" + accId).remove();
     if(currentAccountId === accId) {
@@ -1702,7 +1759,7 @@ function deleteAccount(accId) {
 
 function renameAccount(accId){
     let newName = document.getElementById("accName_" + accId).value.trim();
-    if(!newName){ return alert("हिसाब का नाम लिखें!"); }
+    if(!newName){ return alert("हिساب का नाम लिखें!"); }
     db.ref("accounts/" + currentCustomerId + "/" + accId).update({ name: newName });
     loadAccountDropdown();
     alert("✔ हिसाब नाम बदल दिया गया");
@@ -2338,8 +2395,250 @@ function closePrintPreview(){ document.getElementById("printPreviewBox").style.d
 function setZoom(val){ const pc = document.getElementById("printContent"); pc.style.transform = "scale(" + val + ")"; pc.style.width = (100 / val) + "%"; }  
 function finalPrint(){ window.print(); }  
 </script>  <script>  
-function openReport(){ showCard("advancedReportCard"); }  
+function openReport(){ 
+  showCard("advancedReportCard"); 
+  switchReportTab('entries');
+}  
+
+function switchReportTab(tab) {
+  activeReportTab = tab;
+  if(tab === 'entries') {
+    document.getElementById("btnShowEntries").classList.add("active");
+    document.getElementById("btnShowSummary").classList.remove("active");
+    document.getElementById("reportDataContainer").style.display = "block";
+    document.getElementById("reportSummaryContainer").style.display = "none";
+  } else {
+    document.getElementById("btnShowEntries").classList.remove("active");
+    document.getElementById("btnShowSummary").classList.add("active");
+    document.getElementById("reportDataContainer").style.display = "none";
+    document.getElementById("reportSummaryContainer").style.display = "block";
+    summaryFilterMode = 'debit'; // Default to debit view upon selection
+    generateAccountWiseSummary();
+  }
+}
+
+function onFilterInputTriggered() {
+  if (activeReportTab === 'summary') {
+    generateAccountWiseSummary();
+  }
+}
+
+// 🎯 FILTER ACTION CONTROL SWITCH FOR DISCRETE BALANCES
+function setSummaryFilterMode(mode) {
+  summaryFilterMode = mode;
+  if (mode === 'debit') {
+     document.getElementById("btnFilterDebit").classList.add("active-debit");
+     document.getElementById("btnFilterCredit").classList.remove("active-credit");
+  } else {
+     document.getElementById("btnFilterDebit").classList.remove("active-debit");
+     document.getElementById("btnFilterCredit").classList.add("active-credit");
+  }
+  generateAccountWiseSummary();
+}
+
+function generateAccountWiseSummary() {
+  const container = document.getElementById("reportSummaryList");
+  const banner = document.getElementById("grandSummaryTotalBanner");
+  container.innerHTML = "<div class='text-center p-3 fw-bold text-primary'>📊 नवीनतम सीज़न खाता खंगाला जा रहा है...</div>";
+
+  let from = fromDate.value ? new Date(fromDate.value) : null;
+  let to = toDate.value ? new Date(toDate.value) : null;
+  let search = reportSearch.value.toLowerCase().trim();
+
+  Promise.all([
+    db.ref("customers").once("value"),
+    db.ref("ledgers").once("value")
+  ]).then(([cSnap, lSnap]) => {
+    const customers = cSnap.val() || {};
+    const ledgers = lSnap.val() || {};
+    
+    let renderedHtml = "";
+    lastCalculatedSummaryData = []; 
+    let grandRunningTotalAmount = 0; // Cumulative balance metrics initialization
+
+    Object.keys(customers).forEach(cid => {
+      const cinfo = customers[cid];
+      const cname = cinfo.name || "Unknown";
+      const crn = cinfo.rn || "-";
+      const cvill = cinfo.village || "-";
+      
+      if (search && !cname.toLowerCase().includes(search) && !cvill.toLowerCase().includes(search)) {
+        return;
+      }
+
+      let totalC = 0;
+      let totalD = 0;
+      let totalI = 0;
+      let totalFNet = 0;
+      let hasValidEntries = false;
+      let activeAccountName = "Default";
+
+      if(ledgers[cid]) {
+        let allAccIds = Object.keys(ledgers[cid]);
+        let latestAccId = "default";
+        
+        if (allAccIds.length > 0) {
+          let generatedIds = allAccIds.filter(id => id !== 'default');
+          if (generatedIds.length > 0) {
+             generatedIds.sort();
+             latestAccId = generatedIds[generatedIds.length - 1]; 
+          }
+        }
+
+        activeAccountName = latestAccId === 'default' ? 'पुराना हिसाब' : 'नया हिसाब (सीज़न)';
+
+        if (ledgers[cid][latestAccId]) {
+          Object.keys(ledgers[cid][latestAccId]).forEach(eid => {
+            const entry = ledgers[cid][latestAccId][eid];
+            let entryDate = entry.startDate || entry.date || "";
+            
+            if (entryDate) {
+              if (from && new Date(entryDate) < from) return;
+              if (to && new Date(entryDate) > to) return;
+            }
+            
+            hasValidEntries = true;
+            totalC += +entry.credit || 0;
+            totalD += +entry.debit || 0;
+            totalI += +entry.interestAmount || 0;
+            if(entry.isFasal) {
+              totalFNet += +entry.netFasal || 0;
+            }
+          });
+        }
+      }
+
+      if ((from || to) && !hasValidEntries) {
+        return;
+      }
+
+      let finalNetBalance = (totalD + totalI) - (totalC + totalFNet);
+      if(finalNetBalance === 0) return; // Ignore clear balanced sheets
+
+      // Segregation rules configuration based on toggle selection mode
+      if (summaryFilterMode === 'debit' && finalNetBalance <= 0) return;
+      if (summaryFilterMode === 'credit' && finalNetBalance >= 0) return;
+
+      // Accumulate target amount metric
+      grandRunningTotalAmount += Math.abs(finalNetBalance);
+
+      lastCalculatedSummaryData.push({
+         name: cname,
+         village: cvill,
+         rn: crn,
+         credit: totalC,
+         debit: totalD,
+         interest: totalI,
+         netFasal: totalFNet,
+         netBalance: finalNetBalance
+      });
+
+      let balanceText = "";
+      let balanceStyle = "";
+
+      if(finalNetBalance > 0) {
+        balanceText = `₹${finalNetBalance.toFixed(2)} (निकासी / Debit 🔴)`;
+        balanceStyle = "color: #dc2626; font-weight:800;";
+      } else {
+        balanceText = `₹${Math.abs(finalNetBalance).toFixed(2)} (जमा / Credit 🟢)`;
+        balanceStyle = "color: #16a34a; font-weight:800;";
+      }
+
+      renderedHtml += `
+        <div class="rep-summary-card" onclick="viewLedgerFromReport('${cid}')" style="cursor:pointer;">
+          <div class="rep-summary-title">👤 ${cname} <span class="badge bg-danger float-end" style="font-size:11px;">R.N. ${crn}</span></div>
+          <div style="font-size:12px; color:#64748b; font-weight:700; margin-bottom:6px;">🏡 गाँव: ${cvill} | 📝 सक्रिय खाता: <b class="text-primary">${activeAccountName}</b></div>
+          <div class="rep-summary-item"><span>जमा (Credit):</span> <span style="color:#16a34a;">₹${totalC}</span></div>
+          <div class="rep-summary-item"><span>निकासी (Debit):</span> <span style="color:#b91c1c;">₹${totalD}</span></div>
+          <div class="rep-summary-item"><span>ब्याज (Interest):</span> <span style="color:#ea580c;">₹${totalI.toFixed(2)}</span></div>
+          <div class="rep-summary-item"><span>शुद्ध फसल (Net Fasal):</span> <span style="color:#0284c7;">₹${totalFNet.toFixed(2)}</span></div>
+          <div class="rep-summary-item border-top mt-2 pt-2" style="font-size:14px;">
+            <span>नवीनतम शुद्ध स्थिति (Net Balance):</span>
+            <span style="${balanceStyle}">${balanceText}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    // Update screen banner numbers accurately
+    let labelString = summaryFilterMode === 'debit' ? '🔴 कुल बची निकासी (Total Debit Sum)' : '🟢 कुल बची जमा (Total Credit Sum)';
+    banner.innerText = `${labelString} : ₹${grandRunningTotalAmount.toFixed(2)}`;
+    banner.style.backgroundColor = summaryFilterMode === 'debit' ? '#dc2626' : '#16a34a';
+
+    container.innerHTML = renderedHtml || `<div class='text-center p-3 text-muted fw-bold' style='font-size:13px;'>इस फ़िल्टर में कोई रिकॉर्ड नहीं मिला</div>`;
+  }).catch(err => {
+    container.innerHTML = "<div class='text-center p-3 text-danger'>त्रुटि: डेटा लोड करने में विफल!</div>";
+  });
+}
+
+function printSummaryReport() {
+  let dateHeader = summaryFilterMode === 'debit' ? "नवीनतम सक्रिय सीज़न निकासी रिपोर्ट (Debit Summary)" : "नवीनतम सक्रिय सीज़न जमा रिपोर्ट (Credit Summary)";
+  let periodText = "";
+  if(fromDate.value || toDate.value) {
+    periodText = `${fromDate.value || 'शुरुआत'} से ${toDate.value || 'आज'}`;
+  } else {
+    periodText = "नवीनतम सक्रिय सीज़न रिकॉर्ड";
+  }
+
+  let tableRows = "";
+  let printRunningSum = 0;
+
+  lastCalculatedSummaryData.forEach(r => {
+      let finalCreditColumn = "₹0";
+      let finalDebitColumn = "₹0";
+
+      if(r.netBalance > 0) {
+         finalDebitColumn = `₹${r.netBalance.toFixed(2)}`;
+         printRunningSum += r.netBalance;
+      } else if(r.netBalance < 0) {
+         finalCreditColumn = `₹${Math.abs(r.netBalance).toFixed(2)}`;
+         printRunningSum += Math.abs(r.netBalance);
+      }
+
+      tableRows += `
+        <tr>
+          <td style="text-align:left; font-weight:bold; padding:8px;">${r.name}</td>
+          <td style="padding:8px;">${r.village}</td>
+          <td style="font-size:11px; color:#475569; padding:8px;">${periodText}</td>
+          <td style="color:#16a34a; font-weight:bold; padding:8px;">${finalCreditColumn}</td>
+          <td style="color:#b91c1c; font-weight:bold; padding:8px;">${finalDebitColumn}</td>
+        </tr>
+      `;
+  });
+
+  let fullPrintTemplate = `
+    <div style="padding: 10px; font-family: sans-serif;">
+      <h2 style="text-align:center; margin-bottom:2px;">सैनी ट्रेडिंग कंपनी</h2>
+      <h4 style="text-align:center; margin-top:2px; color:#1e3a8a;">${dateHeader}</h4>
+      <p style="text-align:center; font-size:12px; margin-bottom:15px;"><b>अवधि:</b> ${periodText}</p>
+      <table border="1" style="width:100%; border-collapse:collapse; text-align:center; font-size:13px;">
+         <thead>
+           <tr style="background-color:#f2f2f2; font-weight:bold;">
+             <th style="padding:10px; text-align:left;">नाम (Name)</th>
+             <th style="padding:10px;">गाँव (Gav)</th>
+             <th style="padding:10px;">तारीख (Date Range)</th>
+             <th style="padding:10px; color:#16a34a;">अंतिम जमा (Final Credit)</th>
+             <th style="padding:10px; color:#b91c1c;">अंतिम निकासी (Final Debit)</th>
+           </tr>
+         </thead>
+         <tbody>
+           ${tableRows || '<tr><td colspan="5" style="color:red; padding:10px;">कोई रिकॉर्ड उपलब्ध नहीं है</td></tr>'}
+           <tr style="background-color:#e2e8f0; font-weight:900; font-size:14px;">
+              <td colspan="3" style="text-align:right; padding:10px;">ग्रैंड टोटल (Grand Total Amount):</td>
+              <td colspan="2" style="text-align:center; color:${summaryFilterMode==='debit' ? '#b91c1c':'#16a34a'}; padding:10px;">₹${printRunningSum.toFixed(2)}</td>
+           </tr>
+         </tbody>
+      </table>
+    </div>
+  `;
+  openPrintPreviewManual(fullPrintTemplate);
+}
+
 function generateReport(){  
+  if(activeReportTab === 'summary') {
+    generateAccountWiseSummary();
+    return;
+  }
   let from = fromDate.value ? new Date(fromDate.value) : null; let to = toDate.value ? new Date(toDate.value) : null; let search = reportSearch.value.toLowerCase().trim();  
   let interestSearch = parseFloat(document.getElementById("interestSearch").value) || 0; let sort = sortType.value; reportTable.innerHTML = ""; let all = [];  
   db.ref("customers").once("value").then(async csnap => {  
@@ -2372,7 +2671,6 @@ village: cvillage,
     all.sort((a,b)=>{ return sort === "new" ? b.sortKey.localeCompare(a.sortKey) : a.sortKey.localeCompare(b.sortKey); });  
     reportTable.innerHTML = "";  
     all.forEach(r=>{ 
-        // Rows are now clickable with pointer cursor styling to redirect cleanly to individual customer ledger
         reportTable.insertAdjacentHTML("beforeend",
 `<tr onclick="viewLedgerFromReport('${r.cid}')" style="cursor:pointer;">
 <td style="white-space:normal !important; line-height:1.05 !important;">
@@ -2472,6 +2770,7 @@ function openCombinedLedgerView(mode="ledger"){
   document.body.style.overflow = "hidden"; loadCombinedLedgerData();
 }
 function backToLedgerFromCombined(){ document.getElementById("combinedViewCard").style.display = "none"; document.getElementById("printPreviewBox").style.display = "none"; document.body.style.overflow = "auto"; if(window.combinedMode === "ledger"){ ledgerCard.style.display = "block"; }else{ customerListCard.style.display = "block"; } }
+loadCombinedLedgerData();
 function loadCombinedLedgerData(){
     if(window.bankKhataRef){ window.bankKhataRef.off(); } if(window.kharchKhataRef){ window.kharchKhataRef.off(); }
     window.bankKhataRef = bankDb.ref("bankKhata"); window.kharchKhataRef = bankDb.ref("kharchKhata");
