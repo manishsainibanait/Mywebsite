@@ -1124,6 +1124,9 @@ onclick="document.getElementById('excelUpload').click()">
     </div>
 </div>
 
+<!-- 🎯 TOP SUMMARY AREA WRAPPER -->
+<div id="ledgerTopSummary"></div>
+
 <div class="d-flex gap-2 mb-3 ledger-btn-wrap">
 <button class="btn btn-primary flex-fill" onclick="openTransactionPopup()" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">+ लेन-देन</button>  
 
@@ -1451,6 +1454,7 @@ let isNavigatedFromReport = false; // Flag to trace navigation path
 let activeReportTab = 'entries'; // State tracking for advanced report layout
 let lastCalculatedSummaryData = []; // Store list for print configuration
 let summaryFilterMode = 'debit'; // Toggle state for summary filter list
+window.justSavedEntry = false; // 🎯 SAFETY LOCK INTERFACE FLAG FOR DYNAMIC LIFECYCLE AUTO-ACCOUNTS
 
 window.onload = () => {  
     if(sessionStorage.getItem("isLoggedIn") === "true"){  
@@ -1539,10 +1543,14 @@ function handleBackAction() {
     }
 }
 
+// 🎯 DYNAMIC LIVE OPTIMISTIC SYNC FOR CUSTOMERS
+let currentCustomerPath = "";
 function loadCustomers(callback){
-  if(customerRef){ customerRef.off(); }
-  customerRef = db.ref("customers");
-  customerRef.on("value", snap=>{
+  let newPath = "customers";
+  if(customerRef && currentCustomerPath !== newPath){ customerRef.off(); customerRef = null; }
+  currentCustomerPath = newPath;
+  
+  let renderCustomers = snap => {
       customerTable.innerHTML = "";
       globalFirstAppNames.clear();
 
@@ -1594,7 +1602,14 @@ function loadCustomers(callback){
       });
       document.getElementById("customerCount").innerText = snap.numChildren();
       if(callback) callback();
-  });
+  };
+
+  if(!customerRef) {
+    customerRef = db.ref(newPath);
+    customerRef.on("value", renderCustomers);
+  } else {
+    db.ref(newPath).once("value").then(renderCustomers);
+  }
 }
 
 function openLedger(id){
@@ -1605,6 +1620,7 @@ function openLedger(id){
   currentCustomerId = id;
   let savedAcc = localStorage.getItem("lastAccount_" + id);
   currentAccountId = savedAcc || 'default';
+  window.justSavedEntry = false; // Reset security lock when shifting files
 
   ledgerTable.innerHTML = "";
   ledgerFooter.innerHTML = "";
@@ -1765,12 +1781,16 @@ function renameAccount(accId){
     alert("✔ हिसाब नाम बदल दिया गया");
 }
 
+// 🎯 FIXED ENGINE + AUTOMATIC NEW ACCOUNT ON SAVE/DELETE EVENTS ONLY
+let currentLedgerPath = "";
 function loadLedger(){
-  if(ledgerRef){ ledgerRef.off(); }
-  ledgerRef = db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId);
-  ledgerRef.on("value", snap=>{
+  let newPath = "ledgers/" + currentCustomerId + "/" + currentAccountId;
+  if(ledgerRef && currentLedgerPath !== newPath){ ledgerRef.off(); ledgerRef = null; }
+  currentLedgerPath = newPath;
+
+  let renderEntries = snap => {
       ledgerTable.innerHTML = "";  
-      let totalC = 0, totalD = 0, totalI = 0;  
+      let totalC = 0, totalD = 0, totalI = 0, totalFNet = 0;  
       let allFasal = [];  
       let entries = [];
 
@@ -1800,7 +1820,10 @@ function loadLedger(){
         totalC += +d.credit || 0;
         totalD += +d.debit || 0;
         totalI += +d.interestAmount || 0;
-        if(d.isFasal) allFasal.push(d);  
+        if(d.isFasal) {
+            allFasal.push(d);  
+            totalFNet += +d.netFasal || 0;
+        }
         
         let row = `
         <tr style="${d.isFasal ? 'background:#fff7d1;color:#b8860b;font-weight:bold;' : ''}">
@@ -1834,16 +1857,41 @@ function loadLedger(){
         ledgerTable.insertAdjacentHTML("beforeend", row);
       });
   
-      let totalFasalNet = 0;  
+      let totalFasalNet = totalFNet;  
       let totalFasalMajduri = 0;  
       let totalFasalCut = 0;  
       allFasal.forEach(f => {  
-          totalFasalNet += +f.netFasal || 0;  
           totalFasalMajduri += +f.totalMajduri || 0;  
           totalFasalCut += +f.totalCut || 0;  
       });  
   
       let balance = (totalD + totalI) - (totalC + totalFasalNet);
+
+      // 🎯 TOP LEDGER SUMMARY CARD VIEW
+      let topSummaryHtml = `
+      <div class="p-3 mb-3 border rounded shadow-sm bg-white text-center" style="border-radius:12px !important; border-left:6px solid #2563eb !important;">
+          <div class="row g-2">
+            <div class="col-4">
+              <small class="text-muted d-block fw-bold" style="font-size:11px;">कुल जमा (Credit)</small>
+              <span class="text-success fw-bold" style="font-size:14px;">₹${totalC}</span>
+            </div>
+            <div class="col-4">
+              <small class="text-muted d-block fw-bold" style="font-size:11px;">निकासी + ब्याज</small>
+              <span class="text-danger fw-bold" style="font-size:14px;">₹${(totalD + totalI).toFixed(2)}</span>
+            </div>
+            <div class="col-4">
+              <small class="text-muted d-block fw-bold" style="font-size:11px;">शुद्ध शेष स्थिति</small>
+              <span class="${balance >= 0 ? 'text-danger' : 'text-success'} fw-bold" style="font-size:14px;">₹${balance.toFixed(2)}</span>
+            </div>
+          </div>
+          <div class="mt-2 text-center border-top pt-2 text-muted" style="font-size:11px; font-weight:600;">
+            (नेट फसल: ₹${totalFasalNet.toFixed(2)} | मजदूरी: ₹${totalFasalMajduri.toFixed(2)} | कटौती: ₹${totalFasalCut.toFixed(2)})
+          </div>
+      </div>
+      `;
+      let topDiv = document.getElementById("ledgerTopSummary");
+      if(topDiv) { topDiv.innerHTML = topSummaryHtml; }
+
       ledgerFooter.innerHTML = `  
       <tr class="total-row" style="background:#fff3cd;font-weight:bold;color:#a66d00;">  
           <td colspan="2">कुल</td>  
@@ -1854,7 +1902,7 @@ function loadLedger(){
           <td>₹${totalI.toFixed(2)}</td>  
           <td colspan="3">  
               शेष: ₹${balance.toFixed(2)}<br>  
-              <small>(नेट फसल: ₹${totalFasalNet} | मजदूरी: ₹${totalFasalMajduri} | कटौती: ₹${totalFasalCut})</small>  
+              <small>(नेट फसल: ₹${totalFasalNet.toFixed(2)} | मजदूरी: ₹${totalFasalMajduri.toFixed(2)} | कटौती: ₹${totalFasalCut.toFixed(2)})</small>  
           </td>  
       </tr>  
       `;  
@@ -1874,8 +1922,36 @@ function loadLedger(){
         </tr>  
       `);  
       generateFasalSummary(allFasal);  
-  });  
-}  
+
+      // 🎯 FIXED AUTO CREATION SAFETY CONDITION: ONLY TRIGGERS ON SAVING/DELETING ACTION
+      if (window.justSavedEntry && entries.length > 0 && Math.abs(balance) < 0.01) {
+          window.justSavedEntry = false; // Reset lock instantly to prevent looping
+          if (!window.isAutoCreatingAccount) {
+              window.isAutoCreatingAccount = true;
+              let today = new Date();
+              let day = today.getDate();
+              let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+              let month = months[today.getMonth()];
+              let year = today.getFullYear().toString().slice(-2);
+              let autoName = day + " " + month + " " + year + " - नया सीज़न (ऑटो)";
+              
+              db.ref("accounts/" + currentCustomerId).push({ name: autoName }).then((newAccSnap) => {
+                  let newId = newAccSnap.key;
+                  window.isAutoCreatingAccount = false;
+                  switchAccount(newId);
+                  alert("⚖️ इस ग्राहक का पुराना हिसाब CLEAR (0) हो गया है! ऑटोमैटिक नया खाता शुरू कर दिया गया है।");
+              });
+          }
+      }
+  };
+
+  if(!ledgerRef) {
+    ledgerRef = db.ref(newPath);
+    ledgerRef.on("value", renderEntries);
+  } else {
+    db.ref(newPath).once("value").then(renderEntries);
+  }
+}
   
 function toggleFasalSummary(){  
   const b = fasalSummary;  
@@ -1934,6 +2010,7 @@ function saveTransaction(){
         interestType: (+tDebit.value || 0) > 0 ? "debit" : "credit", note: tNote.value
     };
 
+    window.justSavedEntry = true; // 🎯 Set live operational tag
     if(window.editingTransactionId){
         db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + window.editingTransactionId).update(data);
         window.editingTransactionId = null;
@@ -1941,7 +2018,7 @@ function saveTransaction(){
         db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId).push(data);
     }
     closeTransactionPopup();
-    setTimeout(()=>{ loadLedger(); },300);
+    setTimeout(()=>{ loadLedger(); }, 100);
 }
 
 ["fBori","fWeightPer","fExtraKG","fRate","fMajduri","fCut"].forEach(id=>{
@@ -1979,6 +2056,7 @@ function saveFasal(){
     rate:r, totalAmount, totalMajduri, totalCut, netFasal:net, majType: type, note:fNote.value
   };
 
+  window.justSavedEntry = true; // 🎯 Set live operational tag
   if(window.editingFasalId){
       db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + window.editingFasalId).update(data);
       window.editingFasalId = null;
@@ -1986,11 +2064,12 @@ function saveFasal(){
       db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId).push(data);
   }
   closeFasalPopup();
-  setTimeout(()=>{ loadLedger(); }, 300);
+  setTimeout(()=>{ loadLedger(); }, 100);
 }
 
 function deleteLedgerEntry(id){  
   if(!confirm("हटाना चाहते हैं?")) return;  
+  window.justSavedEntry = true; // 🎯 Set live operational tag for zero evaluations
   db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).remove();  
   loadLedger();  
 }  
@@ -2754,6 +2833,7 @@ document.getElementById("ledgerCard").addEventListener("touchend", function(e){
 function closeHisab(){ document.getElementById("closeHisabPopup").style.display = "flex"; document.getElementById("closeAmount").value = ""; setTimeout(()=>{ document.getElementById("closeAmount").focus(); },100); }
 function saveCloseHisab(){  
   let amount = document.getElementById("closeAmount").value.trim(); if(amount === "" || isNaN(amount)){ return alert("सही राशि लिखें!"); }  
+  window.justSavedEntry = true; // 🎯 Set live operational tag
   db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId).push({ startDate: new Date().toISOString().split("T")[0], endDate: "", credit: Number(amount), debit: 0, interest: 0, days: 0, interestAmount: 0, note: "🔒 हिसाब बंद", isCloseEntry:true });  
   document.getElementById("closeHisabPopup").style.display = "none"; alert("✔ हिसाब बंद हो गया");  
 }  
