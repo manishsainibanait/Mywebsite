@@ -554,16 +554,8 @@ font-size: 13px;
 font-weight: 600;
 }
 
-.comb-view-table{
-width: 100%;
-border-collapse: collapse;
-font-size: 13px;
-table-layout: fixed;
-word-break: break-word;
-}
-
-.comb-view-table th,
-.comb-view-table td{
+.comb-view-summary th,
+.comb-view-summary td{
 padding: 6px 4px !important; 
 border: 1px solid #e2e8f0;
 text-align: center;
@@ -910,7 +902,7 @@ placeholder="पासवर्ड दर्ज करें" style="height: 50p
 </div>  <div id="forgotBox" style="  
     display: none; width: 100%; max-width: 400px;  
     margin: 40px auto; background: white; padding: 25px;  
-    border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">    <h4 class="text-center mb-3 fw-bold">🔑 पासवर्ड रीसेट</h4>  <input id="favName" class="form-control mb-3"  
+    border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">    <h4 class="text-center mb-3 fw-bold">🔑 पासवर्ड रीсет</h4>  <input id="favName" class="form-control mb-3"  
 placeholder="फेवरेट नाम लिखें">
 
 <button class="btn btn-success w-100 mb-2" onclick="resetPass()">Reset करें</button>
@@ -935,7 +927,7 @@ placeholder="फेवरेट नाम लिखें">
 <span id="mainDate" style="float: right; font-size: 14px; font-weight: 500; opacity: 0.9;"></span>
 
   </div>  <div class="sub-header">  
-  ग्राहक सूची  
+   ग्राहक सूची  
   <span style="  
     font-weight: 700;  
     font-size: 16px;  
@@ -972,12 +964,20 @@ onclick="openMandiAppProView()"
 🌾 Mandi App Pro Data View
 </a>
 </li>
+<li>
+<a class="dropdown-item fw-bold text-danger"
+href="#"
+onclick="openAiMatcherCard()"
+>
+🤖 AI Smart Entry Matcher (Total Calc)
+</a>
+</li>
       <li><a class="dropdown-item" href="#" onclick="openVillageManager()">🏡 गाँव प्रबंधन</a></li>  
       <li><a class="dropdown-item" href="#" onclick="toggleSummary()">🔍 कुल सारांश</a></li>  
       <li><a class="dropdown-item" href="#" onclick="deleteSelectedCustomers()">🗑 चुने हुए ग्राहक हटाएं</a></li>  
       <li><a class="dropdown-item" href="#" onclick="openAddCustomer()">➕ नया ग्राहक जोड़ें</a></li>  
       <li><a class="dropdown-item" href="#" onclick="document.getElementById('excelUpload').click()">📤 Excel डेटा अपलोड</a></li>  
-      <li><a class="dropdown-item" href="#" onclick="printCustomers()">🖨 ग्राहक सूची प्रिंट</a></li>  
+      <li><a class="dropdown-item" href="#" onclick="printCustomers()">🖨 ग्राहक सूची PRINT</a></li>  
       <li><a class="dropdown-item" href="#" onclick="openChangePass()">🔐 पासवर्ड बदलें</a></li>  
     </ul>  
   </div>  
@@ -1294,6 +1294,49 @@ onclick="printCombinedLedgerView()">
 
   </div>  
 </div>  
+
+<!-- 🤖 AI SMART LEDGER ENTRY MATCHER CARD -->
+<div id="aiMatcherCard" class="card" style="display: none; position: fixed !important; top: 0; left: 0; width: 100%; height: 100%; margin: 0 !important; border-radius: 0 !important; z-index: 99999; overflow-y: auto; background: white;">
+  <div class="header" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">  
+    🤖 AI Smart Entry Matcher
+    <button class="back-3d-btn" onclick="backToList();">🔙</button>  
+  </div>    
+  <div class="card-body p-4">  
+    <div class="alert alert-dark py-2 text-center fw-bold mb-3" style="font-size:13px; background:#f5f3ff; color:#4338ca; border:1px solid #c7d2fe; border-radius:12px;">
+      नाम, तारीख या कोई भी फसल/विवरण डालकर एक साथ पूरे खाते का मिलान करें और टोटल जानें।
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col-12 col-md-6">
+        <label class="fw-bold mb-1" style="font-size:13px; color:#4f46e5;">👤 ग्राहक का नाम / पुत्र / गाँव</label>
+        <input id="aiMatchName" class="form-control" placeholder="उदा: Manish, Shera, Shahzadpur..." list="aiCustomerNameList">
+        <datalist id="aiCustomerNameList"></datalist>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="fw-bold mb-1" style="font-size:13px; color:#4f46e5;">📅 विशिष्ट तारीख (Specific Date)</label>
+        <input id="aiMatchDate" type="date" class="form-control">
+      </div>
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <label class="fw-bold mb-1" style="font-size:13px; color:#4f46e5;">📅 कब से (From Date)</label>
+        <input id="aiMatchFrom" type="date" class="form-control">
+      </div>
+      <div class="col-6">
+        <label class="fw-bold mb-1" style="font-size:13px; color:#4f46e5;">📅 कब तक (To Date)</label>
+        <input id="aiMatchTo" type="date" class="form-control">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="fw-bold mb-1" style="font-size:13px; color:#4f46e5;">🔍 कोई खास विवरण / नोट / फसल का नाम</label>
+      <input id="aiMatchNote" class="form-control" placeholder="उदा: गेहूं, सरसों, नकद, bank...">
+    </div>
+    <button class="btn text-white w-100 mb-4 btn-lg shadow-sm" onclick="calculateAiMatchedTotal()" style="background: linear-gradient(135deg, #4f46e5, #3730a3); border:none; border-radius:12px; padding:12px; font-weight:700;">
+      🔍 डेटा मैच करें और टोटल बताएं
+    </button>
+    <div id="aiMatchResultBox"></div>
+  </div>
+</div>
+
  <div id="transactionPopupOverlay">  
   <div id="popupBox">  <h5 class="text-center mb-3 fw-bold text-primary">🧾 नया लेन-देन</h5>
 
@@ -1389,7 +1432,7 @@ onclick="printCombinedLedgerView()">
     </div>
 
     <label class="fw-bold">फसल विवरण नोट</label>
-    <textarea id="fNote" class="form-control" placeholder="फसल नोट विवरण" style="height:60px;"></textarea>  
+    <textarea id="fNote" class="form-control" placeholder="فसल नोट विवरण" style="height:60px;"></textarea>  
 
     <div class="row g-2 mt-1">
        <div class="col-6"><button class="btn btn-success w-100" onclick="saveFasal()">✔ सहेजें</button></div>
@@ -1508,7 +1551,8 @@ function showCard(id){
   customerListCard.style.display="none";  
   addCustomerCard.style.display="none";  
   ledgerCard.style.display="none";  
-advancedReportCard.style.display="none";  
+  advancedReportCard.style.display="none";  
+  if(document.getElementById("aiMatcherCard")) document.getElementById("aiMatcherCard").style.display="none";
   loginScreen.style.display="none";  
  document.getElementById("combinedViewCard").style.display="none"; document.getElementById("appContent").style.display = "block";  
   
@@ -1557,7 +1601,7 @@ function loadCustomers(callback){
       snap.forEach(c=>{
         let d = c.val();
         let id = c.key;
-        
+        if (!d) return;
         if(d.name) { globalFirstAppNames.add(d.name.trim().toLowerCase()); }
 
         let row = `
@@ -1664,6 +1708,7 @@ function checkAndMigrateLedger(customerId, callback) {
     rootRef.once("value").then(snap => {
         let hasFlatData = false;
         snap.forEach(child => {
+            if(!child.val()) return;
             if(child.val().date || child.val().startDate || child.val().isFasal) { hasFlatData = true; }
         });
 
@@ -1691,6 +1736,7 @@ function loadAccountDropdown() {
         snap.forEach(acc => {
             let d = acc.val();
             let id = acc.key;
+            if (!d) return;
             accountList.insertAdjacentHTML("beforeend", `<option value="${id}" ${id === currentAccountId ? 'selected' : ''}>${d.name}</option>`);
         });
     });
@@ -1725,6 +1771,7 @@ function loadAccountListManager() {
         snap.forEach(acc => {
             let d = acc.val();
             let id = acc.key;
+            if (!d) return;
             container.insertAdjacentHTML("beforeend", `
                 <div class="border rounded p-2 mb-2 bg-white">
                     <input id="accName_${id}" class="form-control mb-2" value="${d.name}">
@@ -1796,8 +1843,10 @@ function loadLedger(){
 
       snap.forEach(e=>{
         let d = e.val();
-        let key = e.key;
-        entries.push({ ...d, key });
+        if(d) {
+          let key = e.key;
+          entries.push({ ...d, key });
+        }
       });
 
       entries.sort((a,b)=>{ return new Date(a.startDate || a.date) - new Date(b.startDate || b.date); });
@@ -1855,7 +1904,7 @@ function loadLedger(){
         </tr>
         `;
         ledgerTable.insertAdjacentHTML("beforeend", row);
-      });
+      });  
   
       let totalFasalNet = totalFNet;  
       let totalFasalMajduri = 0;  
@@ -1939,7 +1988,7 @@ function loadLedger(){
                   let newId = newAccSnap.key;
                   window.isAutoCreatingAccount = false;
                   switchAccount(newId);
-                  alert("⚖️ इस ग्राहक का पुराना हिसाब CLEAR (0) हो गया है! ऑटोमैटिक नया खाता शुरू कर दिया गया है।");
+                  alert("⚖️ इस ग्राहक का पुराना हिसाब CLEAR (0) हो गया है! खाता ऑटोमैटिक नया शुरू कर दिया गया है।");
               });
           }
       }
@@ -2027,7 +2076,7 @@ function saveTransaction(){
 });
 
 function calcFasal(){  
-  let b = Number(fBori.value) || 0; let w = Number(fWeightPer.value) || 0; let r = Number(fRate.value) || 0; let m = Number(fMajduri.value) || 0;  
+  let b = Number(fBori.value) || 0; let w = Number(fWeightPer.value) || 0; r = Number(fRate.value) || 0; let m = Number(fMajduri.value) || 0;  
   let cut = Number(document.getElementById("fCut").value) || 0; let extra = Number(fExtraKG.value) || 0;  
   let totalKG = (b * w) + extra; let q = totalKG / 100;  
   fTotalQ.value = q.toFixed(2);  
@@ -2039,7 +2088,7 @@ function calcFasal(){
 
 function openFasalPopup() {  
     fasalPopupOverlay.style.display = "flex"; loadFasalDropdown();  
-    fName.value = ""; fDate.value = ""; fBori.value = ""; fWeightPer.value = ""; fExtraKG.value = ""; fTotalQ.value = ""; fRate.value = ""; fMajduri.value = ""; document.getElementById("fCut").value = ""; fMajduriTotal.value = ""; fNetAmount.value = ""; fNote.value = "";  
+    fName.value = ""; fDate.value = ""; fBori.value = ""; fWeightPer.value = ""; fTotalQ.value = ""; fExtraKG.value = ""; fRate.value = ""; fMajduri.value = ""; document.getElementById("fCut").value = ""; fMajduriTotal.value = ""; fNetAmount.value = ""; fNote.value = "";  
     window.editingFasalId = null;  
 }  
   
@@ -2074,6 +2123,15 @@ function deleteLedgerEntry(id){
   loadLedger();  
 }  
 
+/* EXPORT TO EXCEL */
+function exportLedgerToExcel() {
+  if(!currentCustomerId) return alert("कोई ग्राहक चयनित नहीं है!");
+  let nameText = document.getElementById("ledgerCustomerName").innerText.split('\n')[0].replace('👤 ', '').trim();
+  let table = document.getElementById("ledgerTableMain");
+  let wb = XLSX.utils.table_to_book(table, {sheet: "Ledger Sheet"});
+  XLSX.writeFile(wb, `${nameText}_ledger.xlsx`); // Fixed typo from Xxlsx to XLSX
+}
+
 function printLedger(){  
     let name = document.getElementById("ledgerCustomerName").innerText;  
     let table = document.getElementById("ledgerTableMain").cloneNode(true);  
@@ -2106,7 +2164,7 @@ let editingCustomerId = null;
 function editCustomer(id) {  
     editingCustomerId = id;  
     db.ref("customers/" + id).once("value").then(s => {  
-        let d = s.val(); cName.value = d.name; cFather.value = d.father; cVillage.value = d.village; cPhone.value = d.phone; cAadhar.value = d.aadhar; cRN.value = d.rn || "";  
+        let d = s.val(); if(!d) return; cName.value = d.name; cFather.value = d.father; cVillage.value = d.village; cPhone.value = d.phone; cAadhar.value = d.aadhar; cRN.value = d.rn || "";  
         showCard("addCustomerCard");  
     });  
 }  
@@ -2148,6 +2206,7 @@ function handleExcelUpload(e) {
         let data = new Uint8Array(reader.result); let workbook = XLSX.read(data, { type: "array" });  
         let sheet = workbook.Sheets[workbook.SheetNames[0]]; let json = XLSX.utils.sheet_to_json(sheet);  
         json.forEach(row => {  
+            if(!row) return;
             let c = { name: row.name || "", father: row.father || "", village: row.village || "", phone: row.phone || "", aadhar: row.aadhar || "" };  
             db.ref("customers").push(c);  
         });  
@@ -2187,7 +2246,7 @@ function toggleSummary() {
 
             let cs = await db.ref("customers/" + cid).once("value");
 
-            if (cs.exists()) {
+            if (cs.exists() && cs.val()) {
                 customerName = cs.val().name || "Unknown";
             }
 
@@ -2195,14 +2254,17 @@ function toggleSummary() {
             let interest2026 = 0;
 
             let customerData = ledgers[cid];
+            if(!customerData) continue;
 
             for (let acc in customerData) {
 
                 let entries = customerData[acc];
+                if(!entries) continue;
 
                 for (let key in entries) {
 
                     let d = entries[key];
+                    if(!d) continue;
 
                     let interest =
                         +d.interestAmount || 0;
@@ -2349,7 +2411,7 @@ function addVillage() {
 function loadVillageList() {  
     const box = document.getElementById("villageList"); box.innerHTML = "";  
     db.ref("settings/villages").once("value").then(snap => {  
-        snap.forEach(v => { let name = v.val(); let id = v.key; box.insertAdjacentHTML("beforeend", `<div class="d-flex justify-content-between p-2 border mb-1">${name}<button class="btn btn-sm btn-danger" onclick="deleteVillage('${id}')">❌</button></div>`); });  
+        snap.forEach(v => { let name = v.val(); let id = v.key; if(!name) return; box.insertAdjacentHTML("beforeend", `<div class="d-flex justify-content-between p-2 border mb-1">${name}<button class="btn btn-sm btn-danger" onclick="deleteVillage('${id}')">❌</button></div>`); });  
     });  
 }  
 function deleteVillage(id) { db.ref("settings/villages/" + id).remove(); loadVillageList(); loadVillageDropdown(); }  
@@ -2357,7 +2419,7 @@ function deleteVillage(id) { db.ref("settings/villages/" + id).remove(); loadVil
 function loadVillageDropdown() {  
     cVillage.innerHTML = `<option value="">गाँव चुनें</option>`; villageFilter.innerHTML = `<option value="">सभी गाँव</option>`;  
     db.ref("settings/villages").once("value").then(snap => {  
-        snap.forEach(v => { let name = v.val(); cVillage.insertAdjacentHTML("beforeend", `<option>${name}</option>`); villageFilter.insertAdjacentHTML("beforeend", `<option>${name}</option>`); });  
+        snap.forEach(v => { let name = v.val(); if(!name) return; cVillage.insertAdjacentHTML("beforeend", `<option>${name}</option>`); villageFilter.insertAdjacentHTML("beforeend", `<option>${name}</option>`); });  
     });  
 }  
 loadVillageDropdown();  
@@ -2416,7 +2478,7 @@ async function fingerLogin() {
   
 function editFasal(id){  
     db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).once("value").then(s=>{  
-        let f = s.val(); if(!f.isFasal){ return; }
+        let f = s.val(); if(!f || !f.isFasal){ return; }
         fasalPopupOverlay.style.display = "flex";  
         fName.value = f.name || ""; fDate.value = f.date || ""; fBori.value = f.bori || 0; fWeightPer.value = f.weightPer || 0; fTotalQ.value = f.quintal || 0; fExtraKG.value = f.extraKG || 0; fRate.value = f.rate || 0;  
         document.getElementById("majType").value = f.majType || "quintal";  
@@ -2443,7 +2505,7 @@ function calcInterest() {
 function editTransaction(id){  
     window.editingTransactionId = id;  
     db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).once("value").then(s=>{  
-        let d = s.val(); if(d.isFasal){ return; }  
+        let d = s.val(); if(!d || d.isFasal){ return; }  
         transactionPopupOverlay.style.display = "flex"; tDate.value = d.startDate || ""; tEndDate.value = d.endDate || ""; tCredit.value = d.credit || 0; tDebit.value = d.debit || 0; tInterest.value = d.interest || 0; tDays.value = d.days || 0; tInterestAmount.value = d.interestAmount || 0;  
         document.getElementById("interestEnabled").checked = d.interestEnabled !== false; calcInterest(); tNote.value = d.note || "";  
     });  
@@ -2458,10 +2520,10 @@ function addNewFasal() {
 function deleteFasal(id) { if (!confirm("क्या आप फसल हटाना चाहते हैं?")) return; db.ref("fasals/" + id).remove(); loadFasalList(); loadFasalDropdown(); }  
 function loadFasalList() {  
     const box = document.getElementById("fasalList"); box.innerHTML = "";  
-    db.ref("fasals").once("value").then(snap => { snap.forEach(f => { box.insertAdjacentHTML("beforeend", `<div class="d-flex justify-content-between p-2 border mb-1">${f.val().name}<button class="btn btn-sm btn-danger" onclick="deleteFasal('${f.key}')">❌</button></div>`); }); });  
+    db.ref("fasals").once("value").then(snap => { snap.forEach(f => { if(!f.val()) return; box.insertAdjacentHTML("beforeend", `<div class="d-flex justify-content-between p-2 border mb-1">${f.val().name}<button class="btn btn-sm btn-danger" onclick="deleteFasal('${f.key}')">❌</button></div>`); }); });  
 }  
 function loadFasalDropdown() {  
-    db.ref("fasals").once("value").then(snap => { fName.innerHTML = `<option value="">फसल चुनें</option>`; snap.forEach(f => { fName.insertAdjacentHTML("beforeend", `<option>${f.val().name}</option>`); }); });  
+    db.ref("fasals").once("value").then(snap => { fName.innerHTML = `<option value="">फसल चुनें</option>`; snap.forEach(f => { if(!f.val()) return; fName.insertAdjacentHTML("beforeend", `<option>${f.val().name}</option>`); }); });  
 }  
 loadFasalDropdown();  
 function closeFasalPopup() { document.getElementById("fasalPopupOverlay").style.display = "none"; window.editingFasalId = null; }  
@@ -2537,6 +2599,7 @@ function generateAccountWiseSummary() {
 
     Object.keys(customers).forEach(cid => {
       const cinfo = customers[cid];
+      if(!cinfo) return;
       const cname = cinfo.name || "Unknown";
       const crn = cinfo.rn || "-";
       const cvill = cinfo.village || "-";
@@ -2569,6 +2632,7 @@ function generateAccountWiseSummary() {
         if (ledgers[cid][latestAccId]) {
           Object.keys(ledgers[cid][latestAccId]).forEach(eid => {
             const entry = ledgers[cid][latestAccId][eid];
+            if(!entry) return;
             let entryDate = entry.startDate || entry.date || "";
             
             if (entryDate) {
@@ -2723,12 +2787,12 @@ function generateReport(){
   db.ref("customers").once("value").then(async csnap => {  
     let promises = [];  
     csnap.forEach(c => {  
-      let cid = c.key; let cname = c.val().name || "";  
+      let cid = c.key; if(!c.val()) return; let cname = c.val().name || "";  
 let cvillage = c.val().village || "";
 let crn = c.val().rn || "";
       let p = db.ref("ledgers/" + cid).once("value").then(lsnap => {  
         lsnap.forEach(accSnap => { accSnap.forEach(e => {  
-            let d = e.val(); let date = d.startDate || d.date || ""; if(!date) return;  
+            let d = e.val(); if(!d) return; let date = d.startDate || d.date || ""; if(!date) return;  
             if(from && new Date(date) < from) return; if(to && new Date(date) > to) return;  
             if((!search || cname.toLowerCase().includes(search) || (d.note || "").toLowerCase().includes(search)) && (interestSearch === 0 || (+d.interestAmount || 0) >= interestSearch)){  
               all.push({
@@ -2801,6 +2865,424 @@ text-overflow:ellipsis;
     });  
   });  
 }  
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// 🤖 AI SMART LEDGER ENTRY RECONCILIATION MATCHING (FIXED WITH STRICT NULL SAFETY SLOTS FOR ARRAY TYPE DATABASES)
+function openAiMatcherCard() {
+    showCard("aiMatcherCard");
+    document.getElementById("aiMatchResultBox").innerHTML = "";
+    document.getElementById("aiMatchName").value = "";
+    document.getElementById("aiMatchDate").value = "";
+    document.getElementById("aiMatchFrom").value = "";
+    document.getElementById("aiMatchTo").value = "";
+    document.getElementById("aiMatchNote").value = "";
+    
+    // Auto populate suggestion datalist dynamically from database (Displays Name + Father + Village)
+    const datalist = document.getElementById("aiCustomerNameList");
+    if(datalist) {
+        datalist.innerHTML = "";
+        db.ref("customers").once("value").then(snap => {
+            snap.forEach(c => {
+                let d = c.val();
+                if(d && d.name) {
+                    let textString = d.name.trim();
+                    if(d.father) textString += " (पुत्र: " + d.father.trim() + ")";
+                    if(d.village) textString += " - " + d.village.trim();
+                    datalist.insertAdjacentHTML("beforeend", `<option value="${textString}"></option>`);
+                }
+            });
+        });
+    }
+}
+
+function calculateAiMatchedTotal() {
+    const resBox = document.getElementById("aiMatchResultBox");
+    resBox.innerHTML = "<div class='text-center p-4 fw-bold text-primary'><div class='spinner-border text-primary mb-2' role='status'></div><br>🤖 AI System लेजर और Combined (Bank+Kharch) बुक का मिलान कर रहा है...</div>";
+    
+    let qName = document.getElementById("aiMatchName").value.toLowerCase().trim();
+    let qDate = document.getElementById("aiMatchDate").value;
+    let qFrom = document.getElementById("aiMatchFrom").value;
+    let qTo = document.getElementById("aiMatchTo").value;
+    let qNote = document.getElementById("aiMatchNote").value.toLowerCase().trim();
+    
+    // SMART EXTRACTOR: Extracts pure core customer name out of parenthesized strings
+    let pureNameForCombined = qName;
+    if (qName.includes(" (पुत्र:")) {
+        pureNameForCombined = qName.split(" (पुत्र:")[0].trim().toLowerCase();
+    } else if (qName.includes(" - ")) {
+        pureNameForCombined = qName.split(" - ")[0].trim().toLowerCase();
+    }
+
+    Promise.all([
+        db.ref("customers").once("value"),
+        db.ref("ledgers").once("value"),
+        bankDb.ref("bankKhata").once("value"),
+        bankDb.ref("kharchKhata").once("value")
+    ]).then(([cSnap, lSnap, bSnap, kSnap]) => {
+        const customers = cSnap.val() || {};
+        const ledgers = lSnap.val() || {};
+        const bankKhata = bSnap.val() || {};
+        const kharchKhata = kSnap.val() || {};
+        
+        let ledgerEntries = [];
+        let combinedEntries = [];
+        
+        // Detect if the user selected an exact customer from the suggestion datalist
+        let exactCid = null;
+        Object.keys(customers).forEach(cid => {
+            const cinfo = customers[cid];
+            if(!cinfo) return;
+            let block = (cinfo.name || "").trim();
+            if(cinfo.father) block += " (पुत्र: " + cinfo.father.trim() + ")";
+            if(cinfo.village) block += " - " + cinfo.village.trim();
+            if(block.toLowerCase() === qName) {
+                exactCid = cid;
+            }
+        });
+
+        // Cumulative counters for dynamic Debit, Credit, and Balance reporting
+        let totalLedgerCredit = 0;
+        let totalLedgerDebit = 0;
+        let totalLedgerFasal = 0;
+        let totalLedgerInterest = 0;
+        let totalCombinedCredit = 0;
+        let totalCombinedDebit = 0;
+        
+        // 1. Fetch & Filter Customer Personal Ledger Entries
+        Object.keys(customers).forEach(cid => {
+            if (exactCid && cid !== exactCid) {
+                return; // Strictest separation: only allow the exact chosen customer!
+            }
+            
+            const cinfo = customers[cid];
+            if(!cinfo) return;
+            const cname = cinfo.name || "Unknown";
+            const cvill = cinfo.village || "-";
+            const cfather = cinfo.father || "";
+            const crn = cinfo.rn || "-";
+            
+            if (!exactCid && qName) {
+                let combinedSearchBlock = (cname + " " + cfather + " " + cvill).toLowerCase();
+                if (!combinedSearchBlock.includes(qName) && !cname.toLowerCase().includes(pureNameForCombined)) return;
+            }
+            
+            if (ledgers[cid]) {
+                Object.keys(ledgers[cid]).forEach(accId => {
+                    if(!ledgers[cid][accId]) return;
+                    Object.keys(ledgers[cid][accId]).forEach(eid => {
+                        const entry = ledgers[cid][accId][eid];
+                        if(!entry) return;
+                        let entryDate = entry.startDate || entry.date || "";
+                        let entryNote = (entry.note || "").toLowerCase();
+                        let entryFasalName = entry.isFasal ? (entry.name || "").toLowerCase() : "";
+                        
+                        // Apply Date Isolation
+                        if (qDate && entryDate !== qDate) return;
+                        if (qFrom && entryDate < qFrom) return;
+                        if (qTo && entryDate > qTo) return;
+                        
+                        // Calculate dynamic interest exactly like loadLedger() does for standard standalone entries
+                        let computedInterestAmount = +entry.interestAmount || 0;
+                        if(!entry.isFasal && entry.startDate && !entry.endDate && (+entry.debit || 0) > 0 && (+entry.interest || 0) > 0){
+                          let start = new Date(entry.startDate);
+                          let today = new Date();
+                          let days = Math.floor((today - start) / (1000*60*60*24));
+                          if(days < 0) days = 0;
+                          let amount = +entry.debit || 0;
+                          let monthlyInterest = (amount * (+entry.interest || 0)) / 100;
+                          let dailyInterest = monthlyInterest / 30;
+                          computedInterestAmount = dailyInterest * days;
+                        }
+
+                        ledgerEntries.push({
+                            id: eid,
+                            cid: cid,
+                            cname: cname,
+                            cvill: cvill,
+                            crn: crn,
+                            date: entryDate,
+                            credit: +entry.credit || 0,
+                            debit: +entry.debit || 0,
+                            interestAmount: computedInterestAmount,
+                            netFasal: entry.isFasal ? (+entry.netFasal || 0) : 0,
+                            desc: entry.isFasal ? `🌾 फसल: ${entry.name || ""}` : (entry.note || "लेन-देन"),
+                            isFasal: entry.isFasal || false,
+                            isMatched: false,
+                            matchedWith: null,
+                            noteMatch: qNote ? (entryNote.includes(qNote) || entryFasalName.includes(qNote)) : true
+                        });
+                    });
+                });
+            }
+        });
+        
+        // 2. Fetch & Filter Master Combined (Bank + Kharch) Book Entries
+        autoCollectCombinedBook(bankKhata, "Bank");
+        autoCollectCombinedBook(kharchKhata, "Kharch");
+        
+        function autoCollectCombinedBook(khataObj, type) {
+            Object.keys(khataObj).forEach(key => {
+                const e = khataObj[key];
+                if (!e) return; // Array slot placeholder safety skip guard!
+                let entryDate = e.date || "";
+                let entryDesc = (e.desc || e.name || "").toLowerCase();
+                
+                if (exactCid || pureNameForCombined) {
+                    let targetName = pureNameForCombined;
+                    if(!targetName) return;
+                    
+                    // Strict whole-word token matching to ensure precision for specific customer
+                    let words = targetName.split(/\s+/).filter(Boolean);
+                    let allWordsMatch = words.every(word => {
+                        let regex = new RegExp("\\b" + escapeRegExp(word) + "\\b", "i");
+                        return regex.test(entryDesc);
+                    });
+                    if (!allWordsMatch) return;
+
+                    // SMART FILTER RE-VERIFICATION: If another customer's name appears BEFORE our searched customer name in the description, skip it!
+                    let ourIndex = entryDesc.indexOf(targetName);
+                    let belongsToOther = false;
+
+                    Object.keys(customers).forEach(otherCid => {
+                        if (exactCid && otherCid !== exactCid) {
+                            if(!customers[otherCid]) return;
+                            let otherName = (customers[otherCid].name || "").trim().toLowerCase();
+                            if (otherName && otherName.length > 2) {
+                                let otherFirstName = otherName.split(" ")[0];
+                                let otherIdx = entryDesc.indexOf(otherFirstName);
+                                if (otherIdx >= 0 && otherIdx < ourIndex) {
+                                    belongsToOther = true; // It contains another customer's name as primary subject!
+                                }
+                            }
+                        }
+                    });
+                    if (belongsToOther) return; 
+                } else if (qName) {
+                    if (!entryDesc.includes(pureNameForCombined)) return;
+                }
+                
+                // Enforce exact date boundaries 
+                if (qDate && entryDate !== qDate) return;
+                if (qFrom && entryDate < qFrom) return;
+                if (qTo && entryDate > qTo) return;
+                
+                combinedEntries.push({
+                    id: key,
+                    type: type,
+                    date: entryDate,
+                    desc: e.desc || e.name || "-",
+                    credit: +e.credit || 0,
+                    debit: +e.debit || 0,
+                    isMatched: false,
+                    matchedWith: null,
+                    noteMatch: qNote ? entryDesc.includes(qNote) : true
+                });
+            });
+        }
+        
+        // 3. Cross-Reconciliation AI Logic Matcher
+        ledgerEntries.forEach(le => {
+            let leAmt = le.credit || le.debit || le.netFasal || 0;
+            if (leAmt === 0) return;
+            
+            let foundCe = combinedEntries.find(ce => {
+                if (ce.isMatched) return false;
+                let ceAmt = ce.credit || ce.debit || 0;
+                return (le.date === ce.date && Math.abs(leAmt - ceAmt) < 0.01);
+            });
+            
+            if (foundCe) {
+                le.isMatched = true;
+                le.matchedWith = foundCe;
+                foundCe.isMatched = true;
+                foundCe.matchedWith = le;
+            }
+        });
+        
+        // 4. Sort and Segregate across Matched and Unmatched Vectors (Added clickable openLedger pathways)
+        let matchedRowsHtml = "";
+        let unmatchedLedgerRowsHtml = "";
+        let unmatchedCombinedRowsHtml = "";
+        
+        let matchCount = 0, unmatchedLedgerCount = 0, unmatchedCombinedCount = 0;
+        
+        ledgerEntries.forEach(le => {
+            if (qNote && !le.noteMatch && (!le.isMatched || !le.matchedWith.noteMatch)) return;
+            
+            totalLedgerCredit += le.credit;
+            totalLedgerDebit += le.debit;
+            totalLedgerFasal += le.netFasal;
+            totalLedgerInterest += le.interestAmount;
+            
+            if (le.isMatched) {
+                matchCount++;
+                matchedRowsHtml += `
+                    <tr class="table-success" style="background:#e6fffa !important; color:#0f5132;">
+                        <td>${le.date ? le.date.split('-').reverse().join('-') : '-'}</td>
+                        <td class="fw-bold text-primary" onclick="openLedger('${le.cid}')" style="cursor:pointer; text-decoration:underline;">${le.cname} <small class="text-muted">(${le.cvill})</small></td>
+                        <td class="text-start">${le.desc}</td>
+                        <td class="fw-bold text-success">${le.credit > 0 ? '₹'+le.credit.toFixed(2) : '-'}</td>
+                        <td class="fw-bold text-danger">${le.debit > 0 ? '₹'+le.debit.toFixed(2) : (le.netFasal > 0 ? '₹'+le.netFasal.toFixed(2) : '-')}</td>
+                        <td class="text-start fw-bold text-dark">🔗 Matched with ${le.matchedWith.type}: "${le.matchedWith.desc}"</td>
+                    </tr>
+                `;
+            } else {
+                unmatchedLedgerCount++;
+                unmatchedLedgerRowsHtml += `
+                    <tr style="background:#fff1f2; color:#991b1b;">
+                        <td>${le.date ? le.date.split('-').reverse().join('-') : '-'}</td>
+                        <td class="fw-bold text-primary" onclick="openLedger('${le.cid}')" style="cursor:pointer; text-decoration:underline;">${le.cname} <small class="text-muted">(${le.cvill})</small></td>
+                        <td><span class="badge bg-danger">RN: ${le.crn}</span></td>
+                        <td class="text-start">${le.desc}</td>
+                        <td class="text-success fw-bold">${le.credit > 0 ? '₹'+le.credit : '-'}</td>
+                        <td class="text-danger fw-bold">${le.debit > 0 ? '₹'+le.debit : '-'}</td>
+                        <td class="text-info fw-bold">${le.netFasal > 0 ? '₹'+le.netFasal.toFixed(2) : '-'}</td>
+                    </tr>
+                `;
+            }
+        });
+        
+        combinedEntries.forEach(ce => {
+            if (qNote && !ce.noteMatch && (!ce.isMatched || !ce.matchedWith.noteMatch)) return;
+            
+            totalCombinedCredit += ce.credit;
+            totalCombinedDebit += ce.debit;
+            
+            if (!ce.isMatched) {
+                unmatchedCombinedCount++;
+                unmatchedCombinedRowsHtml += `
+                    <tr style="background:#fffbeb; color:#92400e;">
+                        <td>${ce.date ? ce.date.split('-').reverse().join('-') : '-'}</td>
+                        <td class="fw-bold text-start text-dark">${ce.desc}</td>
+                        <td><span class="badge bg-warning text-dark">${ce.type} Book</span></td>
+                        <td class="text-success fw-bold">${ce.credit > 0 ? '₹'+ce.credit : '-'}</td>
+                        <td class="text-danger fw-bold">${ce.debit > 0 ? '₹'+ce.debit : '-'}</td>
+                    </tr>
+                `;
+            }
+        });
+        
+        let finalLedgerInflow = totalLedgerCredit + totalLedgerFasal;
+        let finalLedgerBalance = (totalLedgerDebit + totalLedgerInterest) - finalLedgerInflow;
+        let finalCombinedBalance = totalCombinedCredit - totalCombinedDebit;
+        
+        let resultHtml = `
+            <div class="card shadow-sm border mb-3 shadow" style="border-radius:16px; background:#fbfbfe; border-left: 6px solid #6366f1 !important;">
+                <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between align-items-center" style="border-radius: 12px 12px 0 0;">
+                    <span>📊 AI हिसाब मिलान (Reconciliation Monitor)</span>
+                    <span class="badge bg-primary" style="font-size:13px;">कुल लिंक मैच: ${matchCount}</span>
+                </div>
+                <div class="card-body p-3">
+                    <div class="alert alert-light border text-center py-2 mb-0" style="background:#ffffff; border-radius:12px; font-weight:800; font-size:14px;">
+                        🤝 <span class="text-success">सफलतापूर्वक मैच (Reconciled): ${matchCount}</span> | 
+                        <span class="text-danger">लेजर में छूटे (Unmatched Ledger): ${unmatchedLedgerCount}</span> | 
+                        <span class="text-warning">Combined बुक में छूटे: ${unmatchedCombinedCount}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 🤖 AI CUSTOM TOTALS DEBIT CREDIT BALANCE CONTAINER -->
+            <div class="row g-2 mb-4">
+                <div class="col-12 col-md-6">
+                    <div class="p-3 border rounded bg-light" style="border-left: 5px solid #10b981; border-radius:12px !important;">
+                        <div class="fw-bold text-success mb-2" style="font-size:14px;">📋 फ़िल्टर ग्राहक लेजर (Ledger Totals)</div>
+                        <div class="d-flex justify-content-between small mb-1"><span>कुल जमा / Credit (+फसल Net):</span> <span class="fw-bold text-success">₹${finalLedgerInflow.toFixed(2)}</span></div>
+                        <div class="d-flex justify-content-between small mb-1"><span>कुल निकासी / Debit:</span> <span class="fw-bold text-danger">₹${totalLedgerDebit.toFixed(2)}</span></div>
+                        <div class="d-flex justify-content-between small mb-1"><span>कुल ब्याज / Interest:</span> <span class="fw-bold text-warning">₹${totalLedgerInterest.toFixed(2)}</span></div>
+                        <div class="d-flex justify-content-between border-top pt-1 fw-bold" style="font-size:13px;"><span>शुद्ध शेष / Balance Status:</span> <span class="${finalLedgerBalance >= 0 ? 'text-danger' : 'text-success'}">₹${finalLedgerBalance.toFixed(2)} ${finalLedgerBalance >= 0 ? '🔴 (Debit)' : '🟢 (Credit)'}</span></div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="p-3 border rounded bg-light" style="border-left: 5px solid #3b82f6; border-radius:12px !important;">
+                        <div class="fw-bold text-primary mb-2" style="font-size:14px;">🏦 फ़िल्टर कंबाइंड बुक (Combined Book Totals)</div>
+                        <div class="d-flex justify-content-between small mb-1"><span>कुल जमा / Credit:</span> <span class="fw-bold text-success">₹${totalCombinedCredit.toFixed(2)}</span></div>
+                        <div class="d-flex justify-content-between small mb-1"><span>कुल निकासी / Debit:</span> <span class="fw-bold text-danger">₹${totalCombinedDebit.toFixed(2)}</span></div>
+                        <div class="d-flex justify-content-between border-top pt-1 fw-bold" style="font-size:13px;"><span>शुद्ध बैंक शेष / Net Cash Balance:</span> <span class="${finalCombinedBalance >= 0 ? 'text-success' : 'text-danger'}">₹${finalCombinedBalance.toFixed(2)} ${finalCombinedBalance >= 0 ? '🟢' : '🔴'}</span></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (matchCount > 0) {
+            resultHtml += `
+                <div class="fw-bold mb-2 text-success" style="font-size:14px;">✅ मैच हुई प्रविष्टियां (Reconciled Entries across Ledger & Combined View):</div>
+                <div class="table-responsive border rounded bg-white shadow-sm mb-4" style="max-height: 32vh; overflow-y:auto;">
+                    <table class="table table-sm table-bordered table-striped text-center align-middle m-0" style="font-size:12px;">
+                        <thead class="table-success sticky-top">
+                            <tr>
+                                <th>तारीख</th>
+                                <th>ग्राहक (गाँव)</th>
+                                <th>लेजर विवरण</th>
+                                <th>जमा (Credit)</th>
+                                <th>निकासी (Debit)</th>
+                                <th>🔗 Combined बुक विवरण</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${matchedRowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else {
+            resultHtml += "<div class='alert alert-light border text-center text-muted fw-bold mb-4'>⚠️ इस सीमा में कोई भी प्रविष्टि परस्पर मैच नहीं हुई!</div>";
+        }
+        
+        if (unmatchedLedgerCount > 0) {
+            resultHtml += `
+                <div class="fw-bold mb-2 text-warning" style="font-size:14px;">❌ प्रविष्टियां जो लेजर में हैं पर Combined (Bank+Kharch) में नहीं मिलीं: <span class="badge bg-warning text-dark">${unmatchedLedgerCount}</span></div>
+                <div class="table-responsive border rounded bg-white shadow-sm mb-4" style="max-height: 32vh; overflow-y:auto;">
+                    <table class="table table-sm table-bordered text-center align-middle m-0" style="font-size:12px;">
+                        <thead class="table-warning sticky-top">
+                            <tr>
+                                <th>तारीख</th>
+                                <th>ग्राहक (गाँव)</th>
+                                <th>R.N.</th>
+                                <th>लेजर विवरण</th>
+                                <th>जमा</th>
+                                <th>निकासी</th>
+                                <th>नेट फसल</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${unmatchedLedgerRowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        if (unmatchedCombinedCount > 0) {
+            resultHtml += `
+                <div class="fw-bold mb-2 text-danger" style="font-size:14px;">⚠️ प्रविष्टियां जो Combined (Bank+Kharch) में हैं पर लेजर में नहीं मिलीं: <span class="badge bg-danger">${unmatchedCombinedCount}</span></div>
+                <div class="table-responsive border rounded bg-white shadow-sm" style="max-height: 32vh; overflow-y:auto;">
+                    <table class="table table-sm table-bordered text-center align-middle m-0" style="font-size:12px;">
+                        <thead class="table-danger sticky-top">
+                            <tr>
+                                <th>तारीख</th>
+                                <th>Combined विवरण Note</th>
+                                <th>प्रकार Type</th>
+                                <th>जमा (Cr)</th>
+                                <th>निकासी (Db)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${unmatchedCombinedRowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        resBox.innerHTML = resultHtml;
+    }).catch(err => {
+        resBox.innerHTML = "<div class='alert alert-danger text-center fw-bold'>❌ डेटा मिलान करने में कोई त्रुटि आई!</div>";
+        console.error(err);
+    });
+}
 </script>  <div id="printPreviewBox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:2147483647;overflow:auto;"><div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:#1976d2;color:white;position:sticky;top:0;z-index:1000000;"><button onclick="closePrintPreview()" style="background:red;color:white;border:none;padding:8px 12px;border-radius:6px;">Cancel</button><div>Zoom: <input type="range" id="zoomRange" min="0.1" max="2" step="0.1" value="1" oninput="setZoom(this.value)"></div><button onclick="finalPrint()" style="background:green;color:white;border:none;padding:8px 12px;border-radius:6px;">Print Now</button></div><div id="printContent"></div></div>  
 <script>
 let lastTapTime = 0;
@@ -2857,9 +3339,9 @@ function loadCombinedLedgerData(){
     function refreshCombined(){
         let combined=[];
         window.bankKhataRef.once("value").then(snap1=>{
-            Object.values(snap1.val()||{}).forEach(e=>{ combined.push({...e, type:"Bank"}); });
+            Object.values(snap1.val()||{}).forEach(e=>{ if(e) combined.push({...e, type:"Bank"}); });
             window.kharchKhataRef.once("value").then(snap2=>{
-                Object.values(snap2.val()||{}).forEach(e=>{ combined.push({...e, type:"Kharch"}); });
+                Object.values(snap2.val()||{}).forEach(e=>{ if(e) combined.push({...e, type:"Kharch"}); });
                 combined.sort((a,b)=> (b.date||"").localeCompare(a.date||"")); bankDataMaster = combined; renderCombinedLedgerView();
             });
         });
@@ -2873,6 +3355,7 @@ function renderCombinedLedgerView(){
     tbody.innerHTML = ""; summaryArea.innerHTML = ""; let html = ""; let bCr=0,bDb=0,kCr=0,kDb=0;
 
     bankDataMaster.forEach(e=>{
+        if(!e) return;
         let dt = e.date || ""; if((from && dt < from) || (to && dt > to)) return;
         if(q === "" || JSON.stringify(e).toLowerCase().includes(q)){
             if(e.type==="Bank"){ bCr += Number(e.credit || 0); bDb += Number(e.debit || 0); } else { kCr += Number(e.credit || 0); kDb += Number(e.debit || 0); }
@@ -2934,7 +3417,9 @@ function closeMandiAppProView() { document.getElementById("mandiAppProViewCard")
 function loadMandiSeasons(){
     mandiDb.ref("seasonsInfo").once("value", snap => {
         let select = document.getElementById("mandiSeasonSelect"); select.innerHTML = "";
-        let keys = Object.keys(snap.val() || {});
+        let valData = snap.val();
+        if(!valData) { document.getElementById("mandiSummaryText").innerText = "कोई सीजन उपलब्ध नहीं है।"; return; }
+        let keys = Object.keys(valData);
         if(keys.length === 0) { document.getElementById("mandiSummaryText").innerText = "कोई सीजन उपलब्ध नहीं है।"; return; }
         keys.forEach(k => { select.insertAdjacentHTML("beforeend", `<option value="${k}">${k}</option>`); });
         loadMandiEntries();
@@ -2945,7 +3430,7 @@ function loadMandiEntries() {
     mandiDb.ref("seasonsInfo/" + season).once("value", infoSnap => {
         window.mandiCurrentDefaultBW = Number((infoSnap.val() || {}).defaultBw || 50);
         mandiDb.ref("seasons/" + season + "/entries").on("value", snap => {
-            mandiEntriesMaster = []; snap.forEach(child => { mandiEntriesMaster.push({ id: child.key, ...child.val() }); });
+            mandiEntriesMaster = []; snap.forEach(child => { if(child.val()) mandiEntriesMaster.push({ id: child.key, ...child.val() }); });
             mandiEntriesMaster.sort((a,b) => (b.order ?? b.timestamp ?? 0) - (a.order ?? a.timestamp ?? 0)); renderMandiEntries();
         });
     });
@@ -2955,6 +3440,7 @@ function renderMandiEntries() {
     let tbody = document.getElementById("mandiTableBody"); tbody.innerHTML = ""; let totalKgRaw = 0; let totalQtl = 0; let count = 0;
 
     mandiEntriesMaster.forEach(r => {
+        if(!r) return;
         if(search && !(r.customer||"").toLowerCase().includes(search) && !(r.village||"").toLowerCase().includes(search)) return;
         count++; const bw = Number(r.customBW || currentDefaultBW || 50); const bore = Number(r.bore || 0); const extra = Number(r.extra || 0);
         totalKgRaw += (bore * bw) + extra; totalQtl += Number(r.finalQtl || r.qtlValue || 0);
