@@ -631,6 +631,11 @@ white-space: normal !important;
 word-break: break-word;
 font-weight: 600;
 }
+@media (max-width: 768px) {
+    .ledger-btn-wrap .btn {
+        flex: 1 1 46% !important;
+    }
+}
 @keyframes combinedPopup{
 from{ opacity: 0; }
 to{ opacity: 1; }
@@ -672,8 +677,8 @@ to{ opacity: 1; }
     color: #1e3a8a;
 }
 
-/* 🎯 TASK 1: FIXED AND FULL SCREEN RESPONSIVE SCROLL FOR NEW FASAL POPUP */
-#fasalPopupOverlay #popupBox {
+/* 🎯 TASK 1: FIXED AND FULL SCREEN RESPONSIVE SCROLL FOR POPUPS WITHOUT JUMPING VECTOR CLASHES */
+#fasalPopupOverlay #popupBox, #transactionPopupOverlay #popupBox {
     max-width: 480px;
     width: 95%;
     max-height: 92vh;
@@ -1351,6 +1356,28 @@ onclick="printCombinedLedgerView()">
     <div class="col-6"><small class="fw-bold">कुल दिन</small><input id="tDays" type="number" class="form-control" readonly></div>
     <div class="col-6"><small class="fw-bold">ब्याज राशि (₹)</small><input id="tInterestAmount" type="number" class="form-control" readonly style="font-weight:700; color:#dc2626;"></div>
 </div>
+
+<!-- 🎯 REAL-TIME SYSTEM ENGINE MODE CONFIGURATIONS -->
+<div class="border rounded p-2 mb-2 bg-light text-start" style="font-size: 13px;">
+  <div class="form-check mb-1">
+    <input type="radio" id="radioAutoInterest" name="interestSelectMode" class="form-check-input" checked onchange="toggleInterestInputMode()">
+    <label class="form-check-label fw-bold text-dark" for="radioAutoInterest">🔄 ऑटो गणना (Original Live)</label>
+  </div>
+  <div class="form-check mb-2">
+    <input type="radio" id="radioManualInterest" name="interestSelectMode" class="form-check-input" onchange="toggleInterestInputMode()">
+    <label class="form-check-label fw-bold text-dark" for="radioManualInterest">✍️ मैनुअल राशि डालें (Fixed)</label>
+  </div>
+  <input id="tManualInterestAmount" type="number" class="form-control form-control-sm mt-1" placeholder="ब्याज राशि (₹) यहाँ लिखें" disabled>
+</div>
+
+<!-- 🎯 NEW INTEREST DUAL BREAKDOWN COMPONENT BOX -->
+<div id="interestBreakdownBox" class="p-2 border rounded mb-2 bg-white text-start" style="font-size:12px; display:none;">
+  <div class="d-flex justify-content-between"><span>📋 ओरिजिनल ब्याज:</span> <span id="popOrigInt" class="fw-bold">₹0.00</span></div>
+  <div class="d-flex justify-content-between"><span>✍️ मैनुअल ब्याज:</span> <span id="popManualInt" class="fw-bold text-secondary">₹0.00</span></div>
+  <div class="d-flex justify-content-between text-success border-top pt-1 mt-1"><span>🎉 ब्याज छूट (Discount):</span> <span id="popDiscountInt" class="fw-bold">₹0.00</span></div>
+  <div class="text-center mt-1 fw-bold text-primary border-top pt-1" id="popActiveInterestLabel" style="font-size:11px;">खाते में जुड़ेगा: ओरिजिनल ब्याज</div>
+</div>
+
 <div class="form-check mb-3 mt-2">
 
   <input
@@ -1432,7 +1459,7 @@ onclick="printCombinedLedgerView()">
     </div>
 
     <label class="fw-bold">फसल विवरण नोट</label>
-    <textarea id="fNote" class="form-control" placeholder="فसल नोट विवरण" style="height:60px;"></textarea>  
+    <textarea id="fNote" class="form-control" placeholder="फसल नोट विवरण" style="height:60px;"></textarea>  
 
     <div class="row g-2 mt-1">
        <div class="col-6"><button class="btn btn-success w-100" onclick="saveFasal()">✔ सहेजें</button></div>
@@ -1498,13 +1525,28 @@ let activeReportTab = 'entries'; // State tracking for advanced report layout
 let lastCalculatedSummaryData = []; // Store list for print configuration
 let summaryFilterMode = 'debit'; // Toggle state for summary filter list
 window.justSavedEntry = false; // 🎯 SAFETY LOCK INTERFACE FLAG FOR DYNAMIC LIFECYCLE AUTO-ACCOUNTS
+if (!window.accountClearedTracker) { window.accountClearedTracker = {}; }
 
 window.onload = () => {  
     if(sessionStorage.getItem("isLoggedIn") === "true"){  
         loginScreen.style.display = "none";  
         document.getElementById("appContent").style.display = "block";  
-        customerListCard.style.display = "block";  
-        loadCustomers();  
+        
+        let lastScreen = localStorage.getItem("currentScreen") || "customerListCard";
+        let lastCustId = localStorage.getItem("currentCustomerId");
+        
+        if (lastScreen === "ledgerCard" && lastCustId) {
+            openLedger(lastCustId);
+        } else if (lastScreen === "advancedReportCard") {
+            showCard("advancedReportCard");
+            loadCustomers();
+        } else if (lastScreen === "aiMatcherCard") {
+            openAiMatcherCard();
+            loadCustomers();
+        } else {
+            showCard("customerListCard");  
+            loadCustomers();  
+        }
     } else {  
         document.getElementById("appContent").style.display = "none";  
         loginScreen.style.display = "block";  
@@ -1554,9 +1596,13 @@ function showCard(id){
   advancedReportCard.style.display="none";  
   if(document.getElementById("aiMatcherCard")) document.getElementById("aiMatcherCard").style.display="none";
   loginScreen.style.display="none";  
- document.getElementById("combinedViewCard").style.display="none"; document.getElementById("appContent").style.display = "block";  
+  document.getElementById("combinedViewCard").style.display="none"; 
+  document.getElementById("appContent").style.display = "block";  
   
   document.getElementById(id).style.display="block";  
+  if (id !== "loginScreen") {
+      localStorage.setItem("currentScreen", id);
+  }
 }  
   
 function backToList(){
@@ -1569,11 +1615,11 @@ function backToList(){
     fasalSummary.innerHTML = "";
     if(window.bankKhataRef){ window.bankKhataRef.off(); }
     if(window.kharchKhataRef){ window.kharchKhataRef.off(); }
+    localStorage.setItem("currentScreen", "customerListCard");
     showCard("customerListCard");
     loadCustomers(() => { filterCustomers(); });
 }
 
-// Unified back button handler to redirect cleanly based on where user came from
 function handleBackAction() {
     if (isNavigatedFromReport) {
         isNavigatedFromReport = false;
@@ -1662,9 +1708,10 @@ function openLedger(id){
     ledgerRef = null;
   }
   currentCustomerId = id;
+  localStorage.setItem("currentCustomerId", id);
   let savedAcc = localStorage.getItem("lastAccount_" + id);
   currentAccountId = savedAcc || 'default';
-  window.justSavedEntry = false; // Reset security lock when shifting files
+  window.justSavedEntry = false; 
 
   ledgerTable.innerHTML = "";
   ledgerFooter.innerHTML = "";
@@ -1745,7 +1792,6 @@ function loadAccountDropdown() {
 function switchAccount(accId) {
     currentAccountId = accId;
     localStorage.setItem("lastAccount_" + currentCustomerId, accId);
-    if(ledgerRef) ledgerRef.off();
     loadLedger();
 }
 
@@ -1828,14 +1874,17 @@ function renameAccount(accId){
     alert("✔ हिसाब नाम बदल दिया गया");
 }
 
-// 🎯 FIXED ENGINE + AUTOMATIC NEW ACCOUNT ON SAVE/DELETE EVENTS ONLY
-let currentLedgerPath = "";
+// 🎯 COMPREHENSIVE RECONCILIATION & SYNC MATRIX WITH LIVE DUAL-MODE VISUAL OVERRIDES
 function loadLedger(){
   let newPath = "ledgers/" + currentCustomerId + "/" + currentAccountId;
-  if(ledgerRef && currentLedgerPath !== newPath){ ledgerRef.off(); ledgerRef = null; }
+  
+  if(ledgerRef) {
+    ledgerRef.off();
+  }
   currentLedgerPath = newPath;
-
-  let renderEntries = snap => {
+  ledgerRef = db.ref(newPath);
+  
+  ledgerRef.on("value", snap => {
       ledgerTable.innerHTML = "";  
       let totalC = 0, totalD = 0, totalI = 0, totalFNet = 0;  
       let allFasal = [];  
@@ -1861,8 +1910,22 @@ function loadLedger(){
           let amount = +d.debit || 0;
           let monthlyInterest = (amount * (+d.interest || 0)) / 100;
           let dailyInterest = monthlyInterest / 30;
+          let origInt = dailyInterest * days;
+          
           d.days = days;
-          d.interestAmount = dailyInterest * days;
+          d.origInterestAmount = origInt;
+
+          if (d.useManualInterest) {
+              d.interestAmount = +d.manualInterestAmount || 0;
+              d.interestDiscount = Math.max(0, origInt - d.interestAmount);
+          } else {
+              d.interestAmount = origInt;
+              d.interestDiscount = 0;
+          }
+        } else if (d.useManualInterest) {
+            d.interestAmount = +d.manualInterestAmount || 0;
+            d.origInterestAmount = +d.origInterestAmount || d.interestAmount;
+            d.interestDiscount = Math.max(0, d.origInterestAmount - d.interestAmount);
         }
 
         let key = d.key;
@@ -1882,7 +1945,19 @@ function loadLedger(){
         <td>₹${d.debit || 0}</td>
         <td>${d.interest || 0}</td>
         <td>${d.days || 0}</td>
-        <td>${d.isFasal ? "" : "+₹" + ((+d.interestAmount || 0).toFixed(2))}</td>
+        <td>
+          ${d.isFasal ? "" : (function(){
+              let html = `+₹${(+d.interestAmount || 0).toFixed(2)}`;
+              if(d.useManualInterest) {
+                  let disc = (+d.interestDiscount || 0);
+                  html += `<br><small class="text-muted" style="font-size:10px;">ओरिजिनल: ₹${(+d.origInterestAmount||0).toFixed(1)}</small>`;
+                  if(disc > 0) {
+                      html += `<br><small class="text-success" style="font-size:10px;font-weight:bold;">छूट: -₹${disc.toFixed(1)}</small>`;
+                  }
+              }
+              return html;
+          })()}
+        </td>
         <td>₹${d.totalCut ?? 0}</td>
         <td>
         ${d.isFasal ? (function(){
@@ -1894,7 +1969,7 @@ function loadLedger(){
               let hasIcon = name.trim().startsWith("🌱") || name.trim().startsWith("🌾");
               let finalName = hasIcon ? name : "🌾 " + name;
               return `${finalName} (${mainQ} Q ${extraKG} KG)<br><span style="color:#0d47a1;font-weight:800;">₹${(+d.netFasal || 0).toFixed(2)}</span>`;
-          })() : ""}
+          })() : d.useManualInterest ? `<span class="badge bg-dark" style="font-size:10px;">✍️ मैनुअल ब्याज</span>` : ""}
         </td>
         <td>${d.note || ""}</td>
         <td class="action-col">
@@ -1916,7 +1991,6 @@ function loadLedger(){
   
       let balance = (totalD + totalI) - (totalC + totalFasalNet);
 
-      // 🎯 TOP LEDGER SUMMARY CARD VIEW
       let topSummaryHtml = `
       <div class="p-3 mb-3 border rounded shadow-sm bg-white text-center" style="border-radius:12px !important; border-left:6px solid #2563eb !important;">
           <div class="row g-2">
@@ -1972,11 +2046,14 @@ function loadLedger(){
       `);  
       generateFasalSummary(allFasal);  
 
-      // 🎯 FIXED AUTO CREATION SAFETY CONDITION: ONLY TRIGGERS ON SAVING/DELETING ACTION
       if (window.justSavedEntry && entries.length > 0 && Math.abs(balance) < 0.01) {
-          window.justSavedEntry = false; // Reset lock instantly to prevent looping
-          if (!window.isAutoCreatingAccount) {
+          window.justSavedEntry = false; 
+          let currentTrackerKey = currentCustomerId + "_" + currentAccountId;
+          
+          if (!window.accountClearedTracker[currentTrackerKey] && !window.isAutoCreatingAccount) {
+              window.accountClearedTracker[currentTrackerKey] = true; 
               window.isAutoCreatingAccount = true;
+              
               let today = new Date();
               let day = today.getDate();
               let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -1992,14 +2069,7 @@ function loadLedger(){
               });
           }
       }
-  };
-
-  if(!ledgerRef) {
-    ledgerRef = db.ref(newPath);
-    ledgerRef.on("value", renderEntries);
-  } else {
-    db.ref(newPath).once("value").then(renderEntries);
-  }
+  });
 }
   
 function toggleFasalSummary(){  
@@ -2029,17 +2099,32 @@ function generateFasalSummary(all){
         fasalSummary.insertAdjacentHTML("beforeend", html);
     }
 }  
+
+function toggleInterestInputMode() {
+    let isManual = document.getElementById("radioManualInterest").checked;
+    document.getElementById("tManualInterestAmount").disabled = !isManual;
+    if(!isManual) {
+        document.getElementById("tManualInterestAmount").value = "";
+    }
+    calcInterest();
+}
   
 function openTransactionPopup(){  
     tDate.value = ""; tEndDate.value = ""; tCredit.value = ""; tDebit.value = ""; tInterest.value = ""; tDays.value = ""; tInterestAmount.value = ""; tNote.value = "";  
+    document.getElementById("radioAutoInterest").checked = true;
+    document.getElementById("tManualInterestAmount").value = "";
+    document.getElementById("tManualInterestAmount").disabled = true;
+    document.getElementById("interestBreakdownBox").style.display = "none";
     transactionPopupOverlay.style.display = "flex";  
 }  
-function closeTransactionPopup(){ transactionPopupOverlay.style.display="none"; }  
+const closeTransactionPopup = () => { transactionPopupOverlay.style.display="none"; }  
   
 function saveTransaction(){
     let start = tDate.value || ""; let end = tEndDate.value || "";
     let days = 0; let totalInterest = 0;
     let enableInterest = document.getElementById("interestEnabled").checked;
+    let useManual = document.getElementById("radioManualInterest").checked;
+    let manualAmt = +document.getElementById("tManualInterestAmount").value || 0;
 
     if(start && end){
         let d1 = new Date(start); let d2 = new Date(end);
@@ -2055,11 +2140,15 @@ function saveTransaction(){
 
     let data = {
         startDate: start, endDate: end, credit: +tCredit.value || 0, debit: +tDebit.value || 0,
-        interest: +tInterest.value || 0, days: days, interestAmount: totalInterest,
+        interest: +tInterest.value || 0, days: days, 
+        interestAmount: useManual ? manualAmt : totalInterest,
+        origInterestAmount: totalInterest,
+        manualInterestAmount: manualAmt,
+        useManualInterest: useManual,
         interestType: (+tDebit.value || 0) > 0 ? "debit" : "credit", note: tNote.value
     };
 
-    window.justSavedEntry = true; // 🎯 Set live operational tag
+    window.justSavedEntry = true; 
     if(window.editingTransactionId){
         db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + window.editingTransactionId).update(data);
         window.editingTransactionId = null;
@@ -2067,7 +2156,46 @@ function saveTransaction(){
         db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId).push(data);
     }
     closeTransactionPopup();
-    setTimeout(()=>{ loadLedger(); }, 100);
+}
+
+// 🎯 DUAL INTEREST MODE BREAKDOWN COMPONENT SHIELD ENGAGEMENT
+function calcInterest() {
+    if(!document.getElementById("interestEnabled").checked){ 
+        tInterestAmount.value = "0"; 
+        document.getElementById("interestBreakdownBox").style.display = "none";
+        return; 
+    }
+    let amount = (+tDebit.value > 0) ? +tDebit.value : +tCredit.value;
+    let rate = +tInterest.value || 0; let days = +tDays.value || 0;
+    let origInt = 0;
+    if(amount !== 0 && rate !== 0 && days !== 0){ 
+        origInt = (amount * rate / 100) / 30 * days;
+        tInterestAmount.value = origInt.toFixed(2);
+    } else {
+        tInterestAmount.value = "";
+    }
+    
+    let manualAmt = +document.getElementById("tManualInterestAmount").value || 0;
+    let useManual = document.getElementById("radioManualInterest").checked;
+    
+    // 🎯 FIX: DISCOUNT CALCULATED EXACTLY BASED ON THE TICKED MODE CONDITION
+    let discount = useManual ? Math.max(0, origInt - manualAmt) : 0;
+    
+    document.getElementById("popOrigInt").innerText = "₹" + origInt.toFixed(2);
+    document.getElementById("popManualInt").innerText = "₹" + manualAmt.toFixed(2);
+    document.getElementById("popDiscountInt").innerText = "₹" + discount.toFixed(2);
+    
+    if(useManual) {
+        document.getElementById("popActiveInterestLabel").innerHTML = `🎯 खाते में जुड़ेगा (Manual Fixed): <span class="text-danger fw-bold">₹${manualAmt.toFixed(2)} 🔴</span>`;
+    } else {
+        document.getElementById("popActiveInterestLabel").innerHTML = `🎯 खाते में जुड़ेगा (Original Live): <span class="text-success fw-bold">₹${origInt.toFixed(2)} 🟢</span>`;
+    }
+    
+    if(amount > 0 && days > 0) {
+        document.getElementById("interestBreakdownBox").style.display = "block";
+    } else {
+        document.getElementById("interestBreakdownBox").style.display = "none";
+    }
 }
 
 ["fBori","fWeightPer","fExtraKG","fRate","fMajduri","fCut"].forEach(id=>{
@@ -2105,7 +2233,7 @@ function saveFasal(){
     rate:r, totalAmount, totalMajduri, totalCut, netFasal:net, majType: type, note:fNote.value
   };
 
-  window.justSavedEntry = true; // 🎯 Set live operational tag
+  window.justSavedEntry = true; 
   if(window.editingFasalId){
       db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + window.editingFasalId).update(data);
       window.editingFasalId = null;
@@ -2113,14 +2241,12 @@ function saveFasal(){
       db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId).push(data);
   }
   closeFasalPopup();
-  setTimeout(()=>{ loadLedger(); }, 100);
 }
 
 function deleteLedgerEntry(id){  
   if(!confirm("हटाना चाहते हैं?")) return;  
-  window.justSavedEntry = true; // 🎯 Set live operational tag for zero evaluations
+  window.justSavedEntry = true; 
   db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).remove();  
-  loadLedger();  
 }  
 
 /* EXPORT TO EXCEL */
@@ -2129,7 +2255,7 @@ function exportLedgerToExcel() {
   let nameText = document.getElementById("ledgerCustomerName").innerText.split('\n')[0].replace('👤 ', '').trim();
   let table = document.getElementById("ledgerTableMain");
   let wb = XLSX.utils.table_to_book(table, {sheet: "Ledger Sheet"});
-  XLSX.writeFile(wb, `${nameText}_ledger.xlsx`); // Fixed typo from Xxlsx to XLSX
+  XLSX.writeFile(wb, `${nameText}_ledger.xlsx`); 
 }
 
 function printLedger(){  
@@ -2440,7 +2566,7 @@ function resetPass(){
     if(name === FAV_NAME){ alert("✔ आपका पासवर्ड है: " + MASTER_PASS); hideForgot(); } else { alert("❌ गलत नाम!"); }  
 }  
 function logoutNow(){  
-    sessionStorage.removeItem("isLoggedIn"); loginPass.value = ""; document.getElementById("appContent").style.display = "none"; customerListCard.style.display = "none"; ledgerCard.style.display = "none"; addCustomerCard.style.display = "none"; loginScreen.style.display = "block";  
+    sessionStorage.removeItem("isLoggedIn"); localStorage.clear(); loginPass.value = ""; document.getElementById("appContent").style.display = "none"; customerListCard.style.display = "none"; ledgerCard.style.display = "none"; addCustomerCard.style.display = "none"; loginScreen.style.display = "block";  
 }  
 function openChangePass() { changePassPopup.style.display = "flex"; }  
 function closeChangePass() { changePassPopup.style.display = "none"; currPass.value = ""; newPass.value = ""; confPass.value = ""; }  
@@ -2480,7 +2606,7 @@ function editFasal(id){
     db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).once("value").then(s=>{  
         let f = s.val(); if(!f || !f.isFasal){ return; }
         fasalPopupOverlay.style.display = "flex";  
-        fName.value = f.name || ""; fDate.value = f.date || ""; fBori.value = f.bori || 0; fWeightPer.value = f.weightPer || 0; fTotalQ.value = f.quintal || 0; fExtraKG.value = f.extraKG || 0; fRate.value = f.rate || 0;  
+        fName.value = f.name || ""; fDate.value = f.date || ""; fBori.value = f.bori || 0; fWeightPer.value = f.weightPer || 0; fTotalQ.value = f.quintal || 0; fExtraKG = f.extraKG || 0; fRate.value = f.rate || 0;  
         document.getElementById("majType").value = f.majType || "quintal";  
         fMajduri.value = f.majType === "quintal" ? ((f.totalMajduri || 0) / (f.quintal || 1)).toFixed(2) : ((f.totalMajduri || 0) / (f.bori || 1)).toFixed(2);
         document.getElementById("fCut").value = f.totalCut || 0; fMajduriTotal.value = f.totalMajduri || 0; fNetAmount.value = f.netFasal || 0; fNote.value = f.note || ""; window.editingFasalId = id;
@@ -2494,25 +2620,29 @@ function calcDays() {
     tDays.value = diff; calcInterest();  
 }  
   
-function calcInterest() {
-    if(!document.getElementById("interestEnabled").checked){ tInterestAmount.value = "0"; return; }
-    let amount = (+tDebit.value > 0) ? +tDebit.value : +tCredit.value;
-    let rate = +tInterest.value || 0; let days = +tDays.value || 0;
-    if(amount === 0 || rate === 0 || days === 0){ tInterestAmount.value = ""; return; }
-    tInterestAmount.value = ((amount * rate / 100) / 30 * days).toFixed(2);
-}
-
 function editTransaction(id){  
     window.editingTransactionId = id;  
     db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).once("value").then(s=>{  
         let d = s.val(); if(!d || d.isFasal){ return; }  
         transactionPopupOverlay.style.display = "flex"; tDate.value = d.startDate || ""; tEndDate.value = d.endDate || ""; tCredit.value = d.credit || 0; tDebit.value = d.debit || 0; tInterest.value = d.interest || 0; tDays.value = d.days || 0; tInterestAmount.value = d.interestAmount || 0;  
-        document.getElementById("interestEnabled").checked = d.interestEnabled !== false; calcInterest(); tNote.value = d.note || "";  
+        document.getElementById("interestEnabled").checked = d.interestEnabled !== false; 
+        
+        if(d.useManualInterest) {
+            document.getElementById("radioManualInterest").checked = true;
+            document.getElementById("tManualInterestAmount").value = d.manualInterestAmount || "";
+            document.getElementById("tManualInterestAmount").disabled = false;
+        } else {
+            document.getElementById("radioAutoInterest").checked = true;
+            document.getElementById("tManualInterestAmount").value = "";
+            document.getElementById("tManualInterestAmount").disabled = true;
+        }
+        
+        calcInterest(); tNote.value = d.note || "";  
     });  
 }  
   
 function openFasalManager() { document.getElementById("fasalManagerPopup").style.display = "flex"; loadFasalList(); }  
-function closeFasalManager() { document.getElementById("fasalManagerPopup").style.display = "none"; }  
+closeFasalManager = () => { document.getElementById("fasalManagerPopup").style.display = "none"; }  
 function addNewFasal() {  
     let name = document.getElementById("newFasalName").value.trim(); if (!name) return alert("फसल का नाम लिखें!");  
     db.ref("fasals").push({ name }); document.getElementById("newFasalName").value = ""; loadFasalList(); loadFasalDropdown();  
@@ -2553,7 +2683,7 @@ function switchReportTab(tab) {
     document.getElementById("btnShowSummary").classList.add("active");
     document.getElementById("reportDataContainer").style.display = "none";
     document.getElementById("reportSummaryContainer").style.display = "block";
-    summaryFilterMode = 'debit'; // Default to debit view upon selection
+    summaryFilterMode = 'debit'; 
     generateAccountWiseSummary();
   }
 }
@@ -2564,7 +2694,6 @@ function onFilterInputTriggered() {
   }
 }
 
-// 🎯 FILTER ACTION CONTROL SWITCH FOR DISCRETE BALANCES
 function setSummaryFilterMode(mode) {
   summaryFilterMode = mode;
   if (mode === 'debit') {
@@ -2595,7 +2724,7 @@ function generateAccountWiseSummary() {
     
     let renderedHtml = "";
     lastCalculatedSummaryData = []; 
-    let grandRunningTotalAmount = 0; // Cumulative balance metrics initialization
+    let grandRunningTotalAmount = 0; 
 
     Object.keys(customers).forEach(cid => {
       const cinfo = customers[cid];
@@ -2643,7 +2772,13 @@ function generateAccountWiseSummary() {
             hasValidEntries = true;
             totalC += +entry.credit || 0;
             totalD += +entry.debit || 0;
-            totalI += +entry.interestAmount || 0;
+            
+            if (entry.useManualInterest) {
+                totalI += +entry.manualInterestAmount || 0;
+            } else {
+                totalI += +entry.interestAmount || 0;
+            }
+            
             if(entry.isFasal) {
               totalFNet += +entry.netFasal || 0;
             }
@@ -2656,13 +2791,11 @@ function generateAccountWiseSummary() {
       }
 
       let finalNetBalance = (totalD + totalI) - (totalC + totalFNet);
-      if(finalNetBalance === 0) return; // Ignore clear balanced sheets
+      if(finalNetBalance === 0) return; 
 
-      // Segregation rules configuration based on toggle selection mode
       if (summaryFilterMode === 'debit' && finalNetBalance <= 0) return;
       if (summaryFilterMode === 'credit' && finalNetBalance >= 0) return;
 
-      // Accumulate target amount metric
       grandRunningTotalAmount += Math.abs(finalNetBalance);
 
       lastCalculatedSummaryData.push({
@@ -2691,8 +2824,8 @@ function generateAccountWiseSummary() {
         <div class="rep-summary-card" onclick="viewLedgerFromReport('${cid}')" style="cursor:pointer;">
           <div class="rep-summary-title">👤 ${cname} <span class="badge bg-danger float-end" style="font-size:11px;">R.N. ${crn}</span></div>
           <div style="font-size:12px; color:#64748b; font-weight:700; margin-bottom:6px;">🏡 गाँव: ${cvill} | 📝 सक्रिय खाता: <b class="text-primary">${activeAccountName}</b></div>
-          <div class="rep-summary-item"><span>जमा (Credit):</span> <span style="color:#16a34a;">₹${totalC}</span></div>
-          <div class="rep-summary-item"><span>निकासी (Debit):</span> <span style="color:#b91c1c;">₹${totalD}</span></div>
+          <div class="rep-summary-item"><span>जमा (Credit):</span> <span style="color:#16a34a;">₹totalC</span></div>
+          <div class="rep-summary-item"><span>निकासी (Debit):</span> <span style="color:#b91c1c;">₹totalD</span></div>
           <div class="rep-summary-item"><span>ब्याज (Interest):</span> <span style="color:#ea580c;">₹${totalI.toFixed(2)}</span></div>
           <div class="rep-summary-item"><span>शुद्ध फसल (Net Fasal):</span> <span style="color:#0284c7;">₹${totalFNet.toFixed(2)}</span></div>
           <div class="rep-summary-item border-top mt-2 pt-2" style="font-size:14px;">
@@ -2703,12 +2836,11 @@ function generateAccountWiseSummary() {
       `;
     });
 
-    // Update screen banner numbers accurately
     let labelString = summaryFilterMode === 'debit' ? '🔴 कुल बची निकासी (Total Debit Sum)' : '🟢 कुल बची जमा (Total Credit Sum)';
     banner.innerText = `${labelString} : ₹${grandRunningTotalAmount.toFixed(2)}`;
     banner.style.backgroundColor = summaryFilterMode === 'debit' ? '#dc2626' : '#16a34a';
 
-    container.innerHTML = renderedHtml || `<div class='text-center p-3 text-muted fw-bold' style='font-size:13px;'>इस फ़िल्टर में कोई रिकॉर्ड नहीं मिला</div>`;
+    container.innerHTML = renderedHtml || `<div class='text-center p-3 text-muted fw-bold' style='font-size:13px;'>इस फ़िल्तर में कोई रिकॉर्ड नहीं मिला</div>`;
   }).catch(err => {
     container.innerHTML = "<div class='text-center p-3 text-danger'>त्रुटि: डेटा लोड करने में विफल!</div>";
   });
@@ -2774,7 +2906,7 @@ function printSummaryReport() {
       </table>
     </div>
   `;
-  openPrintPreviewManual(fullPrintTemplate);
+  openPrintPreviewManual(html);
 }
 
 function generateReport(){  
@@ -2811,7 +2943,7 @@ village: cvillage,
       }); promises.push(p);  
     });  
     await Promise.all(promises);  
-    all.sort((a,b)=>{ return sort === "new" ? b.sortKey.localeCompare(a.sortKey) : a.sortKey.localeCompare(b.sortKey); });  
+    all.sort((a,b)=>{ return new Date(a.startDate || a.date) - new Date(b.startDate || b.date); });  
     reportTable.innerHTML = "";  
     all.forEach(r=>{ 
         reportTable.insertAdjacentHTML("beforeend",
@@ -2880,7 +3012,6 @@ function openAiMatcherCard() {
     document.getElementById("aiMatchTo").value = "";
     document.getElementById("aiMatchNote").value = "";
     
-    // Auto populate suggestion datalist dynamically from database (Displays Name + Father + Village)
     const datalist = document.getElementById("aiCustomerNameList");
     if(datalist) {
         datalist.innerHTML = "";
@@ -2908,7 +3039,6 @@ function calculateAiMatchedTotal() {
     let qTo = document.getElementById("aiMatchTo").value;
     let qNote = document.getElementById("aiMatchNote").value.toLowerCase().trim();
     
-    // SMART EXTRACTOR: Extracts pure core customer name out of parenthesized strings
     let pureNameForCombined = qName;
     if (qName.includes(" (पुत्र:")) {
         pureNameForCombined = qName.split(" (पुत्र:")[0].trim().toLowerCase();
@@ -2930,7 +3060,6 @@ function calculateAiMatchedTotal() {
         let ledgerEntries = [];
         let combinedEntries = [];
         
-        // Detect if the user selected an exact customer from the suggestion datalist
         let exactCid = null;
         Object.keys(customers).forEach(cid => {
             const cinfo = customers[cid];
@@ -2943,7 +3072,6 @@ function calculateAiMatchedTotal() {
             }
         });
 
-        // Cumulative counters for dynamic Debit, Credit, and Balance reporting
         let totalLedgerCredit = 0;
         let totalLedgerDebit = 0;
         let totalLedgerFasal = 0;
@@ -2951,10 +3079,9 @@ function calculateAiMatchedTotal() {
         let totalCombinedCredit = 0;
         let totalCombinedDebit = 0;
         
-        // 1. Fetch & Filter Customer Personal Ledger Entries
         Object.keys(customers).forEach(cid => {
             if (exactCid && cid !== exactCid) {
-                return; // Strictest separation: only allow the exact chosen customer!
+                return; 
             }
             
             const cinfo = customers[cid];
@@ -2979,14 +3106,14 @@ function calculateAiMatchedTotal() {
                         let entryNote = (entry.note || "").toLowerCase();
                         let entryFasalName = entry.isFasal ? (entry.name || "").toLowerCase() : "";
                         
-                        // Apply Date Isolation
                         if (qDate && entryDate !== qDate) return;
                         if (qFrom && entryDate < qFrom) return;
                         if (qTo && entryDate > qTo) return;
                         
-                        // Calculate dynamic interest exactly like loadLedger() does for standard standalone entries
                         let computedInterestAmount = +entry.interestAmount || 0;
-                        if(!entry.isFasal && entry.startDate && !entry.endDate && (+entry.debit || 0) > 0 && (+entry.interest || 0) > 0){
+                        if (entry.useManualInterest) {
+                            computedInterestAmount = +entry.manualInterestAmount || 0;
+                        } else if(!entry.isFasal && entry.startDate && !entry.endDate && (+entry.debit || 0) > 0 && (+entry.interest || 0) > 0){
                           let start = new Date(entry.startDate);
                           let today = new Date();
                           let days = Math.floor((today - start) / (1000*60*60*24));
@@ -3019,14 +3146,13 @@ function calculateAiMatchedTotal() {
             }
         });
         
-        // 2. Fetch & Filter Master Combined (Bank + Kharch) Book Entries
         autoCollectCombinedBook(bankKhata, "Bank");
         autoCollectCombinedBook(kharchKhata, "Kharch");
         
         function autoCollectCombinedBook(khataObj, type) {
             Object.keys(khataObj).forEach(key => {
                 const e = khataObj[key];
-                if (!e) return; // Array slot placeholder safety skip guard!
+                if (!e) return; 
                 let entryDate = e.date || "";
                 let entryDesc = (e.desc || e.name || "").toLowerCase();
                 
@@ -3034,7 +3160,6 @@ function calculateAiMatchedTotal() {
                     let targetName = pureNameForCombined;
                     if(!targetName) return;
                     
-                    // Strict whole-word token matching to ensure precision for specific customer
                     let words = targetName.split(/\s+/).filter(Boolean);
                     let allWordsMatch = words.every(word => {
                         let regex = new RegExp("\\b" + escapeRegExp(word) + "\\b", "i");
@@ -3042,7 +3167,6 @@ function calculateAiMatchedTotal() {
                     });
                     if (!allWordsMatch) return;
 
-                    // SMART FILTER RE-VERIFICATION: If another customer's name appears BEFORE our searched customer name in the description, skip it!
                     let ourIndex = entryDesc.indexOf(targetName);
                     let belongsToOther = false;
 
@@ -3054,7 +3178,7 @@ function calculateAiMatchedTotal() {
                                 let otherFirstName = otherName.split(" ")[0];
                                 let otherIdx = entryDesc.indexOf(otherFirstName);
                                 if (otherIdx >= 0 && otherIdx < ourIndex) {
-                                    belongsToOther = true; // It contains another customer's name as primary subject!
+                                    belongsToOther = true; 
                                 }
                             }
                         }
@@ -3064,7 +3188,6 @@ function calculateAiMatchedTotal() {
                     if (!entryDesc.includes(pureNameForCombined)) return;
                 }
                 
-                // Enforce exact date boundaries 
                 if (qDate && entryDate !== qDate) return;
                 if (qFrom && entryDate < qFrom) return;
                 if (qTo && entryDate > qTo) return;
@@ -3083,7 +3206,6 @@ function calculateAiMatchedTotal() {
             });
         }
         
-        // 3. Cross-Reconciliation AI Logic Matcher
         ledgerEntries.forEach(le => {
             let leAmt = le.credit || le.debit || le.netFasal || 0;
             if (leAmt === 0) return;
@@ -3102,9 +3224,8 @@ function calculateAiMatchedTotal() {
             }
         });
         
-        // 4. Sort and Segregate across Matched and Unmatched Vectors (Added clickable openLedger pathways)
         let matchedRowsHtml = "";
-        let unmatchedLedgerRowsHtml = "";
+        let unclaimedLedgerRowsHtml = "";
         let unmatchedCombinedRowsHtml = "";
         
         let matchCount = 0, unmatchedLedgerCount = 0, unmatchedCombinedCount = 0;
@@ -3184,7 +3305,6 @@ function calculateAiMatchedTotal() {
                 </div>
             </div>
             
-            <!-- 🤖 AI CUSTOM TOTALS DEBIT CREDIT BALANCE CONTAINER -->
             <div class="row g-2 mb-4">
                 <div class="col-12 col-md-6">
                     <div class="p-3 border rounded bg-light" style="border-left: 5px solid #10b981; border-radius:12px !important;">
@@ -3315,14 +3435,15 @@ document.getElementById("ledgerCard").addEventListener("touchend", function(e){
 function closeHisab(){ document.getElementById("closeHisabPopup").style.display = "flex"; document.getElementById("closeAmount").value = ""; setTimeout(()=>{ document.getElementById("closeAmount").focus(); },100); }
 function saveCloseHisab(){  
   let amount = document.getElementById("closeAmount").value.trim(); if(amount === "" || isNaN(amount)){ return alert("सही राशि लिखें!"); }  
-  window.justSavedEntry = true; // 🎯 Set live operational tag
+  window.justSavedEntry = true; 
   db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId).push({ startDate: new Date().toISOString().split("T")[0], endDate: "", credit: Number(amount), debit: 0, interest: 0, days: 0, interestAmount: 0, note: "🔒 हिसाब बंद", isCloseEntry:true });  
   document.getElementById("closeHisabPopup").style.display = "none"; alert("✔ हिसाब बंद हो गया");  
 }  
 </script>
 <div id="closeHisabPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);justify-content:center;align-items:center;z-index:999999;"><div style="background:white;padding:20px;border-radius:12px;width:90%;max-width:350px;"><h4 class="text-center mb-3">🔒 हिसाब बंद</h4><input id="closeAmount" type="number" inputmode="numeric" class="form-control mb-3" placeholder="राशि लिखें"><button class="btn btn-success w-100 mb-2" onclick="saveCloseHisab()">✔ Save</button><button class="btn btn-danger w-100" onclick="document.getElementById('closeHisabPopup').style.display='none'">❌ Cancel</button></div></div>
 <script>
-["tDate","tEndDate","tDebit","tCredit","tInterest"].forEach(id=>{
+// 🎯 REGISTER MANUAL INTEREST FIELDS TO CORE LIVE COMPLIANCE WATCHERS
+["tDate","tEndDate","tDebit","tCredit","tInterest","tManualInterestAmount"].forEach(id=>{
   let el = document.getElementById(id); if(el){ el.addEventListener("input", ()=>{ calcDays(); calcInterest(); }); }
 });
 
