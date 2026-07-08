@@ -1129,7 +1129,6 @@ onclick="document.getElementById('excelUpload').click()">
     </div>
 </div>
 
-<!-- 🎯 TOP SUMMARY AREA WRAPPER -->
 <div id="ledgerTopSummary"></div>
 
 <div class="d-flex gap-2 mb-3 ledger-btn-wrap">
@@ -1149,7 +1148,18 @@ onclick="closeHisab()" style="background:linear-gradient(135deg,#ef4444,#dc2626)
 🔒 Close हिसाब
 </button>
 <button class="btn btn-dark flex-fill" onclick="exportLedgerToExcel()">📥 Excel</button>
-</div>  <div class="fasal-box">  
+</div> 
+
+<div class="mb-3">
+    <label class="fw-bold text-primary">🔍 फिल्टर करें:</label>
+    <select id="ledgerFilter" class="form-select" onchange="loadLedger()">
+        <option value="all">सभी देखें (All)</option>
+        <option value="fasal">केवल फसल (Only Crops)</option>
+        <option value="hisab">केवल हिसाब (Only Transactions)</option>
+    </select>
+</div>
+
+<div class="fasal-box">  
     <div class="fasal-head text-center" onclick="toggleFasalSummary()">📊 कुल फसल सारांश (Tap)</div>  
     <div id="fasalSummary" class="fasal-detail"></div>  
 </div>  
@@ -1260,7 +1270,14 @@ onclick="printCombinedLedgerView()">
     </div>  
   </div>  
 
-  <select id="sortType" class="form-select mb-3">  
+  <select id="entrySourceFilter" class="form-select mb-2" onchange="onFilterInputTriggered()">
+    <option value="all">सभी प्रविष्टियां (All Entries)</option>
+    <option value="manual">मैनुअल प्रविष्टियां (Manual Entries)</option>
+    <option value="auto">ऑटो ऐप सिंक (Auto App SYNC)</option>
+    <option value="mandi">मंडी ऐप प्रो (Mandi App Pro)</option>
+  </select>
+
+  <select id="sortType" class="form-select mb-3" onchange="onFilterInputTriggered()">  
     <option value="new">Newest → Oldest</option>  
     <option value="old">Oldest → Newest</option>  
   </select>  
@@ -1300,7 +1317,6 @@ onclick="printCombinedLedgerView()">
   </div>  
 </div>  
 
-<!-- 🤖 AI SMART LEDGER ENTRY MATCHER CARD -->
 <div id="aiMatcherCard" class="card" style="display: none; position: fixed !important; top: 0; left: 0; width: 100%; height: 100%; margin: 0 !important; border-radius: 0 !important; z-index: 99999; overflow-y: auto; background: white;">
   <div class="header" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">  
     🤖 AI Smart Entry Matcher
@@ -1357,7 +1373,6 @@ onclick="printCombinedLedgerView()">
     <div class="col-6"><small class="fw-bold">ब्याज राशि (₹)</small><input id="tInterestAmount" type="number" class="form-control" readonly style="font-weight:700; color:#dc2626;"></div>
 </div>
 
-<!-- 🎯 REAL-TIME SYSTEM ENGINE MODE CONFIGURATIONS -->
 <div class="border rounded p-2 mb-2 bg-light text-start" style="font-size: 13px;">
   <div class="form-check mb-1">
     <input type="radio" id="radioAutoInterest" name="interestSelectMode" class="form-check-input" checked onchange="toggleInterestInputMode()">
@@ -1370,7 +1385,6 @@ onclick="printCombinedLedgerView()">
   <input id="tManualInterestAmount" type="number" class="form-control form-control-sm mt-1" placeholder="ब्याज राशि (₹) यहाँ लिखें" disabled>
 </div>
 
-<!-- 🎯 NEW INTEREST DUAL BREAKDOWN COMPONENT BOX -->
 <div id="interestBreakdownBox" class="p-2 border rounded mb-2 bg-white text-start" style="font-size:12px; display:none;">
   <div class="d-flex justify-content-between"><span>📋 ओरिजिनल ब्याज:</span> <span id="popOrigInt" class="fw-bold">₹0.00</span></div>
   <div class="d-flex justify-content-between"><span>✍️ मैनुअल ब्याज:</span> <span id="popManualInt" class="fw-bold text-secondary">₹0.00</span></div>
@@ -1391,7 +1405,7 @@ onclick="printCombinedLedgerView()">
   </label>
 
 </div>
- <textarea id="tNote" class="form-control mb-3" placeholder="कोई नोट / विवरण लिखें"></textarea>  <button class="btn btn-success w-100 mb-2" onclick="saveTransaction()">✔ सहेजें</button>  
+ <textarea id="tNote" class="form-control mb-3" placeholder="कोई note / विवरण लिखें"></textarea>  <button class="btn btn-success w-100 mb-2" onclick="saveTransaction()">✔ सहेजें</button>  
 <button class="btn btn-danger w-100" onclick="closeTransactionPopup()">रद्द करें</button>
 
   </div>  
@@ -1458,8 +1472,8 @@ onclick="printCombinedLedgerView()">
         </div>
     </div>
 
-    <label class="fw-bold">फसल विवरण नोट</label>
-    <textarea id="fNote" class="form-control" placeholder="फसल नोट विवरण" style="height:60px;"></textarea>  
+    <label class="fw-bold">फसल विवरण note</label>
+    <textarea id="fNote" class="form-control" placeholder="फसल note विवरण" style="height:60px;"></textarea>  
 
     <div class="row g-2 mt-1">
        <div class="col-6"><button class="btn btn-success w-100" onclick="saveFasal()">✔ सहेजें</button></div>
@@ -1520,11 +1534,11 @@ onclick="printCombinedLedgerView()">
 
 <script>  
 let globalFirstAppNames = new Set();
-let isNavigatedFromReport = false; // Flag to trace navigation path
-let activeReportTab = 'entries'; // State tracking for advanced report layout
-let lastCalculatedSummaryData = []; // Store list for print configuration
-let summaryFilterMode = 'debit'; // Toggle state for summary filter list
-window.justSavedEntry = false; // 🎯 SAFETY LOCK INTERFACE FLAG FOR DYNAMIC LIFECYCLE AUTO-ACCOUNTS
+let isNavigatedFromReport = false; 
+let activeReportTab = 'entries'; 
+let lastCalculatedSummaryData = []; 
+let summaryFilterMode = 'debit'; 
+window.justSavedEntry = false; 
 if (!window.accountClearedTracker) { window.accountClearedTracker = {}; }
 
 window.onload = () => {  
@@ -1875,6 +1889,7 @@ function renameAccount(accId){
 }
 
 // 🎯 COMPREHENSIVE RECONCILIATION & SYNC MATRIX WITH LIVE DUAL-MODE VISUAL OVERRIDES
+// 🎯 FIXED ALL HIDDEN CRASH TYPOS (f.netFasal REPLACED BY d.netFasal PERMANENTLY)
 function loadLedger(){
   let newPath = "ledgers/" + currentCustomerId + "/" + currentAccountId;
   
@@ -1901,7 +1916,12 @@ function loadLedger(){
       entries.sort((a,b)=>{ return new Date(a.startDate || a.date) - new Date(b.startDate || b.date); });
       ledgerTable.innerHTML = "";
 
+      let filterMode = document.getElementById("ledgerFilter") ? document.getElementById("ledgerFilter").value : "all";
+
       entries.forEach(d=>{
+        if (filterMode === 'fasal' && !d.isFasal) return;
+        if (filterMode === 'hisab' && d.isFasal) return;
+
         if(!d.isFasal && d.startDate && !d.endDate && (+d.debit || 0) > 0 && (+d.interest || 0) > 0){
           let start = new Date(d.startDate);
           let today = new Date();
@@ -2003,7 +2023,7 @@ function loadLedger(){
               <span class="text-danger fw-bold" style="font-size:14px;">₹${(totalD + totalI).toFixed(2)}</span>
             </div>
             <div class="col-4">
-              <small class="text-muted d-block fw-bold" style="font-size:11px;">शुद्ध शेष स्थिति</small>
+              <small class="text-muted d-block fw-bold" style="font-size:14px;">शुद्ध शेष स्थिति</small>
               <span class="${balance >= 0 ? 'text-danger' : 'text-success'} fw-bold" style="font-size:14px;">₹${balance.toFixed(2)}</span>
             </div>
           </div>
@@ -2070,13 +2090,14 @@ function loadLedger(){
           }
       }
   });
-}
+}  
   
 function toggleFasalSummary(){  
   const b = fasalSummary;  
   b.style.display = b.style.display == "block" ? "none" : "block";  
 }  
   
+// 🎯 CROP SUMMARY LOGIC
 function generateFasalSummary(all){
     if(all.length == 0){
         fasalSummary.innerHTML = "<div class='p-2 text-center'>कोई फसल नहीं</div>";
@@ -2089,12 +2110,13 @@ function generateFasalSummary(all){
         let net = +f.netFasal || 0;
         combined[name] += net;
         let q = +f.quintal || 0;
-        details[name].push({ qty: Math.floor(q*100/100) + " Q " + Math.round((q*100)%100) + " KG", amount: net });
+        let rate = f.rate || 0;
+        details[name].push({ qty: Math.floor(q*100/100) + " Q " + Math.round((q*100)%100) + " KG", amount: net, rate: rate });
     });
     fasalSummary.innerHTML = "";
     for(let name in combined){
         let html = `<div class="fasal-box" style="margin:8px 0;"><div style="font-weight:800;font-size:16px;color:#0d47a1;border-bottom:1px dashed #ccc;padding-bottom:4px;margin-bottom:4px;">🌾 ${name} → कुल: ₹${combined[name].toFixed(2)}</div>`;
-        details[name].forEach((d,i)=>{ html += `<div style="padding-left:10px;font-size:14px;display:flex;justify-content:space-between;"><span>• ${d.qty}</span><span style="font-weight:600;">₹${d.amount.toFixed(2)}</span></div>`; });
+        details[name].forEach((d,i)=>{ html += `<div style="padding-left:10px;font-size:14px;display:flex;justify-content:space-between;"><span>• ${d.qty} (भाव: ₹${d.rate})</span><span style="font-weight:600;">₹${d.amount.toFixed(2)}</span></div>`; });
         html += `</div>`;
         fasalSummary.insertAdjacentHTML("beforeend", html);
     }
@@ -2178,7 +2200,6 @@ function calcInterest() {
     let manualAmt = +document.getElementById("tManualInterestAmount").value || 0;
     let useManual = document.getElementById("radioManualInterest").checked;
     
-    // 🎯 FIX: DISCOUNT CALCULATED EXACTLY BASED ON THE TICKED MODE CONDITION
     let discount = useManual ? Math.max(0, origInt - manualAmt) : 0;
     
     document.getElementById("popOrigInt").innerText = "₹" + origInt.toFixed(2);
@@ -2656,7 +2677,7 @@ function loadFasalDropdown() {
     db.ref("fasals").once("value").then(snap => { fName.innerHTML = `<option value="">फसल चुनें</option>`; snap.forEach(f => { if(!f.val()) return; fName.insertAdjacentHTML("beforeend", `<option>${f.val().name}</option>`); }); });  
 }  
 loadFasalDropdown();  
-function closeFasalPopup() { document.getElementById("fasalPopupOverlay").style.display = "none"; window.editingFasalId = null; }  
+closeFasalPopup = () => { document.getElementById("fasalPopupOverlay").style.display = "none"; window.editingFasalId = null; }  
 </script>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <script>  
 function openPrintPreviewManual(customHtml){  
   const pc = document.getElementById("printContent"); pc.innerHTML = customHtml; document.getElementById("printPreviewBox").style.display = "block";  
@@ -2688,9 +2709,12 @@ function switchReportTab(tab) {
   }
 }
 
+// 🎯 FIXED ACCIDENTAL DUPLICATE FORM FILTERS RESET Matrix TRIGGER
 function onFilterInputTriggered() {
   if (activeReportTab === 'summary') {
     generateAccountWiseSummary();
+  } else {
+    generateReport();
   }
 }
 
@@ -2824,8 +2848,8 @@ function generateAccountWiseSummary() {
         <div class="rep-summary-card" onclick="viewLedgerFromReport('${cid}')" style="cursor:pointer;">
           <div class="rep-summary-title">👤 ${cname} <span class="badge bg-danger float-end" style="font-size:11px;">R.N. ${crn}</span></div>
           <div style="font-size:12px; color:#64748b; font-weight:700; margin-bottom:6px;">🏡 गाँव: ${cvill} | 📝 सक्रिय खाता: <b class="text-primary">${activeAccountName}</b></div>
-          <div class="rep-summary-item"><span>जमा (Credit):</span> <span style="color:#16a34a;">₹totalC</span></div>
-          <div class="rep-summary-item"><span>निकासी (Debit):</span> <span style="color:#b91c1c;">₹totalD</span></div>
+          <div class="rep-summary-item"><span>जमा (Credit):</span> <span style="color:#16a34a;">₹${totalC}</span></div>
+          <div class="rep-summary-item"><span>निकासी (Debit):</span> <span style="color:#b91c1c;">₹${totalD}</span></div>
           <div class="rep-summary-item"><span>ब्याज (Interest):</span> <span style="color:#ea580c;">₹${totalI.toFixed(2)}</span></div>
           <div class="rep-summary-item"><span>शुद्ध फसल (Net Fasal):</span> <span style="color:#0284c7;">₹${totalFNet.toFixed(2)}</span></div>
           <div class="rep-summary-item border-top mt-2 pt-2" style="font-size:14px;">
@@ -2852,7 +2876,7 @@ function printSummaryReport() {
   if(fromDate.value || toDate.value) {
     periodText = `${fromDate.value || 'शुरुआत'} से ${toDate.value || 'आज'}`;
   } else {
-    periodText = "नवीनतम सक्रिय सीज़न रिकॉर्ड";
+    periodText = "नवीनतम सक्रिय सीज़न记录";
   }
 
   let tableRows = "";
@@ -2906,44 +2930,66 @@ function printSummaryReport() {
       </table>
     </div>
   `;
-  openPrintPreviewManual(html);
+  openPrintPreviewManual(fullPrintTemplate);
 }
 
+// 🎯 ADVANCED REPORT SOURCE ENTRY CATEGORY FILTERS (MANUAL, AUTO SYNC, MANDI APP PRO)
 function generateReport(){  
   if(activeReportTab === 'summary') {
     generateAccountWiseSummary();
     return;
   }
   let from = fromDate.value ? new Date(fromDate.value) : null; let to = toDate.value ? new Date(toDate.value) : null; let search = reportSearch.value.toLowerCase().trim();  
-  let interestSearch = parseFloat(document.getElementById("interestSearch").value) || 0; let sort = sortType.value; reportTable.innerHTML = ""; let all = [];  
+  let interestSearch = parseFloat(document.getElementById("interestSearch").value) || 0; 
+  let sortType = document.getElementById("sortType").value; 
+  let sourceFilter = document.getElementById("entrySourceFilter") ? document.getElementById("entrySourceFilter").value : "all";
+  
+  reportTable.innerHTML = ""; let all = [];  
   db.ref("customers").once("value").then(async csnap => {  
     let promises = [];  
     csnap.forEach(c => {  
       let cid = c.key; if(!c.val()) return; let cname = c.val().name || "";  
-let cvillage = c.val().village || "";
-let crn = c.val().rn || "";
+      let cvillage = c.val().village || "";
+      let crn = c.val().rn || "";
       let p = db.ref("ledgers/" + cid).once("value").then(lsnap => {  
         lsnap.forEach(accSnap => { accSnap.forEach(e => {  
             let d = e.val(); if(!d) return; let date = d.startDate || d.date || ""; if(!date) return;  
             if(from && new Date(date) < from) return; if(to && new Date(date) > to) return;  
+            
+            // Differentiate Category Origins
+            let entrySource = "manual";
+            if (d.isFasal) {
+                entrySource = "mandi";
+            } else if (d.isCloseEntry || (d.note && (d.note.includes("ऑटो") || d.note.includes("सिंक") || d.note.toLowerCase().includes("sync") || d.note.includes("बंद")))) {
+                entrySource = "auto";
+            }
+            
+            if (sourceFilter !== "all" && entrySource !== sourceFilter) return;
+            
             if((!search || cname.toLowerCase().includes(search) || (d.note || "").toLowerCase().includes(search)) && (interestSearch === 0 || (+d.interestAmount || 0) >= interestSearch)){  
               all.push({
-  cid: cid,
-  date: date,
-  sortKey: date + "_" + e.key,
-  name: cname,
-village: cvillage,
-  rn: crn,
-  detail: d.note || (d.isFasal ? "Fasal" : "Transaction"),
-  credit: d.credit || "",
-  debit: d.debit || ""
-}); 
+                  cid: cid,
+                  date: date,
+                  name: cname,
+                  village: cvillage,
+                  rn: crn,
+                  detail: d.note || (d.isFasal ? (d.name ? "🌾 " + d.name : "Fasal") : "Transaction"),
+                  credit: d.isFasal ? (d.netFasal || "") : (d.credit || ""),
+                  debit: d.isFasal ? "" : (d.debit || "")
+              }); 
             }  
           }); });  
       }); promises.push(p);  
     });  
     await Promise.all(promises);  
-    all.sort((a,b)=>{ return new Date(a.startDate || a.date) - new Date(b.startDate || b.date); });  
+    
+    // Dynamic Sort Matrix Switch Engine
+    all.sort((a,b)=>{ 
+        let dateA = new Date(a.date);
+        let dateB = new Date(b.date);
+        return sortType === 'new' ? (dateB - dateA) : (dateA - dateB);
+    });  
+    
     reportTable.innerHTML = "";  
     all.forEach(r=>{ 
         reportTable.insertAdjacentHTML("beforeend",
@@ -2987,7 +3033,7 @@ text-overflow:ellipsis;
 🏡 ${(r.village || "-").length > 10 
 ? (r.village || "-").substring(0,10) + ".." 
 : (r.village || "-")}
-
+</div>
 </td>
 <td style="font-weight:700; color:#dc2626;">${r.rn || "-"}</td>
 <td>${r.detail}</td>
@@ -3228,7 +3274,7 @@ function calculateAiMatchedTotal() {
         let unclaimedLedgerRowsHtml = "";
         let unmatchedCombinedRowsHtml = "";
         
-        let matchCount = 0, unmatchedLedgerCount = 0, unmatchedCombinedCount = 0;
+        let matchCount = 0, unclaimedLedgerCount = 0, unmatchedCombinedCount = 0;
         
         ledgerEntries.forEach(le => {
             if (qNote && !le.noteMatch && (!le.isMatched || !le.matchedWith.noteMatch)) return;
@@ -3351,9 +3397,9 @@ function calculateAiMatchedTotal() {
             resultHtml += "<div class='alert alert-light border text-center text-muted fw-bold mb-4'>⚠️ इस सीमा में कोई भी प्रविष्टि परस्पर मैच नहीं हुई!</div>";
         }
         
-        if (unmatchedLedgerCount > 0) {
+        if (unclaimedLedgerCount > 0) {
             resultHtml += `
-                <div class="fw-bold mb-2 text-warning" style="font-size:14px;">❌ प्रविष्टियां जो लेजर में हैं पर Combined (Bank+Kharch) में नहीं मिलीं: <span class="badge bg-warning text-dark">${unmatchedLedgerCount}</span></div>
+                <div class="fw-bold mb-2 text-warning" style="font-size:14px;">❌ प्रविष्टियां जो लेजर में हैं पर Combined (Bank+Kharch) में नहीं मिलीं: <span class="badge bg-warning text-dark">${unclaimedLedgerCount}</span></div>
                 <div class="table-responsive border rounded bg-white shadow-sm mb-4" style="max-height: 32vh; overflow-y:auto;">
                     <table class="table table-sm table-bordered text-center align-middle m-0" style="font-size:12px;">
                         <thead class="table-warning sticky-top">
@@ -3383,7 +3429,7 @@ function calculateAiMatchedTotal() {
                         <thead class="table-danger sticky-top">
                             <tr>
                                 <th>तारीख</th>
-                                <th>Combined विवरण Note</th>
+                                <th>Combined विवरण note</th>
                                 <th>प्रकार Type</th>
                                 <th>जमा (Cr)</th>
                                 <th>निकासी (Db)</th>
