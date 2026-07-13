@@ -157,7 +157,7 @@ thead th {
     background: #fef9c3; border: 1.5px solid #fef08a;  
     padding: 14px; border-radius: 14px; margin-top: 10px;  
     white-space: pre-line;  
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.022);
 }  
 .fasal-head {  
     background: #fef08a; padding: 8px 14px; border-radius: 8px;  
@@ -488,13 +488,14 @@ th.reg-col, td.reg-col {
 }  
 
 #ledgerCard .table-responsive{
-  max-height: 68vh !important;
+  max-height: 60vh !important;
   overflow-y: auto !important;
   overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   background: #ffffff;
+  overscroll-behavior-y: contain !important;
 }
 #ledgerTableMain td{
   padding: 10px !important;
@@ -512,7 +513,7 @@ th.reg-col, td.reg-col {
 
 #ledgerCard{
   min-height: 100vh;
-  overflow-y: auto;
+  overflow-y: auto !important;
 }
 
 #ledgerCard .card-body{
@@ -563,6 +564,10 @@ font-size: 13px !important;
 line-height: 1.25 !important;
 }
 
+.comb-view-table{
+width: 100% !important;
+}
+
 .comb-view-table th{
 background: #f1f5f9;
 font-weight: 700;
@@ -592,38 +597,38 @@ padding: 8px 4px !important;
 
 #combinedViewCard{
 position: fixed !important;
-width: 95%;
+width: 92%;
 max-width: 700px;
-height: 85vh;
-min-width: 320px;
+height: 75vh;
+min-width: 310px;
 min-height: 300px;
-max-width: 98vw;
-max-height: 95vh;
 overflow: hidden;
 background: #fff;
 border-radius: 24px;
 box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-z-index: 999999;
+z-index: 999999 !important;
 display: none;
 animation: combinedPopup .25s ease;
 border: 1px solid #e2e8f0;
 }
 #combinedViewCard .card-body{
-height: calc(85vh - 70px);
+height: calc(100% - 60px) !important;
 display: flex;
 flex-direction: column;
-overflow: hidden;
+overflow: hidden !important;
 padding: 16px;
 }
 #combinedViewCard .table-responsive{
-flex: 1;
-height: 100%;
-min-height: 0;
+flex: 1 !important;
+height: auto !important;
 overflow-y: auto !important;
 overflow-x: auto !important;
 -webkit-overflow-scrolling: touch;
 border-radius: 12px;
 border: 1px solid #e2e8f0;
+width: 100%;
+touch-action: auto !important;
+overscroll-behavior-y: contain !important;
 }
 
 .comb-view-table td{
@@ -907,7 +912,7 @@ placeholder="पासवर्ड दर्ज करें" style="height: 50p
 </div>  <div id="forgotBox" style="  
     display: none; width: 100%; max-width: 400px;  
     margin: 40px auto; background: white; padding: 25px;  
-    border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">    <h4 class="text-center mb-3 fw-bold">🔑 पासवर्ड रीсет</h4>  <input id="favName" class="form-control mb-3"  
+    border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">    <h4 class="text-center mb-3 fw-bold">🔑 पासवर्ड रीसेट</h4>  <input id="favName" class="form-control mb-3"  
 placeholder="फेवरेट नाम लिखें">
 
 <button class="btn btn-success w-100 mb-2" onclick="resetPass()">Reset करें</button>
@@ -1351,7 +1356,7 @@ onclick="printCombinedLedgerView()">
       <label class="fw-bold mb-1" style="font-size:13px; color:#4f46e5;">🔍 कोई खास विवरण / नोट / फसल का नाम</label>
       <input id="aiMatchNote" class="form-control" placeholder="उदा: गेहूं, सरसों, नकद, bank...">
     </div>
-    <button class="btn text-white w-100 mb-4 btn-lg shadow-sm" onclick="calculateAiMatchedTotal()" style="background: linear-gradient(135deg, #4f46e5, #3730a3); border:none; border-radius:12px; padding:12px; font-weight:700;">
+    <button class="btn text-white w-100 mb-4 btn-lg shadow-sm" onclick="clearAiMatchedTotal()" style="background: linear-gradient(135deg, #4f46e5, #3730a3); border:none; border-radius:12px; padding:12px; font-weight:700;">
       🔍 डेटा मैच करें और टोटल बताएं
     </button>
     <div id="aiMatchResultBox"></div>
@@ -1382,7 +1387,9 @@ onclick="printCombinedLedgerView()">
     <input type="radio" id="radioManualInterest" name="interestSelectMode" class="form-check-input" onchange="toggleInterestInputMode()">
     <label class="form-check-label fw-bold text-dark" for="radioManualInterest">✍️ मैनुअल राशि डालें (Fixed)</label>
   </div>
-  <input id="tManualInterestAmount" type="number" class="form-control form-control-sm mt-1" placeholder="ब्याज राशि (₹) यहाँ लिखें" disabled>
+  <div id="manualInterestWrapper" class="mt-1" style="display: none;">
+    <input id="tManualInterestAmount" type="number" class="form-control form-control-sm" placeholder="ब्याज राशि (₹) यहाँ लिखें" disabled>
+  </div>
 </div>
 
 <div id="interestBreakdownBox" class="p-2 border rounded mb-2 bg-white text-start" style="font-size:12px; display:none;">
@@ -1504,10 +1511,17 @@ onclick="printCombinedLedgerView()">
   </div>
   <div class="card-body" style="height: calc(85vh - 70px); display: flex; flex-direction: column; padding: 14px; overflow: hidden;">
     <div class="row g-2 mb-3">
-      <div class="col-6">
+      <div class="col-4">
         <select id="mandiSeasonSelect" class="form-select fw-bold" style="border: 2px solid #10b981;" onchange="loadMandiEntries()"></select>
       </div>
-      <div class="col-6">
+      <div class="col-4">
+        <select id="mandiTypeFilter" class="form-select fw-bold" style="border: 2px solid #10b981;" onchange="filterMandiEntries()">
+          <option value="all">सभी एंट्री (All)</option>
+          <option value="normal">नॉर्मल एंट्री (Normal)</option>
+          <option value="form">फॉर्म एंट्री (Form)</option>
+        </select>
+      </div>
+      <div class="col-4">
         <input type="text" id="mandiSearchInput" class="form-control" placeholder="🔍 नाम/गाँव से खोजें..." oninput="filterMandiEntries()">
       </div>
     </div>
@@ -2124,6 +2138,10 @@ function generateFasalSummary(all){
 
 function toggleInterestInputMode() {
     let isManual = document.getElementById("radioManualInterest").checked;
+    let manualWrapper = document.getElementById("manualInterestWrapper");
+    if(manualWrapper) {
+        manualWrapper.style.display = isManual ? "block" : "none";
+    }
     document.getElementById("tManualInterestAmount").disabled = !isManual;
     if(!isManual) {
         document.getElementById("tManualInterestAmount").value = "";
@@ -2134,6 +2152,10 @@ function toggleInterestInputMode() {
 function openTransactionPopup(){  
     tDate.value = ""; tEndDate.value = ""; tCredit.value = ""; tDebit.value = ""; tInterest.value = ""; tDays.value = ""; tInterestAmount.value = ""; tNote.value = "";  
     document.getElementById("radioAutoInterest").checked = true;
+    let manualWrapper = document.getElementById("manualInterestWrapper");
+    if(manualWrapper) {
+        manualWrapper.style.display = "none";
+    }
     document.getElementById("tManualInterestAmount").value = "";
     document.getElementById("tManualInterestAmount").disabled = true;
     document.getElementById("interestBreakdownBox").style.display = "none";
@@ -2237,10 +2259,12 @@ function calcFasal(){
 
 function openFasalPopup() {  
     fasalPopupOverlay.style.display = "flex"; loadFasalDropdown();  
-    fName.value = ""; fDate.value = ""; fBori.value = ""; fWeightPer.value = ""; fTotalQ.value = ""; fExtraKG.value = ""; fRate.value = ""; fMajduri.value = ""; document.getElementById("fCut").value = ""; fMajduriTotal.value = ""; fNetAmount.value = ""; fNote.value = "";  
-    window.editingFasalId = null;  
-}  
-  
+    fName.value = ""; fDate.value = ""; fBori.value = ""; fWeightPer.value = ""; fTotalQ.value = ""; fExtraKG = fExtraKG || 0; fRate.value = f.rate || 0;  
+    document.getElementById("majType").value = f.majType || "quintal";  
+    fMajduri.value = f.majType === "quintal" ? ((f.totalMajduri || 0) / (f.quintal || 1)).toFixed(2) : ((f.totalMajduri || 0) / (f.bori || 1)).toFixed(2);
+    document.getElementById("fCut").value = f.totalCut || 0; fMajduriTotal.value = f.totalMajduri || 0; fNetAmount.value = f.netFasal || 0; fNote.value = f.note || ""; window.editingFasalId = id;
+}
+
 function saveFasal(){
   if(!fName.value) return alert("फसल चुनें!");
   let b = +fBori.value||0; let w = +fWeightPer.value||0; let q = +fTotalQ.value||0; let r = +fRate.value||0; let m = +fMajduri.value||0; let o = +document.getElementById("fCut").value || 0;
@@ -2272,7 +2296,7 @@ function deleteLedgerEntry(id){
 
 /* EXPORT TO EXCEL */
 function exportLedgerToExcel() {
-  if(!currentCustomerId) return alert("कोई ग्राहक चयनित नहीं है!");
+  if(!currentCustomerId) return alert("कोई ग्राहकं चयनित नहीं है!");
   let nameText = document.getElementById("ledgerCustomerName").innerText.split('\n')[0].replace('👤 ', '').trim();
   let table = document.getElementById("ledgerTableMain");
   let wb = XLSX.utils.table_to_book(table, {sheet: "Ledger Sheet"});
@@ -2650,10 +2674,18 @@ function editTransaction(id){
         
         if(d.useManualInterest) {
             document.getElementById("radioManualInterest").checked = true;
+            let manualWrapper = document.getElementById("manualInterestWrapper");
+            if(manualWrapper) {
+                manualWrapper.style.display = "block";
+            }
             document.getElementById("tManualInterestAmount").value = d.manualInterestAmount || "";
             document.getElementById("tManualInterestAmount").disabled = false;
         } else {
             document.getElementById("radioAutoInterest").checked = true;
+            let manualWrapper = document.getElementById("manualInterestWrapper");
+            if(manualWrapper) {
+                manualWrapper.style.display = "none";
+            }
             document.getElementById("tManualInterestAmount").value = "";
             document.getElementById("tManualInterestAmount").disabled = true;
         }
@@ -3297,8 +3329,8 @@ function calculateAiMatchedTotal() {
                     </tr>
                 `;
             } else {
-                unmatchedLedgerCount++;
-                unmatchedLedgerRowsHtml += `
+                unclaimedLedgerCount++;
+                unclaimedLedgerRowsHtml += `
                     <tr style="background:#fff1f2; color:#991b1b;">
                         <td>${le.date ? le.date.split('-').reverse().join('-') : '-'}</td>
                         <td class="fw-bold text-primary" onclick="openLedger('${le.cid}')" style="cursor:pointer; text-decoration:underline;">${le.cname} <small class="text-muted">(${le.cvill})</small></td>
@@ -3496,7 +3528,7 @@ function saveCloseHisab(){
 function openCombinedLedgerView(mode="ledger"){
   window.combinedMode = mode; let combinedCard = document.getElementById("combinedViewCard"); document.body.appendChild(combinedCard); combinedCard.style.display = "block";  
   combinedCard.style.left = Math.max(0, (window.innerWidth - combinedCard.offsetWidth) / 2) + "px"; combinedCard.style.top = Math.max(0, (window.innerHeight - combinedCard.offsetHeight) / 2) + "px";  
-  document.body.style.overflow = "hidden"; loadCombinedLedgerData();
+  loadCombinedLedgerData();
 }
 function backToLedgerFromCombined(){ document.getElementById("combinedViewCard").style.display = "none"; document.getElementById("printPreviewBox").style.display = "none"; document.body.style.overflow = "auto"; if(window.combinedMode === "ledger"){ ledgerCard.style.display = "block"; }else{ customerListCard.style.display = "block"; } }
 loadCombinedLedgerData();
@@ -3604,11 +3636,33 @@ function loadMandiEntries() {
 }
 function renderMandiEntries() {
     let currentDefaultBW = window.mandiCurrentDefaultBW || 50; let search = document.getElementById("mandiSearchInput").value.toLowerCase().trim();
+    let typeFilter = document.getElementById("mandiTypeFilter") ? document.getElementById("mandiTypeFilter").value : "all";
     let tbody = document.getElementById("mandiTableBody"); tbody.innerHTML = ""; let totalKgRaw = 0; let totalQtl = 0; let count = 0;
 
     mandiEntriesMaster.forEach(r => {
         if(!r) return;
         if(search && !(r.customer||"").toLowerCase().includes(search) && !(r.village||"").toLowerCase().includes(search)) return;
+        
+        let isForm = false;
+        if (r.isForm == true || r.isForm === "true" || r.isForm == 1 || r.isForm === "1" || r.isForm === "form" ||
+            r.isFormEntry == true || r.isFormEntry === "true" || r.isFormEntry == 1 || r.isFormEntry === "form" ||
+            r.form == true || r.form === "true" || r.form == 1 || r.form === "form" ||
+            r.jForm == true || r.jForm === "true" || r.jForm == 1 || r.jForm === "form" ||
+            r.isJForm == true || r.isJForm === "true" || r.isJForm == 1 || r.isJForm === "form" ||
+            (r.entryType && (r.entryType === "form" || r.entryType === "formEntry" || r.entryType === "jForm")) ||
+            (r.source && (r.source === "form" || r.source === "formEntry")) ||
+            (r.type && (r.type === "form" || r.type === "formEntry" || r.type === "jForm"))) {
+            isForm = true;
+        }
+
+        if (r.isNormal == true || r.isNormal === "true" || r.isNormal == 1 || 
+            r.entryType === "normal" || r.type === "normal" || r.source === "normal" || r.source === "manual") {
+            isForm = false;
+        }
+
+        if (typeFilter === "normal" && isForm) return;
+        if (typeFilter === "form" && !isForm) return;
+
         count++; const bw = Number(r.customBW || currentDefaultBW || 50); const bore = Number(r.bore || 0); const extra = Number(r.extra || 0);
         totalKgRaw += (bore * bw) + extra; totalQtl += Number(r.finalQtl || r.qtlValue || 0);
         tbody.insertAdjacentHTML("beforeend", `<tr><td>${r.date || "-"}</td><td class="text-primary fw-bold">${r.customer || "-"}</td><td>${r.father || "-"}</td><td>${r.village || "-"}</td><td class="text-danger fw-bold">${r.bore || 0}</td><td>${r.extra || 0}</td><td class="text-success fw-bold">${r.quintal || "-"}</td><td>Gross: ₹${((r.rate || 0) * (r.finalQtl || 0)).toFixed(2)}<br>Net: <b class="text-danger">₹${r.amount || 0}</b></td></tr>`);
