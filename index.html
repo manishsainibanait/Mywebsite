@@ -1356,7 +1356,8 @@ onclick="printCombinedLedgerView()">
       <label class="fw-bold mb-1" style="font-size:13px; color:#4f46e5;">🔍 कोई खास विवरण / नोट / फसल का नाम</label>
       <input id="aiMatchNote" class="form-control" placeholder="उदा: गेहूं, सरसों, नकद, bank...">
     </div>
-    <button class="btn text-white w-100 mb-4 btn-lg shadow-sm" onclick="clearAiMatchedTotal()" style="background: linear-gradient(135deg, #4f46e5, #3730a3); border:none; border-radius:12px; padding:12px; font-weight:700;">
+    <!-- 🎯 FIXED ONCLICK FUNCTION LINK FOR THE AI MATCHER ENGINE -->
+    <button class="btn text-white w-100 mb-4 btn-lg shadow-sm" onclick="calculateAiMatchedTotal()" style="background: linear-gradient(135deg, #4f46e5, #3730a3); border:none; border-radius:12px; padding:12px; font-weight:700;">
       🔍 डेटा मैच करें और टोटल बताएं
     </button>
     <div id="aiMatchResultBox"></div>
@@ -1616,6 +1617,7 @@ let currentCustomerId = null;
 let currentAccountId = 'default';
 let ledgerRef = null;
 let customerRef = null;
+let accountsRef = null;
 
 function showCard(id){  
   customerListCard.style.display="none";  
@@ -1638,9 +1640,16 @@ function backToList(){
       ledgerRef.off();
       ledgerRef = null;
     }
+    if(accountsRef){
+      accountsRef.off();
+      accountsRef = null;
+    }
     ledgerTable.innerHTML = "";
     ledgerFooter.innerHTML = "";
     fasalSummary.innerHTML = "";
+    if (document.getElementById("ledgerTopSummary")) {
+        document.getElementById("ledgerTopSummary").innerHTML = "";
+    }
     if(window.bankKhataRef){ window.bankKhataRef.off(); }
     if(window.kharchKhataRef){ window.kharchKhataRef.off(); }
     localStorage.setItem("currentScreen", "customerListCard");
@@ -1654,6 +1663,10 @@ function handleBackAction() {
         if(ledgerRef){
           ledgerRef.off();
           ledgerRef = null;
+        }
+        if(accountsRef){
+          accountsRef.off();
+          accountsRef = null;
         }
         showCard("advancedReportCard");
     } else {
@@ -1735,6 +1748,10 @@ function openLedger(id){
     ledgerRef.off();
     ledgerRef = null;
   }
+  if(accountsRef){
+    accountsRef.off();
+    accountsRef = null;
+  }
   currentCustomerId = id;
   localStorage.setItem("currentCustomerId", id);
   let savedAcc = localStorage.getItem("lastAccount_" + id);
@@ -1744,6 +1761,12 @@ function openLedger(id){
   ledgerTable.innerHTML = "";
   ledgerFooter.innerHTML = "";
   fasalSummary.innerHTML = "";
+  if (document.getElementById("ledgerTopSummary")) {
+      document.getElementById("ledgerTopSummary").innerHTML = "";
+  }
+  if (document.getElementById("accountList")) {
+      document.getElementById("accountList").innerHTML = "<option>लोड हो रहा है...</option>";
+  }
   ledgerCustomerName.innerText = "लोड हो रहा है...";
   showCard("ledgerCard");
 
@@ -1806,7 +1829,11 @@ function checkAndMigrateLedger(customerId, callback) {
 }
 
 function loadAccountDropdown() {
-    db.ref("accounts/" + currentCustomerId).on("value", snap => {
+    if (accountsRef) {
+        accountsRef.off();
+    }
+    accountsRef = db.ref("accounts/" + currentCustomerId);
+    accountsRef.on("value", snap => {
         accountList.innerHTML = "";
         snap.forEach(acc => {
             let d = acc.val();
@@ -2111,7 +2138,7 @@ function toggleFasalSummary(){
   b.style.display = b.style.display == "block" ? "none" : "block";  
 }  
   
-// 🎯 CROP SUMMARY LOGIC
+// 🎯 CROP SUMMARY LOGIC - मजदूरी और कटौती अपडेटेड
 function generateFasalSummary(all){
     if(all.length == 0){
         fasalSummary.innerHTML = "<div class='p-2 text-center'>कोई फसल नहीं</div>";
@@ -2120,17 +2147,44 @@ function generateFasalSummary(all){
     let combined = {}; let details = {};
     all.forEach(f => {
         let name = (f.name || "Other").trim();
-        if(!combined[name]){ combined[name] = 0; details[name] = []; }
+        if(!combined[name]){ 
+            combined[name] = { net: 0, majduri: 0, katoi: 0 }; 
+            details[name] = []; 
+        }
         let net = +f.netFasal || 0;
-        combined[name] += net;
+        let m = +f.totalMajduri || 0;
+        let c = +f.totalCut || 0;
+        
+        combined[name].net += net;
+        combined[name].majduri += m;
+        combined[name].katoi += c;
+        
         let q = +f.quintal || 0;
         let rate = f.rate || 0;
-        details[name].push({ qty: Math.floor(q*100/100) + " Q " + Math.round((q*100)%100) + " KG", amount: net, rate: rate });
+        details[name].push({ 
+            qty: Math.floor(q*100/100) + " Q " + Math.round((q*100)%100) + " KG", 
+            amount: net, 
+            rate: rate, 
+            majduri: m, 
+            katoi: c 
+        });
     });
     fasalSummary.innerHTML = "";
     for(let name in combined){
-        let html = `<div class="fasal-box" style="margin:8px 0;"><div style="font-weight:800;font-size:16px;color:#0d47a1;border-bottom:1px dashed #ccc;padding-bottom:4px;margin-bottom:4px;">🌾 ${name} → कुल: ₹${combined[name].toFixed(2)}</div>`;
-        details[name].forEach((d,i)=>{ html += `<div style="padding-left:10px;font-size:14px;display:flex;justify-content:space-between;"><span>• ${d.qty} (भाव: ₹${d.rate})</span><span style="font-weight:600;">₹${d.amount.toFixed(2)}</span></div>`; });
+        let html = `<div class="fasal-box" style="margin:8px 0;">
+            <div style="font-weight:800;font-size:16px;color:#0d47a1;border-bottom:1px dashed #ccc;padding-bottom:4px;margin-bottom:6px;">
+                🌾 ${name} → कुल नेट: ₹${combined[name].net.toFixed(2)}
+                <br><small style="font-size:12px; color:#475569; font-weight:700;">(कुल मजदूरी: ₹${combined[name].majduri.toFixed(2)} | कुल कटौती: ₹${combined[name].katoi.toFixed(2)})</small>
+            </div>`;
+        details[name].forEach((d,i)=>{ 
+            html += `<div style="padding-left:10px;font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:6px;border-bottom: 1px dotted #e2e8f0;padding-bottom:4px;">
+                <span>• ${d.qty} (भाव: ₹${d.rate})</span>
+                <span style="font-weight:600;">₹${d.amount.toFixed(2)}</span>
+                <div style="width:100%; padding-left:10px; font-size:12px; color:#64748b; font-weight:600; margin-top:2px;">
+                    ↳ मजदूरी: ₹${d.majduri.toFixed(2)} | कटौती: ₹${d.katoi.toFixed(2)}
+                </div>
+            </div>`; 
+        });
         html += `</div>`;
         fasalSummary.insertAdjacentHTML("beforeend", html);
     }
@@ -2401,6 +2455,9 @@ function toggleSummary() {
 
         let totalDebit = 0;
         let totalCredit = 0;
+        
+        let totalLabour = 0;
+        let totalKatoi = 0;
 
         let html = "";
 
@@ -2423,6 +2480,9 @@ function toggleSummary() {
 
             let interest2025 = 0;
             let interest2026 = 0;
+            
+            let customerLabour = 0;
+            let customerKatoi = 0;
 
             let customerData = ledgers[cid];
             if(!customerData) continue;
@@ -2445,9 +2505,17 @@ function toggleSummary() {
 
                     let debit =
                         +d.debit || 0;
+                    
+                    let labour = +d.totalMajduri || 0;
+                    let katoi = +d.totalCut || 0;
 
                     totalCredit += credit;
                     totalDebit += debit;
+                    
+                    totalLabour += labour;
+                    totalKatoi += katoi;
+                    customerLabour += labour;
+                    customerKatoi += katoi;
 
                     let entryDate =
                         d.startDate || d.date || "";
@@ -2506,8 +2574,16 @@ function toggleSummary() {
             <div style="
                 color:#bf360c;
                 font-weight:700;
+                margin-bottom:4px;
             ">
                 📅 2026 → ₹${interest2026.toFixed(2)}
+            </div>
+
+            <div style="
+                color:#4f46e5;
+                font-weight:700;
+            ">
+                🚜 मजदूरी: ₹${customerLabour.toFixed(2)} | ✂️ कटौती: ₹${customerKatoi.toFixed(2)}
             </div>
 
             </div>
@@ -2559,7 +2635,11 @@ color:#0d47a1;
 
 📈 कुल ब्याज 2025 → ₹${total2025.toFixed(2)}<br>
 
-📈 कुल ब्याज 2026 → ₹${total2026.toFixed(2)}
+📈 कुल ब्याज 2026 → ₹${total2026.toFixed(2)}<br><br>
+
+🚜 कुल मजदूरी (Total Labour) → ₹${totalLabour.toFixed(2)}<br>
+
+✂️ कुल कटौती (Total Katoi) → ₹${totalKatoi.toFixed(2)}
 
 </div>
 
@@ -3080,7 +3160,7 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// 🤖 AI SMART LEDGER ENTRY RECONCILIATION MATCHING (FIXED WITH STRICT NULL SAFETY SLOTS FOR ARRAY TYPE DATABASES)
+// 🤖 AI SMART LEDGER ENTRY RECONCILIATION MATCHING (FIXED MULTILINGUAL HINDI BOUNDARY ENGAGEMENT)
 function openAiMatcherCard() {
     showCard("aiMatcherCard");
     document.getElementById("aiMatchResultBox").innerHTML = "";
@@ -3239,10 +3319,8 @@ function calculateAiMatchedTotal() {
                     if(!targetName) return;
                     
                     let words = targetName.split(/\s+/).filter(Boolean);
-                    let allWordsMatch = words.every(word => {
-                        let regex = new RegExp("\\b" + escapeRegExp(word) + "\\b", "i");
-                        return regex.test(entryDesc);
-                    });
+                    // 🎯 UNICODE COMPLIANT MULTILINGUAL MATCH ENGINE FOR HINDI/PUNJABI
+                    let allWordsMatch = words.every(word => entryDesc.includes(word));
                     if (!allWordsMatch) return;
 
                     let ourIndex = entryDesc.indexOf(targetName);
@@ -3320,7 +3398,7 @@ function calculateAiMatchedTotal() {
                 matchCount++;
                 matchedRowsHtml += `
                     <tr class="table-success" style="background:#e6fffa !important; color:#0f5132;">
-                        <td>${le.date ? le.date.split('-').reverse().join('-') : '-'}</td>
+                        <td>${le.date ? String(le.date).split('-').reverse().join('-') : '-'}</td>
                         <td class="fw-bold text-primary" onclick="openLedger('${le.cid}')" style="cursor:pointer; text-decoration:underline;">${le.cname} <small class="text-muted">(${le.cvill})</small></td>
                         <td class="text-start">${le.desc}</td>
                         <td class="fw-bold text-success">${le.credit > 0 ? '₹'+le.credit.toFixed(2) : '-'}</td>
@@ -3329,10 +3407,11 @@ function calculateAiMatchedTotal() {
                     </tr>
                 `;
             } else {
+                /* 🎯 FIXED VARIABLE TYPO IN THE UNCLAIMED LEDGER ROW COUNTER MECHANISM */
                 unclaimedLedgerCount++;
                 unclaimedLedgerRowsHtml += `
                     <tr style="background:#fff1f2; color:#991b1b;">
-                        <td>${le.date ? le.date.split('-').reverse().join('-') : '-'}</td>
+                        <td>${le.date ? String(le.date).split('-').reverse().join('-') : '-'}</td>
                         <td class="fw-bold text-primary" onclick="openLedger('${le.cid}')" style="cursor:pointer; text-decoration:underline;">${le.cname} <small class="text-muted">(${le.cvill})</small></td>
                         <td><span class="badge bg-danger">RN: ${le.crn}</span></td>
                         <td class="text-start">${le.desc}</td>
@@ -3354,7 +3433,7 @@ function calculateAiMatchedTotal() {
                 unmatchedCombinedCount++;
                 unmatchedCombinedRowsHtml += `
                     <tr style="background:#fffbeb; color:#92400e;">
-                        <td>${ce.date ? ce.date.split('-').reverse().join('-') : '-'}</td>
+                        <td>${ce.date ? String(ce.date).split('-').reverse().join('-') : '-'}</td>
                         <td class="fw-bold text-start text-dark">${ce.desc}</td>
                         <td><span class="badge bg-warning text-dark">${ce.type} Book</span></td>
                         <td class="text-success fw-bold">${ce.credit > 0 ? '₹'+ce.credit : '-'}</td>
@@ -3377,7 +3456,7 @@ function calculateAiMatchedTotal() {
                 <div class="card-body p-3">
                     <div class="alert alert-light border text-center py-2 mb-0" style="background:#ffffff; border-radius:12px; font-weight:800; font-size:14px;">
                         🤝 <span class="text-success">सफलतापूर्वक मैच (Reconciled): ${matchCount}</span> | 
-                        <span class="text-danger">लेजर में छूटे (Unmatched Ledger): ${unmatchedLedgerCount}</span> | 
+                        <span class="text-danger">लेजर में छूटे (Unmatched Ledger): ${unclaimedLedgerCount}</span> | 
                         <span class="text-warning">Combined बुक में छूटे: ${unmatchedCombinedCount}</span>
                     </div>
                 </div>
@@ -3446,7 +3525,7 @@ function calculateAiMatchedTotal() {
                             </tr>
                         </thead>
                         <tbody>
-                            ${unmatchedLedgerRowsHtml}
+                            ${unclaimedLedgerRowsHtml}
                         </tbody>
                     </table>
                 </div>
@@ -3477,7 +3556,7 @@ function calculateAiMatchedTotal() {
         
         resBox.innerHTML = resultHtml;
     }).catch(err => {
-        resBox.innerHTML = "<div class='alert alert-danger text-center fw-bold'>❌ डेटा मिलान करने में कोई त्रुटि आई!</div>";
+        resBox.innerHTML = "<div class='alert alert-danger text-center fw-bold'>❌ डेटा मिलान करने में कोई त्रुटि आई! <br><small>" + err.message + "</small></div>";
         console.error(err);
     });
 }
