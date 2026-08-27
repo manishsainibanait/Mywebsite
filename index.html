@@ -682,7 +682,6 @@ to{ opacity: 1; }
     color: #1e3a8a;
 }
 
-/* 🎯 TASK 1: FIXED AND FULL SCREEN RESPONSIVE SCROLL FOR POPUPS WITHOUT JUMPING VECTOR CLASHES */
 #fasalPopupOverlay #popupBox, #transactionPopupOverlay #popupBox {
     max-width: 480px;
     width: 95%;
@@ -700,7 +699,6 @@ to{ opacity: 1; }
     font-size: 14px !important;
     margin-bottom: 8px !important;
 }
-/* PERFECT ADVANCED REPORT MOBILE FIT */
 
 #advancedReportCard .table-responsive{
     overflow-x: auto !important;
@@ -713,7 +711,6 @@ to{ opacity: 1; }
     border-collapse: collapse !important;
 }
 
-/* ALL CELLS */
 #advancedReportCard th,
 #advancedReportCard td{
     padding: 6px 3px !important;
@@ -725,110 +722,81 @@ to{ opacity: 1; }
     font-size: 12px !important;
 }
 
-/* DATE COLUMN */
-
 #advancedReportCard th:nth-child(1),
 #advancedReportCard td:nth-child(1){
-
     width: 58px !important;
     min-width: 58px !important;
     max-width: 58px !important;
-
     font-size: 12px !important;
     font-weight: 900 !important;
-
     color: #0f766e !important;
-
     line-height: 1.05 !important;
-
     white-space: normal !important;
     word-break: break-word !important;
-
     padding: 4px 2px !important;
-
     text-align:center !important;
     vertical-align:middle !important;
 }
 
-/* NAME */
 #advancedReportCard th:nth-child(2),
 #advancedReportCard td:nth-child(2){
-
     width: 82px !important;
-min-width: 82px !important;
-max-width: 82px !important;
+    min-width: 82px !important;
+    max-width: 82px !important;
     font-size: 12px !important;
     font-weight: 800 !important;
-
     color: #2563eb !important;
-
     line-height: 1.05 !important;
-
     word-break: break-word !important;
 }
 
-/* RN */
 #advancedReportCard th:nth-child(3),
 #advancedReportCard td:nth-child(3){
     width: 32px !important;
     min-width: 32px !important;
     max-width: 32px !important;
-
     font-size: 10px !important;
     font-weight: 900 !important;
     color: #dc2626 !important;
-
     padding-left: 1px !important;
     padding-right: 1px !important;
-
     line-height: 1 !important;
 }
 
-/* VIVRAN */
 #advancedReportCard th:nth-child(4),
 #advancedReportCard td:nth-child(4){
     width: 48px !important;
     min-width: 48px !important;
     max-width: 48px !important;
-
     font-size: 8px !important;
     font-weight: 700 !important;
     color: #64748b !important;
-
     line-height: 1.05 !important;
-
     padding: 3px 1px !important;
 }
 
-/* JAMA */
 #advancedReportCard th:nth-child(5),
 #advancedReportCard td:nth-child(5){
     width: 78px !important;
     min-width: 78px !important;
     max-width: 78px !important;
-
     font-size: 14px !important;
     font-weight: 900 !important;
     color: #15803d !important;
-
     line-height: 1.1 !important;
 }
 
-/* NIKASI */
 #advancedReportCard th:nth-child(6),
 #advancedReportCard td:nth-child(6){
     width: 78px !important;
     min-width: 78px !important;
     max-width: 78px !important;
-
     font-size: 14px !important;
     font-weight: 900 !important;
     color: #b91c1c !important;
-
     line-height: 1.1 !important;
 }
 
-/* UNIQUE CSS FOR DEBIT CREDIT CUSTOMER-WISE SUMMARY REPORT VIEW */
 .rep-summary-card {
     background: #f8fafc;
     border: 1px solid #cbd5e1;
@@ -1308,6 +1276,18 @@ onclick="printCombinedLedgerView()">
 </div>
 
 <div id="reportSummaryContainer" style="display:none;">
+  <div class="row g-2 mb-2">
+    <div class="col-12">
+      <label class="fw-bold text-primary mb-1" style="font-size:12px;">🏦/💸 खातावार रिपोर्ट फ़िल्टर Source:</label>
+      <select id="summarySourceFilter" class="form-select form-select-sm fw-bold" style="border:2px solid #2563eb;" onchange="generateAccountWiseSummary()">
+        <option value="all">📊 सभी डेटा (Main Current Ledger + Bank + खर्च)</option>
+        <option value="ledger" selected>📘 केवल ग्राहक करंट हिसाब (Current Active Ledger Only)</option>
+        <option value="bank">🏦 केवल बैंक खाता (Bank Book Debit/Credit)</option>
+        <option value="kharch">💸 केवल खर्च खाता (Kharch Book Debit/Credit)</option>
+      </select>
+    </div>
+  </div>
+
   <div class="row g-2 mb-3">
      <div class="col-6"><button class="btn w-100 filter-toggle-btn active-debit" id="btnFilterDebit" onclick="setSummaryFilterMode('debit')">🔴 Keval Debit Dekhein</button></div>
      <div class="col-6"><button class="btn w-100 filter-toggle-btn" id="btnFilterCredit" onclick="setSummaryFilterMode('credit')">🟢 Keval Credit Dekhein</button></div>
@@ -1356,7 +1336,6 @@ onclick="printCombinedLedgerView()">
       <label class="fw-bold mb-1" style="font-size:13px; color:#4f46e5;">🔍 कोई खास विवरण / नोट / फसल का नाम</label>
       <input id="aiMatchNote" class="form-control" placeholder="उदा: गेहूं, सरसों, नकद, bank...">
     </div>
-    <!-- 🎯 FIXED ONCLICK FUNCTION LINK FOR THE AI MATCHER ENGINE -->
     <button class="btn text-white w-100 mb-4 btn-lg shadow-sm" onclick="calculateAiMatchedTotal()" style="background: linear-gradient(135deg, #4f46e5, #3730a3); border:none; border-radius:12px; padding:12px; font-weight:700;">
       🔍 डेटा मैच करें और टोटल बताएं
     </button>
@@ -1538,7 +1517,7 @@ onclick="printCombinedLedgerView()">
             <th>बोरी</th>
             <th>अतिरिक्त</th>
             <th>क्विंटल (Qtl)</th>
-            <th>हिساب डिटेल्स</th>
+            <th>हिसाब डिटेल्स</th>
           </tr>
         </thead>
         <tbody id="mandiTableBody"></tbody>
@@ -1563,11 +1542,17 @@ window.onload = () => {
         
         let lastScreen = localStorage.getItem("currentScreen") || "customerListCard";
         let lastCustId = localStorage.getItem("currentCustomerId");
-        
+        let fromRep = localStorage.getItem("isNavigatedFromReport") === "true";
+        let repTab = localStorage.getItem("navigatedReportTab") || "entries";
+
         if (lastScreen === "ledgerCard" && lastCustId) {
+            if(fromRep) {
+                isNavigatedFromReport = true;
+            }
             openLedger(lastCustId);
         } else if (lastScreen === "advancedReportCard") {
             showCard("advancedReportCard");
+            switchReportTab(repTab);
             loadCustomers();
         } else if (lastScreen === "aiMatcherCard") {
             openAiMatcherCard();
@@ -1636,6 +1621,9 @@ function showCard(id){
 }  
   
 function backToList(){
+    isNavigatedFromReport = false;
+    localStorage.removeItem("isNavigatedFromReport");
+    localStorage.removeItem("navigatedReportTab");
     if(ledgerRef){
       ledgerRef.off();
       ledgerRef = null;
@@ -1658,8 +1646,12 @@ function backToList(){
 }
 
 function handleBackAction() {
-    if (isNavigatedFromReport) {
+    let fromRep = localStorage.getItem("isNavigatedFromReport") === "true" || isNavigatedFromReport;
+    let repTab = localStorage.getItem("navigatedReportTab") || activeReportTab || 'summary';
+    
+    if (fromRep) {
         isNavigatedFromReport = false;
+        localStorage.removeItem("isNavigatedFromReport");
         if(ledgerRef){
           ledgerRef.off();
           ledgerRef = null;
@@ -1669,12 +1661,12 @@ function handleBackAction() {
           accountsRef = null;
         }
         showCard("advancedReportCard");
+        switchReportTab(repTab);
     } else {
         backToList();
     }
 }
 
-// 🎯 DYNAMIC LIVE OPTIMISTIC SYNC FOR CUSTOMERS
 let currentCustomerPath = "";
 function loadCustomers(callback){
   let newPath = "customers";
@@ -1752,6 +1744,7 @@ function openLedger(id){
     accountsRef.off();
     accountsRef = null;
   }
+
   currentCustomerId = id;
   localStorage.setItem("currentCustomerId", id);
   let savedAcc = localStorage.getItem("lastAccount_" + id);
@@ -1762,7 +1755,7 @@ function openLedger(id){
   ledgerFooter.innerHTML = "";
   fasalSummary.innerHTML = "";
   if (document.getElementById("ledgerTopSummary")) {
-      document.getElementById("ledgerTopSummary").innerHTML = "";
+      document.getElementById("ledgerTopSummary").innerHTML = "<div class='p-3 text-center fw-bold text-primary'>लोड हो रहा है...</div>";
   }
   if (document.getElementById("accountList")) {
       document.getElementById("accountList").innerHTML = "<option>लोड हो रहा है...</option>";
@@ -1770,33 +1763,36 @@ function openLedger(id){
   ledgerCustomerName.innerText = "लोड हो रहा है...";
   showCard("ledgerCard");
 
+  const openingCid = id;
   db.ref("customers/" + id).once("value").then(s=>{
+    if(openingCid !== currentCustomerId) return;
     if(!s.exists()) return;
     let d = s.val() || {};
 
-let shortName = (d.name || "").split(" ").slice(0,2).join(" ");
-let shortFather = (d.father || "").split(" ").slice(0,2).join(" ");
-let shortVillage = d.village || "-";
-let crn = d.rn || "-";
+    let shortName = (d.name || "").split(" ").slice(0,2).join(" ");
+    let shortFather = (d.father || "").split(" ").slice(0,2).join(" ");
+    let shortVillage = d.village || "-";
+    let crn = d.rn || "-";
 
-if(shortVillage.length > 10){
-   shortVillage = shortVillage.substring(0,10) + "..";
-}
+    if(shortVillage.length > 10){
+       shortVillage = shortVillage.substring(0,10) + "..";
+    }
 
-ledgerCustomerName.innerHTML = `
-👤 ${shortName} <span class="badge bg-warning text-dark ms-2" style="font-size:12px;">R.N. ${crn}</span>
-<br>
-<span style="
-font-size:12px;
-font-weight:600;
-opacity:.95;
-">
-👨 ${shortFather} | 🏡 ${shortVillage}
-</span>
-`;
+    ledgerCustomerName.innerHTML = `
+    👤 ${shortName} <span class="badge bg-warning text-dark ms-2" style="font-size:12px;">R.N. ${crn}</span>
+    <br>
+    <span style="
+    font-size:12px;
+    font-weight:600;
+    opacity:.95;
+    ">
+    👨 ${shortFather} | 🏡 ${shortVillage}
+    </span>
+    `;
     checkAndMigrateLedger(id, () => {
+       if(openingCid !== currentCustomerId) return;
        loadAccountDropdown();
-       setTimeout(()=>{ switchAccount(currentAccountId); },100);
+       switchAccount(currentAccountId);
     });
   });
 }
@@ -1832,8 +1828,10 @@ function loadAccountDropdown() {
     if (accountsRef) {
         accountsRef.off();
     }
+    const targetCid = currentCustomerId;
     accountsRef = db.ref("accounts/" + currentCustomerId);
     accountsRef.on("value", snap => {
+        if(targetCid !== currentCustomerId) return;
         accountList.innerHTML = "";
         snap.forEach(acc => {
             let d = acc.val();
@@ -1852,6 +1850,8 @@ function switchAccount(accId) {
 
 function viewLedgerFromReport(customerId) {
     isNavigatedFromReport = true;
+    localStorage.setItem("isNavigatedFromReport", "true");
+    localStorage.setItem("navigatedReportTab", activeReportTab);
     openLedger(customerId);
 }
 
@@ -1923,26 +1923,38 @@ function deleteAccount(accId) {
 
 function renameAccount(accId){
     let newName = document.getElementById("accName_" + accId).value.trim();
-    if(!newName){ return alert("हिساب का नाम लिखें!"); }
+    if(!newName){ return alert("हिसाब का नाम लिखें!"); }
     db.ref("accounts/" + currentCustomerId + "/" + accId).update({ name: newName });
     loadAccountDropdown();
     alert("✔ हिसाब नाम बदल दिया गया");
 }
 
-// 🎯 COMPREHENSIVE RECONCILIATION & SYNC MATRIX WITH LIVE DUAL-MODE VISUAL OVERRIDES
-// 🎯 FIXED ALL HIDDEN CRASH TYPOS (f.netFasal REPLACED BY d.netFasal PERMANENTLY)
 function loadLedger(){
   let newPath = "ledgers/" + currentCustomerId + "/" + currentAccountId;
   
   if(ledgerRef) {
     ledgerRef.off();
+    ledgerRef = null;
   }
   currentLedgerPath = newPath;
+
+  ledgerTable.innerHTML = "";
+  ledgerFooter.innerHTML = "";
+  fasalSummary.innerHTML = "";
+  if (document.getElementById("ledgerTopSummary")) {
+      document.getElementById("ledgerTopSummary").innerHTML = "<div class='p-3 text-center fw-bold text-primary'>लोड हो रहा है...</div>";
+  }
+
+  const targetCid = currentCustomerId;
+  const targetAccId = currentAccountId;
+
   ledgerRef = db.ref(newPath);
   
   ledgerRef.on("value", snap => {
+      if (targetCid !== currentCustomerId || targetAccId !== currentAccountId) return;
+
       ledgerTable.innerHTML = "";  
-      let totalC = 0, totalD = 0, totalI = 0, totalFNet = 0;  
+      let totalC = 0, totalD = 0, totalIDebit = 0, totalICredit = 0, totalFNet = 0;  
       let allFasal = [];  
       let entries = [];
 
@@ -1963,13 +1975,14 @@ function loadLedger(){
         if (filterMode === 'fasal' && !d.isFasal) return;
         if (filterMode === 'hisab' && d.isFasal) return;
 
-        if(!d.isFasal && d.startDate && !d.endDate && (+d.debit || 0) > 0 && (+d.interest || 0) > 0){
+        let activeAmt = (+d.debit || 0) > 0 ? (+d.debit || 0) : (+d.credit || 0);
+
+        if(!d.isFasal && d.startDate && !d.endDate && activeAmt > 0 && (+d.interest || 0) > 0){
           let start = new Date(d.startDate);
           let today = new Date();
           let days = Math.floor((today - start) / (1000*60*60*24));
           if(days < 0) days = 0;
-          let amount = +d.debit || 0;
-          let monthlyInterest = (amount * (+d.interest || 0)) / 100;
+          let monthlyInterest = (activeAmt * (+d.interest || 0)) / 100;
           let dailyInterest = monthlyInterest / 30;
           let origInt = dailyInterest * days;
           
@@ -1992,7 +2005,15 @@ function loadLedger(){
         let key = d.key;
         totalC += +d.credit || 0;
         totalD += +d.debit || 0;
-        totalI += +d.interestAmount || 0;
+        
+        let intVal = +d.interestAmount || 0;
+        let isCreditEntry = (+d.credit || 0) > 0 && (+d.debit || 0) === 0;
+        if (isCreditEntry) {
+            totalICredit += intVal;
+        } else {
+            totalIDebit += intVal;
+        }
+
         if(d.isFasal) {
             allFasal.push(d);  
             totalFNet += +d.netFasal || 0;
@@ -2008,7 +2029,8 @@ function loadLedger(){
         <td>${d.days || 0}</td>
         <td>
           ${d.isFasal ? "" : (function(){
-              let html = `+₹${(+d.interestAmount || 0).toFixed(2)}`;
+              let isCred = (+d.credit || 0) > 0 && (+d.debit || 0) === 0;
+              let html = isCred ? `<span class="text-success" style="font-weight:800;">-₹${(+d.interestAmount || 0).toFixed(2)}</span>` : `+₹${(+d.interestAmount || 0).toFixed(2)}`;
               if(d.useManualInterest) {
                   let disc = (+d.interestDiscount || 0);
                   html += `<br><small class="text-muted" style="font-size:10px;">ओरिजिनल: ₹${(+d.origInterestAmount||0).toFixed(1)}</small>`;
@@ -2050,22 +2072,24 @@ function loadLedger(){
           totalFasalCut += +f.totalCut || 0;  
       });  
   
-      let balance = (totalD + totalI) - (totalC + totalFasalNet);
+      let totalEffectiveDebit = totalD + totalIDebit;
+      let totalEffectiveCredit = totalC + totalICredit + totalFasalNet;
+      let balance = totalEffectiveDebit - totalEffectiveCredit;
 
       let topSummaryHtml = `
       <div class="p-3 mb-3 border rounded shadow-sm bg-white text-center" style="border-radius:12px !important; border-left:6px solid #2563eb !important;">
           <div class="row g-2">
             <div class="col-4">
               <small class="text-muted d-block fw-bold" style="font-size:11px;">कुल जमा (Credit)</small>
-              <span class="text-success fw-bold" style="font-size:14px;">₹${totalC}</span>
+              <span class="text-success fw-bold" style="font-size:14px;">₹${totalC}${totalICredit > 0 ? ` (+₹${totalICredit.toFixed(1)} Int)` : ''}</span>
             </div>
             <div class="col-4">
               <small class="text-muted d-block fw-bold" style="font-size:11px;">निकासी + ब्याज</small>
-              <span class="text-danger fw-bold" style="font-size:14px;">₹${(totalD + totalI).toFixed(2)}</span>
+              <span class="text-danger fw-bold" style="font-size:14px;">₹${totalEffectiveDebit.toFixed(2)}</span>
             </div>
             <div class="col-4">
               <small class="text-muted d-block fw-bold" style="font-size:14px;">शुद्ध शेष स्थिति</small>
-              <span class="${balance >= 0 ? 'text-danger' : 'text-success'} fw-bold" style="font-size:14px;">₹${balance.toFixed(2)}</span>
+              <span class="${balance >= 0 ? 'text-danger' : 'text-success'} fw-bold" style="font-size:14px;">₹${Math.abs(balance).toFixed(2)} ${balance >= 0 ? '(देना)' : '(जमा)'}</span>
             </div>
           </div>
           <div class="mt-2 text-center border-top pt-2 text-muted" style="font-size:11px; font-weight:600;">
@@ -2076,6 +2100,7 @@ function loadLedger(){
       let topDiv = document.getElementById("ledgerTopSummary");
       if(topDiv) { topDiv.innerHTML = topSummaryHtml; }
 
+      let totalNetI = totalIDebit - totalICredit;
       ledgerFooter.innerHTML = `  
       <tr class="total-row" style="background:#fff3cd;font-weight:bold;color:#a66d00;">  
           <td colspan="2">कुल</td>  
@@ -2083,7 +2108,7 @@ function loadLedger(){
           <td>₹${totalD}</td>  
           <td></td>  
           <td></td>  
-          <td>₹${totalI.toFixed(2)}</td>  
+          <td>₹${totalNetI.toFixed(2)}</td>  
           <td colspan="3">  
               शेष: ₹${balance.toFixed(2)}<br>  
               <small>(नेट फसल: ₹${totalFasalNet.toFixed(2)} | मजदूरी: ₹${totalFasalMajduri.toFixed(2)} | कटौती: ₹${totalFasalCut.toFixed(2)})</small>  
@@ -2137,8 +2162,7 @@ function toggleFasalSummary(){
   const b = fasalSummary;  
   b.style.display = b.style.display == "block" ? "none" : "block";  
 }  
-  
-// 🎯 CROP SUMMARY LOGIC - मजदूरी और कटौती अपडेटेड
+
 function generateFasalSummary(all){
     if(all.length == 0){
         fasalSummary.innerHTML = "<div class='p-2 text-center'>कोई फसल नहीं</div>";
@@ -2256,7 +2280,6 @@ function saveTransaction(){
     closeTransactionPopup();
 }
 
-// 🎯 DUAL INTEREST MODE BREAKDOWN COMPONENT SHIELD ENGAGEMENT
 function calcInterest() {
     if(!document.getElementById("interestEnabled").checked){ 
         tInterestAmount.value = "0"; 
@@ -2313,10 +2336,9 @@ function calcFasal(){
 
 function openFasalPopup() {  
     fasalPopupOverlay.style.display = "flex"; loadFasalDropdown();  
-    fName.value = ""; fDate.value = ""; fBori.value = ""; fWeightPer.value = ""; fTotalQ.value = ""; fExtraKG = fExtraKG || 0; fRate.value = f.rate || 0;  
-    document.getElementById("majType").value = f.majType || "quintal";  
-    fMajduri.value = f.majType === "quintal" ? ((f.totalMajduri || 0) / (f.quintal || 1)).toFixed(2) : ((f.totalMajduri || 0) / (f.bori || 1)).toFixed(2);
-    document.getElementById("fCut").value = f.totalCut || 0; fMajduriTotal.value = f.totalMajduri || 0; fNetAmount.value = f.netFasal || 0; fNote.value = f.note || ""; window.editingFasalId = id;
+    fName.value = ""; fDate.value = ""; fBori.value = ""; fWeightPer.value = ""; fTotalQ.value = ""; fExtraKG.value = ""; fRate.value = "";  
+    document.getElementById("majType").value = "quintal";  
+    fMajduri.value = ""; document.getElementById("fCut").value = ""; fMajduriTotal.value = ""; fNetAmount.value = ""; fNote.value = ""; window.editingFasalId = null;
 }
 
 function saveFasal(){
@@ -2348,9 +2370,8 @@ function deleteLedgerEntry(id){
   db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).remove();  
 }  
 
-/* EXPORT TO EXCEL */
 function exportLedgerToExcel() {
-  if(!currentCustomerId) return alert("कोई ग्राहकं चयनित नहीं है!");
+  if(!currentCustomerId) return alert("कोई ग्राहक चयनित नहीं है!");
   let nameText = document.getElementById("ledgerCustomerName").innerText.split('\n')[0].replace('👤 ', '').trim();
   let table = document.getElementById("ledgerTableMain");
   let wb = XLSX.utils.table_to_book(table, {sheet: "Ledger Sheet"});
@@ -2497,14 +2518,21 @@ function toggleSummary() {
                     let d = entries[key];
                     if(!d) continue;
 
-                    let interest =
-                        +d.interestAmount || 0;
+                    let credit = +d.credit || 0;
+                    let debit = +d.debit || 0;
+                    let activeAmt = debit > 0 ? debit : credit;
 
-                    let credit =
-                        +d.credit || 0;
+                    let interest = +d.interestAmount || 0;
 
-                    let debit =
-                        +d.debit || 0;
+                    if(!d.isFasal && d.startDate && !d.endDate && activeAmt > 0 && (+d.interest || 0) > 0){
+                        let start = new Date(d.startDate);
+                        let today = new Date();
+                        let days = Math.floor((today - start) / (1000*60*60*24));
+                        if(days < 0) days = 0;
+                        let monthlyInterest = (activeAmt * (+d.interest || 0)) / 100;
+                        let dailyInterest = monthlyInterest / 30;
+                        interest = d.useManualInterest ? (+d.manualInterestAmount || 0) : (dailyInterest * days);
+                    }
                     
                     let labour = +d.totalMajduri || 0;
                     let katoi = +d.totalCut || 0;
@@ -2517,13 +2545,11 @@ function toggleSummary() {
                     customerLabour += labour;
                     customerKatoi += katoi;
 
-                    let entryDate =
-                        d.startDate || d.date || "";
+                    let entryDate = d.startDate || d.date || "";
 
                     if (!entryDate) continue;
 
-                    let yr =
-                        new Date(entryDate).getFullYear();
+                    let yr = new Date(entryDate).getFullYear();
 
                     if (yr == 2025) {
                         interest2025 += interest;
@@ -2731,7 +2757,7 @@ function editFasal(id){
     db.ref("ledgers/" + currentCustomerId + "/" + currentAccountId + "/" + id).once("value").then(s=>{  
         let f = s.val(); if(!f || !f.isFasal){ return; }
         fasalPopupOverlay.style.display = "flex";  
-        fName.value = f.name || ""; fDate.value = f.date || ""; fBori.value = f.bori || 0; fWeightPer.value = f.weightPer || 0; fTotalQ.value = f.quintal || 0; fExtraKG = f.extraKG || 0; fRate.value = f.rate || 0;  
+        fName.value = f.name || ""; fDate.value = f.date || ""; fBori.value = f.bori || 0; fWeightPer.value = f.weightPer || 0; fTotalQ.value = f.quintal || 0; fExtraKG.value = f.extraKG || 0; fRate.value = f.rate || 0;  
         document.getElementById("majType").value = f.majType || "quintal";  
         fMajduri.value = f.majType === "quintal" ? ((f.totalMajduri || 0) / (f.quintal || 1)).toFixed(2) : ((f.totalMajduri || 0) / (f.bori || 1)).toFixed(2);
         document.getElementById("fCut").value = f.totalCut || 0; fMajduriTotal.value = f.totalMajduri || 0; fNetAmount.value = f.netFasal || 0; fNote.value = f.note || ""; window.editingFasalId = id;
@@ -2801,27 +2827,29 @@ function finalPrint(){ window.print(); }
 </script>  <script>  
 function openReport(){ 
   showCard("advancedReportCard"); 
-  switchReportTab('entries');
+  let repTab = localStorage.getItem("navigatedReportTab") || activeReportTab || 'entries';
+  switchReportTab(repTab);
 }  
 
 function switchReportTab(tab) {
   activeReportTab = tab;
+  localStorage.setItem("navigatedReportTab", tab);
   if(tab === 'entries') {
     document.getElementById("btnShowEntries").classList.add("active");
     document.getElementById("btnShowSummary").classList.remove("active");
     document.getElementById("reportDataContainer").style.display = "block";
     document.getElementById("reportSummaryContainer").style.display = "none";
+    generateReport();
   } else {
     document.getElementById("btnShowEntries").classList.remove("active");
     document.getElementById("btnShowSummary").classList.add("active");
     document.getElementById("reportDataContainer").style.display = "none";
     document.getElementById("reportSummaryContainer").style.display = "block";
-    summaryFilterMode = 'debit'; 
+    summaryFilterMode = summaryFilterMode || 'debit'; 
     generateAccountWiseSummary();
   }
 }
 
-// 🎯 FIXED ACCIDENTAL DUPLICATE FORM FILTERS RESET Matrix TRIGGER
 function onFilterInputTriggered() {
   if (activeReportTab === 'summary') {
     generateAccountWiseSummary();
@@ -2842,21 +2870,67 @@ function setSummaryFilterMode(mode) {
   generateAccountWiseSummary();
 }
 
+function isBankEntryMatchCustomer(entryDesc, customerName, allCustomers) {
+    if (!entryDesc || !customerName) return false;
+    let desc = entryDesc.toLowerCase().trim();
+    let cName = customerName.toLowerCase().trim();
+
+    let cleanCName = cName.split(" care of ")[0].split(" (पुत्र:")[0].split(" - ")[0].trim();
+    if (!cleanCName) return false;
+
+    if (desc.includes(cleanCName)) return true;
+
+    let words = cleanCName.split(/\s+/).filter(w => w.length > 1);
+    if (words.length > 1) {
+        if (words.every(w => desc.includes(w))) return true;
+    }
+
+    if (words.length === 1 && words[0].length >= 3) {
+        let singleWord = words[0];
+        let reg = new RegExp("(?:^|\\s|[^a-zA-Z0-9\u0900-\u097F])" + escapeRegExp(singleWord) + "(?:$|\\s|[^a-zA-Z0-9\u0900-\u097F])", "i");
+        if (reg.test(desc)) {
+            let isBetterMatchedByOther = false;
+            if (allCustomers) {
+                Object.keys(allCustomers).forEach(otherCid => {
+                    let otherName = (allCustomers[otherCid].name || "").toLowerCase().trim();
+                    let otherClean = otherName.split(" care of ")[0].split(" (पुत्र:")[0].split(" - ")[0].trim();
+                    if (otherClean !== cleanCName && otherClean.includes(singleWord)) {
+                        let otherWords = otherClean.split(/\s+/).filter(w => w.length > 1);
+                        if (otherWords.length > 1 && otherWords.every(w => desc.includes(w))) {
+                            isBetterMatchedByOther = true;
+                        }
+                    }
+                });
+            }
+            if (!isBetterMatchedByOther) return true;
+        }
+    }
+
+    return false;
+}
+
 function generateAccountWiseSummary() {
   const container = document.getElementById("reportSummaryList");
   const banner = document.getElementById("grandSummaryTotalBanner");
-  container.innerHTML = "<div class='text-center p-3 fw-bold text-primary'>📊 नवीनतम सीज़न खाता खंगाला जा रहा है...</div>";
+  container.innerHTML = "<div class='text-center p-3 fw-bold text-primary'>📊 केवल करंट एक्टिव हिसाब खंगाला जा रहा है...</div>";
 
   let from = fromDate.value ? new Date(fromDate.value) : null;
   let to = toDate.value ? new Date(toDate.value) : null;
   let search = reportSearch.value.toLowerCase().trim();
+  let sourceMode = document.getElementById("summarySourceFilter") ? document.getElementById("summarySourceFilter").value : "ledger";
 
   Promise.all([
     db.ref("customers").once("value"),
-    db.ref("ledgers").once("value")
-  ]).then(([cSnap, lSnap]) => {
+    db.ref("ledgers").once("value"),
+    bankDb.ref("bankKhata").once("value"),
+    bankDb.ref("kharchKhata").once("value"),
+    db.ref("accounts").once("value")
+  ]).then(([cSnap, lSnap, bSnap, kSnap, aSnap]) => {
     const customers = cSnap.val() || {};
     const ledgers = lSnap.val() || {};
+    const bankKhata = bSnap.val() || {};
+    const kharchKhata = kSnap.val() || {};
+    const accountsData = aSnap.val() || {};
     
     let renderedHtml = "";
     lastCalculatedSummaryData = []; 
@@ -2875,59 +2949,130 @@ function generateAccountWiseSummary() {
 
       let totalC = 0;
       let totalD = 0;
-      let totalI = 0;
+      let totalIDebit = 0;
+      let totalICredit = 0;
       let totalFNet = 0;
       let hasValidEntries = false;
-      let activeAccountName = "Default";
 
-      if(ledgers[cid]) {
-        let allAccIds = Object.keys(ledgers[cid]);
-        let latestAccId = "default";
-        
-        if (allAccIds.length > 0) {
-          let generatedIds = allAccIds.filter(id => id !== 'default');
-          if (generatedIds.length > 0) {
-             generatedIds.sort();
-             latestAccId = generatedIds[generatedIds.length - 1]; 
+      let currentAccId = localStorage.getItem("lastAccount_" + cid);
+
+      if(!currentAccId) {
+        if (accountsData[cid]) {
+          let pushKeys = Object.keys(accountsData[cid]).filter(id => id !== 'default');
+          if (pushKeys.length > 0) {
+            pushKeys.sort();
+            currentAccId = pushKeys[pushKeys.length - 1];
+          } else {
+            currentAccId = 'default';
           }
-        }
-
-        activeAccountName = latestAccId === 'default' ? 'पुराना हिसाब' : 'नया हिसाब (सीज़न)';
-
-        if (ledgers[cid][latestAccId]) {
-          Object.keys(ledgers[cid][latestAccId]).forEach(eid => {
-            const entry = ledgers[cid][latestAccId][eid];
-            if(!entry) return;
-            let entryDate = entry.startDate || entry.date || "";
-            
-            if (entryDate) {
-              if (from && new Date(entryDate) < from) return;
-              if (to && new Date(entryDate) > to) return;
-            }
-            
-            hasValidEntries = true;
-            totalC += +entry.credit || 0;
-            totalD += +entry.debit || 0;
-            
-            if (entry.useManualInterest) {
-                totalI += +entry.manualInterestAmount || 0;
-            } else {
-                totalI += +entry.interestAmount || 0;
-            }
-            
-            if(entry.isFasal) {
-              totalFNet += +entry.netFasal || 0;
-            }
-          });
+        } else if (ledgers[cid]) {
+          let pushKeys = Object.keys(ledgers[cid]).filter(id => id !== 'default');
+          if (pushKeys.length > 0) {
+            pushKeys.sort();
+            currentAccId = pushKeys[pushKeys.length - 1];
+          } else {
+            currentAccId = 'default';
+          }
+        } else {
+          currentAccId = 'default';
         }
       }
+
+      let activeAccountName = "पुराना हिसाब";
+      if (accountsData[cid] && accountsData[cid][currentAccId] && accountsData[cid][currentAccId].name) {
+        activeAccountName = accountsData[cid][currentAccId].name;
+      } else if (currentAccId !== 'default') {
+        activeAccountName = 'नया हिसाब (सीज़न)';
+      }
+
+      if(ledgers[cid] && ledgers[cid][currentAccId]) {
+        Object.keys(ledgers[cid][currentAccId]).forEach(eid => {
+          const entry = ledgers[cid][currentAccId][eid];
+          if(!entry) return;
+          let entryDate = entry.startDate || entry.date || "";
+          
+          if (entryDate) {
+            if (from && new Date(entryDate) < from) return;
+            if (to && new Date(entryDate) > to) return;
+          }
+          
+          hasValidEntries = true;
+          totalC += +entry.credit || 0;
+          totalD += +entry.debit || 0;
+          
+          let computedInt = 0;
+          if (entry.useManualInterest) {
+              computedInt = +entry.manualInterestAmount || 0;
+          } else {
+              computedInt = +entry.interestAmount || 0;
+          }
+
+          if ((+entry.credit || 0) > 0 && (+entry.debit || 0) === 0) {
+              totalICredit += computedInt;
+          } else {
+              totalIDebit += computedInt;
+          }
+          
+          if(entry.isFasal) {
+            totalFNet += +entry.netFasal || 0;
+          }
+        });
+      }
+
+      let bankCr = 0, bankDbVal = 0;
+      let kharchCr = 0, kharchDbVal = 0;
+
+      Object.keys(bankKhata).forEach(bk => {
+        let e = bankKhata[bk];
+        if(!e) return;
+        let desc = e.desc || e.name || "";
+        let eDate = e.date || "";
+        if(from && eDate && new Date(eDate) < from) return;
+        if(to && eDate && new Date(eDate) > to) return;
+
+        if(isBankEntryMatchCustomer(desc, cname, customers)) {
+          bankCr += +e.credit || 0;
+          bankDbVal += +e.debit || 0;
+          hasValidEntries = true;
+        }
+      });
+
+      Object.keys(kharchKhata).forEach(kk => {
+        let e = kharchKhata[kk];
+        if(!e) return;
+        let desc = e.desc || e.name || "";
+        let eDate = e.date || "";
+        if(from && eDate && new Date(eDate) < from) return;
+        if(to && eDate && new Date(eDate) > to) return;
+
+        if(isBankEntryMatchCustomer(desc, cname, customers)) {
+          kharchCr += +e.credit || 0;
+          kharchDbVal += +e.debit || 0;
+          hasValidEntries = true;
+        }
+      });
 
       if ((from || to) && !hasValidEntries) {
         return;
       }
 
-      let finalNetBalance = (totalD + totalI) - (totalC + totalFNet);
-      if(finalNetBalance === 0) return; 
+      let totalI = totalIDebit - totalICredit;
+      let ledgerNetBalance = (totalD + totalIDebit) - (totalC + totalICredit + totalFNet);
+      let bankNetBalance = bankDbVal - bankCr;
+      let kharchNetBalance = kharchDbVal - kharchCr;
+
+      let finalNetBalance = 0;
+      if (sourceMode === "ledger") {
+        finalNetBalance = ledgerNetBalance;
+      } else if (sourceMode === "bank") {
+        finalNetBalance = bankNetBalance;
+      } else if (sourceMode === "kharch") {
+        finalNetBalance = kharchNetBalance;
+      } else { 
+        finalNetBalance = ledgerNetBalance + bankNetBalance + kharchNetBalance;
+      }
+
+      if(finalNetBalance === 0 && totalC === 0 && totalD === 0 && bankCr === 0 && bankDbVal === 0 && kharchCr === 0 && kharchDbVal === 0) return; 
 
       if (summaryFilterMode === 'debit' && finalNetBalance <= 0) return;
       if (summaryFilterMode === 'credit' && finalNetBalance >= 0) return;
@@ -2942,6 +3087,10 @@ function generateAccountWiseSummary() {
          debit: totalD,
          interest: totalI,
          netFasal: totalFNet,
+         bankCr: bankCr,
+         bankDb: bankDbVal,
+         kharchCr: kharchCr,
+         kharchDb: kharchDbVal,
          netBalance: finalNetBalance
       });
 
@@ -2959,36 +3108,60 @@ function generateAccountWiseSummary() {
       renderedHtml += `
         <div class="rep-summary-card" onclick="viewLedgerFromReport('${cid}')" style="cursor:pointer;">
           <div class="rep-summary-title">👤 ${cname} <span class="badge bg-danger float-end" style="font-size:11px;">R.N. ${crn}</span></div>
-          <div style="font-size:12px; color:#64748b; font-weight:700; margin-bottom:6px;">🏡 गाँव: ${cvill} | 📝 सक्रिय खाता: <b class="text-primary">${activeAccountName}</b></div>
-          <div class="rep-summary-item"><span>जमा (Credit):</span> <span style="color:#16a34a;">₹${totalC}</span></div>
-          <div class="rep-summary-item"><span>निकासी (Debit):</span> <span style="color:#b91c1c;">₹${totalD}</span></div>
-          <div class="rep-summary-item"><span>ब्याज (Interest):</span> <span style="color:#ea580c;">₹${totalI.toFixed(2)}</span></div>
-          <div class="rep-summary-item"><span>शुद्ध फसल (Net Fasal):</span> <span style="color:#0284c7;">₹${totalFNet.toFixed(2)}</span></div>
+          <div style="font-size:12px; color:#64748b; font-weight:700; margin-bottom:6px;">🏡 गाँव: ${cvill} | 🎯 करंट हिसाब: <b class="text-primary">${activeAccountName}</b></div>
+          
+          <div class="p-2 mb-2 border rounded bg-white" style="font-size:12px;">
+            <div class="fw-bold text-primary mb-1" style="border-bottom:1px solid #e2e8f0; padding-bottom:2px;">📘 करंट ग्राहक लेजर:</div>
+            <div class="rep-summary-item"><span>जमा (Credit):</span> <span style="color:#16a34a;">₹${totalC}${totalICredit > 0 ? ` (+₹${totalICredit.toFixed(1)} Int)` : ''}</span></div>
+            <div class="rep-summary-item"><span>निकासी (Debit):</span> <span style="color:#b91c1c;">₹${totalD}${totalIDebit > 0 ? ` (+₹${totalIDebit.toFixed(1)} Int)` : ''}</span></div>
+            <div class="rep-summary-item"><span>ब्याज (Net Interest):</span> <span style="color:#ea580c;">₹${totalI.toFixed(2)}</span></div>
+            <div class="rep-summary-item"><span>शुद्ध फसल (Net Fasal):</span> <span style="color:#0284c7;">₹${totalFNet.toFixed(2)}</span></div>
+          </div>
+
+          <div class="row g-2 mb-2" style="font-size:11px;">
+            <div class="col-6">
+              <div class="p-2 border rounded bg-light">
+                <div class="fw-bold text-dark">🏦 बैंक (Bank)</div>
+                <div>जमा: <b class="text-success">₹${bankCr}</b></div>
+                <div>निकासी: <b class="text-danger">₹${bankDbVal}</b></div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 border rounded bg-light">
+                <div class="fw-bold text-dark">💸 खर्च (Kharch)</div>
+                <div>जमा: <b class="text-success">₹${kharchCr}</b></div>
+                <div>निकासी: <b class="text-danger">₹${kharchDbVal}</b></div>
+              </div>
+            </div>
+          </div>
+
           <div class="rep-summary-item border-top mt-2 pt-2" style="font-size:14px;">
-            <span>नवीनतम शुद्ध स्थिति (Net Balance):</span>
+            <span>करंट हिसाब शुद्ध स्थिति (${sourceMode === 'ledger' ? 'Current Ledger' : sourceMode === 'bank' ? 'Bank' : sourceMode === 'kharch' ? 'Kharch' : 'Combined'} Balance):</span>
             <span style="${balanceStyle}">${balanceText}</span>
           </div>
         </div>
       `;
     });
 
-    let labelString = summaryFilterMode === 'debit' ? '🔴 कुल बची निकासी (Total Debit Sum)' : '🟢 कुल बची जमा (Total Credit Sum)';
+    let sourceLabel = sourceMode === 'ledger' ? 'Current Ledger' : sourceMode === 'bank' ? 'Bank' : sourceMode === 'kharch' ? 'Kharch' : 'Combined';
+    let labelString = summaryFilterMode === 'debit' ? `🔴 करंट हिसाब कुल निकासी (${sourceLabel} Debit Sum)` : `🟢 करंट हिसाब कुल जमा (${sourceLabel} Credit Sum)`;
     banner.innerText = `${labelString} : ₹${grandRunningTotalAmount.toFixed(2)}`;
     banner.style.backgroundColor = summaryFilterMode === 'debit' ? '#dc2626' : '#16a34a';
 
     container.innerHTML = renderedHtml || `<div class='text-center p-3 text-muted fw-bold' style='font-size:13px;'>इस फ़िल्तर में कोई रिकॉर्ड नहीं मिला</div>`;
   }).catch(err => {
     container.innerHTML = "<div class='text-center p-3 text-danger'>त्रुटि: डेटा लोड करने में विफल!</div>";
+    console.error(err);
   });
 }
 
 function printSummaryReport() {
-  let dateHeader = summaryFilterMode === 'debit' ? "नवीनतम सक्रिय सीज़न निकासी रिपोर्ट (Debit Summary)" : "नवीनतम सक्रिय सीज़न जमा रिपोर्ट (Credit Summary)";
+  let dateHeader = summaryFilterMode === 'debit' ? "करंट सीज़न निकासी रिपोर्ट (Current Debit Summary)" : "करंट सीज़न जमा रिपोर्ट (Current Credit Summary)";
   let periodText = "";
   if(fromDate.value || toDate.value) {
     periodText = `${fromDate.value || 'शुरुआत'} से ${toDate.value || 'आज'}`;
   } else {
-    periodText = "नवीनतम सक्रिय सीज़न记录";
+    periodText = "करंट सक्रिय सीज़न Report";
   }
 
   let tableRows = "";
@@ -3045,57 +3218,93 @@ function printSummaryReport() {
   openPrintPreviewManual(fullPrintTemplate);
 }
 
-// 🎯 ADVANCED REPORT SOURCE ENTRY CATEGORY FILTERS (MANUAL, AUTO SYNC, MANDI APP PRO)
 function generateReport(){  
   if(activeReportTab === 'summary') {
     generateAccountWiseSummary();
     return;
   }
-  let from = fromDate.value ? new Date(fromDate.value) : null; let to = toDate.value ? new Date(toDate.value) : null; let search = reportSearch.value.toLowerCase().trim();  
+  let from = fromDate.value ? new Date(fromDate.value) : null; 
+  let to = toDate.value ? new Date(toDate.value) : null; 
+  let search = reportSearch.value.toLowerCase().trim();  
   let interestSearch = parseFloat(document.getElementById("interestSearch").value) || 0; 
   let sortType = document.getElementById("sortType").value; 
   let sourceFilter = document.getElementById("entrySourceFilter") ? document.getElementById("entrySourceFilter").value : "all";
   
   reportTable.innerHTML = ""; let all = [];  
-  db.ref("customers").once("value").then(async csnap => {  
-    let promises = [];  
-    csnap.forEach(c => {  
-      let cid = c.key; if(!c.val()) return; let cname = c.val().name || "";  
-      let cvillage = c.val().village || "";
-      let crn = c.val().rn || "";
-      let p = db.ref("ledgers/" + cid).once("value").then(lsnap => {  
-        lsnap.forEach(accSnap => { accSnap.forEach(e => {  
-            let d = e.val(); if(!d) return; let date = d.startDate || d.date || ""; if(!date) return;  
-            if(from && new Date(date) < from) return; if(to && new Date(date) > to) return;  
-            
-            // Differentiate Category Origins
-            let entrySource = "manual";
-            if (d.isFasal) {
-                entrySource = "mandi";
-            } else if (d.isCloseEntry || (d.note && (d.note.includes("ऑटो") || d.note.includes("सिंक") || d.note.toLowerCase().includes("sync") || d.note.includes("बंद")))) {
-                entrySource = "auto";
-            }
-            
-            if (sourceFilter !== "all" && entrySource !== sourceFilter) return;
-            
-            if((!search || cname.toLowerCase().includes(search) || (d.note || "").toLowerCase().includes(search)) && (interestSearch === 0 || (+d.interestAmount || 0) >= interestSearch)){  
-              all.push({
-                  cid: cid,
-                  date: date,
-                  name: cname,
-                  village: cvillage,
-                  rn: crn,
-                  detail: d.note || (d.isFasal ? (d.name ? "🌾 " + d.name : "Fasal") : "Transaction"),
-                  credit: d.isFasal ? (d.netFasal || "") : (d.credit || ""),
-                  debit: d.isFasal ? "" : (d.debit || "")
-              }); 
-            }  
-          }); });  
-      }); promises.push(p);  
+  
+  Promise.all([
+    db.ref("customers").once("value"),
+    db.ref("ledgers").once("value"),
+    db.ref("accounts").once("value")
+  ]).then(([csnap, lsnap, asnap]) => {  
+    const customers = csnap.val() || {};
+    const ledgers = lsnap.val() || {};
+    const accountsData = asnap.val() || {};
+
+    Object.keys(customers).forEach(cid => {  
+      let cval = customers[cid]; 
+      if(!cval) return; 
+      let cname = cval.name || "";  
+      let cvillage = cval.village || "";
+      let crn = cval.rn || "";
+
+      let currentAccId = localStorage.getItem("lastAccount_" + cid);
+      if(!currentAccId) {
+        if (accountsData[cid]) {
+          let pushKeys = Object.keys(accountsData[cid]).filter(id => id !== 'default');
+          if (pushKeys.length > 0) {
+            pushKeys.sort();
+            currentAccId = pushKeys[pushKeys.length - 1];
+          } else {
+            currentAccId = 'default';
+          }
+        } else if (ledgers[cid]) {
+          let pushKeys = Object.keys(ledgers[cid]).filter(id => id !== 'default');
+          if (pushKeys.length > 0) {
+            pushKeys.sort();
+            currentAccId = pushKeys[pushKeys.length - 1];
+          } else {
+            currentAccId = 'default';
+          }
+        } else {
+          currentAccId = 'default';
+        }
+      }
+
+      if(ledgers[cid] && ledgers[cid][currentAccId]) {
+        Object.keys(ledgers[cid][currentAccId]).forEach(eid => {
+          let d = ledgers[cid][currentAccId][eid];
+          if(!d) return; 
+          let date = d.startDate || d.date || ""; 
+          if(!date) return;  
+          if(from && new Date(date) < from) return; 
+          if(to && new Date(date) > to) return;  
+          
+          let entrySource = "manual";
+          if (d.isFasal) {
+              entrySource = "mandi";
+          } else if (d.isCloseEntry || (d.note && (d.note.includes("ऑटो") || d.note.includes("सिंक") || d.note.toLowerCase().includes("sync") || d.note.includes("बंद")))) {
+              entrySource = "auto";
+          }
+          
+          if (sourceFilter !== "all" && entrySource !== sourceFilter) return;
+          
+          if((!search || cname.toLowerCase().includes(search) || (d.note || "").toLowerCase().includes(search)) && (interestSearch === 0 || (+d.interestAmount || 0) >= interestSearch)){  
+            all.push({
+                cid: cid,
+                date: date,
+                name: cname,
+                village: cvillage,
+                rn: crn,
+                detail: d.note || (d.isFasal ? (d.name ? "🌾 " + d.name : "Fasal") : "Transaction"),
+                credit: d.isFasal ? (d.netFasal || "") : (d.credit || ""),
+                debit: d.isFasal ? "" : (d.debit || "")
+            }); 
+          }  
+        });
+      }
     });  
-    await Promise.all(promises);  
     
-    // Dynamic Sort Matrix Switch Engine
     all.sort((a,b)=>{ 
         let dateA = new Date(a.date);
         let dateB = new Date(b.date);
@@ -3160,7 +3369,6 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// 🤖 AI SMART LEDGER ENTRY RECONCILIATION MATCHING (FIXED MULTILINGUAL HINDI BOUNDARY ENGAGEMENT)
 function openAiMatcherCard() {
     showCard("aiMatcherCard");
     document.getElementById("aiMatchResultBox").innerHTML = "";
@@ -3268,16 +3476,16 @@ function calculateAiMatchedTotal() {
                         if (qFrom && entryDate < qFrom) return;
                         if (qTo && entryDate > qTo) return;
                         
+                        let activeAmt = (+entry.debit || 0) > 0 ? (+entry.debit || 0) : (+entry.credit || 0);
                         let computedInterestAmount = +entry.interestAmount || 0;
                         if (entry.useManualInterest) {
                             computedInterestAmount = +entry.manualInterestAmount || 0;
-                        } else if(!entry.isFasal && entry.startDate && !entry.endDate && (+entry.debit || 0) > 0 && (+entry.interest || 0) > 0){
+                        } else if(!entry.isFasal && entry.startDate && !entry.endDate && activeAmt > 0 && (+entry.interest || 0) > 0){
                           let start = new Date(entry.startDate);
                           let today = new Date();
                           let days = Math.floor((today - start) / (1000*60*60*24));
                           if(days < 0) days = 0;
-                          let amount = +entry.debit || 0;
-                          let monthlyInterest = (amount * (+entry.interest || 0)) / 100;
+                          let monthlyInterest = (activeAmt * (+entry.interest || 0)) / 100;
                           let dailyInterest = monthlyInterest / 30;
                           computedInterestAmount = dailyInterest * days;
                         }
@@ -3319,7 +3527,6 @@ function calculateAiMatchedTotal() {
                     if(!targetName) return;
                     
                     let words = targetName.split(/\s+/).filter(Boolean);
-                    // 🎯 UNICODE COMPLIANT MULTILINGUAL MATCH ENGINE FOR HINDI/PUNJABI
                     let allWordsMatch = words.every(word => entryDesc.includes(word));
                     if (!allWordsMatch) return;
 
@@ -3407,7 +3614,6 @@ function calculateAiMatchedTotal() {
                     </tr>
                 `;
             } else {
-                /* 🎯 FIXED VARIABLE TYPO IN THE UNCLAIMED LEDGER ROW COUNTER MECHANISM */
                 unclaimedLedgerCount++;
                 unclaimedLedgerRowsHtml += `
                     <tr style="background:#fff1f2; color:#991b1b;">
@@ -3599,7 +3805,6 @@ function saveCloseHisab(){
 </script>
 <div id="closeHisabPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);justify-content:center;align-items:center;z-index:999999;"><div style="background:white;padding:20px;border-radius:12px;width:90%;max-width:350px;"><h4 class="text-center mb-3">🔒 हिसाब बंद</h4><input id="closeAmount" type="number" inputmode="numeric" class="form-control mb-3" placeholder="राशि लिखें"><button class="btn btn-success w-100 mb-2" onclick="saveCloseHisab()">✔ Save</button><button class="btn btn-danger w-100" onclick="document.getElementById('closeHisabPopup').style.display='none'">❌ Cancel</button></div></div>
 <script>
-// 🎯 REGISTER MANUAL INTEREST FIELDS TO CORE LIVE COMPLIANCE WATCHERS
 ["tDate","tEndDate","tDebit","tCredit","tInterest","tManualInterestAmount"].forEach(id=>{
   let el = document.getElementById(id); if(el){ el.addEventListener("input", ()=>{ calcDays(); calcInterest(); }); }
 });
@@ -3681,7 +3886,6 @@ resizeBtn.addEventListener("pointerdown", function(e) {
     resizeBtn.addEventListener("pointermove", onResizeMove); resizeBtn.addEventListener("pointerup", onResizeUp);
 });
 
-// MANDI APP PRO CONFIG & SYNC LOGIC
 const mandiFirebaseConfig = { apiKey:"AIzaSyAiwfHxzsreDK2RkYLXNjhb8DhMmpYZ-tY", authDomain:"fasal-9a05b.firebaseapp.com", databaseURL:"https://fasal-9a05b-default-rtdb.firebaseio.com", projectId:"fasal-9a05b" };  
 const mandiAppInstance = firebase.initializeApp(mandiFirebaseConfig, "mandiAppProInstance"); const mandiDb = mandiAppInstance.database();
 let mandiEntriesMaster = [];
@@ -3692,6 +3896,7 @@ function openMandiAppProView() {
     document.body.style.overflow = "hidden"; loadMandiSeasons();
 }
 function closeMandiAppProView() { document.getElementById("mandiAppProViewCard").style.display = "none"; document.body.style.overflow = "auto"; }
+
 function loadMandiSeasons(){
     mandiDb.ref("seasonsInfo").once("value", snap => {
         let select = document.getElementById("mandiSeasonSelect"); select.innerHTML = "";
@@ -3699,12 +3904,21 @@ function loadMandiSeasons(){
         if(!valData) { document.getElementById("mandiSummaryText").innerText = "कोई सीजन उपलब्ध नहीं है।"; return; }
         let keys = Object.keys(valData);
         if(keys.length === 0) { document.getElementById("mandiSummaryText").innerText = "कोई सीजन उपलब्ध नहीं है।"; return; }
+        
+        let savedSeason = localStorage.getItem("lastMandiSeason");
         keys.forEach(k => { select.insertAdjacentHTML("beforeend", `<option value="${k}">${k}</option>`); });
+        
+        if (savedSeason && keys.includes(savedSeason)) {
+            select.value = savedSeason;
+        }
+        
         loadMandiEntries();
     });
 }
+
 function loadMandiEntries() {
     let season = document.getElementById("mandiSeasonSelect").value; if(!season) return;
+    localStorage.setItem("lastMandiSeason", season);
     mandiDb.ref("seasonsInfo/" + season).once("value", infoSnap => {
         window.mandiCurrentDefaultBW = Number((infoSnap.val() || {}).defaultBw || 50);
         mandiDb.ref("seasons/" + season + "/entries").on("value", snap => {
@@ -3713,6 +3927,7 @@ function loadMandiEntries() {
         });
     });
 }
+
 function renderMandiEntries() {
     let currentDefaultBW = window.mandiCurrentDefaultBW || 50; let search = document.getElementById("mandiSearchInput").value.toLowerCase().trim();
     let typeFilter = document.getElementById("mandiTypeFilter") ? document.getElementById("mandiTypeFilter").value : "all";
@@ -3723,7 +3938,7 @@ function renderMandiEntries() {
         if(search && !(r.customer||"").toLowerCase().includes(search) && !(r.village||"").toLowerCase().includes(search)) return;
         
         let isForm = false;
-        if (r.isForm == true || r.isForm === "true" || r.isForm == 1 || r.isForm === "1" || r.isForm === "form" ||
+        if (r.isForm == true || r.isForm === "true" || r.isForm == 1 || r.isForm === "1" || r.isForm == "form" ||
             r.isFormEntry == true || r.isFormEntry === "true" || r.isFormEntry == 1 || r.isFormEntry === "form" ||
             r.form == true || r.form === "true" || r.form == 1 || r.form === "form" ||
             r.jForm == true || r.jForm === "true" || r.jForm == 1 || r.jForm === "form" ||
