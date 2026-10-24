@@ -1062,7 +1062,13 @@ onclick="document.getElementById('excelUpload').click()">
 </button>  
   </div>  
 </div>  <div id="villagePopup">  
-  <div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;"><h5 class="text-center mb-3">🏡 गाँव प्रबंधन</h5><input id="newVillage" class="form-control mb-2" placeholder="नया गाँव जोड़ें"><button class="btn btn-success w-100 mb-3" onclick="addVillage()">✔ जोड़ें</button><div id="villageList" style="max-height:300px;overflow-y:auto;"></div><button onclick="closeVillagePopup()" class="btn btn-danger w-100 mt-3">❌ बंद</button></div>
+  <div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;">
+    <h5 class="text-center mb-3">🏡 गाँव प्रबंधन</h5>
+    <input id="newVillage" class="form-control mb-2" placeholder="नया गाँव जोड़ें">
+    <button class="btn btn-success w-100 mb-3" onclick="addVillage()">✔ जोड़ें</button>
+    <div id="villageList" style="max-height:300px;overflow-y:auto;"></div>
+    <button onclick="closeVillagePopup()" class="btn btn-danger w-100 mt-3">❌ बंद</button>
+  </div>
 </div>  
 <div id="fasalManagerPopup" style="display: none;  
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;  
@@ -1525,7 +1531,6 @@ onclick="printCombinedLedgerView()">
     </div>
   </div>
 </div>
-
 <script>  
 let globalFirstAppNames = new Set();
 let isNavigatedFromReport = false; 
@@ -2399,6 +2404,9 @@ function filterCustomers() {
 }  
   
 function openAddCustomer() { showCard("addCustomerCard"); }  
+
+function addNewVillage() { openVillageManager(); }
+
 function saveCustomer() {  
     if (!cName.value) return alert("नाम लिखें!");  
     let obj = { name: cName.value, father: cFather.value, village: cVillage.value, phone: cPhone.value, aadhar: cAadhar.value, rn: cRN.value };  
@@ -2677,26 +2685,107 @@ ${html}
 }
 
 function openVillageManager() {  
-    let html = `<div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;"><h5 class="text-center mb-3">🏡 गाँव प्रबंधन</h5><input id="newVillage" class="form-control mb-2" placeholder="नया गाँव जोड़ें"><button class="btn btn-success w-100 mb-3" onclick="addVillage()">✔ जोड़ें</button><div id="villageList" style="max-height:300px;overflow-y:auto;"></div><button onclick="closeVillagePopup()" class="btn btn-danger w-100 mt-3">❌ बंद</button></div>`;  
-    villagePopup.innerHTML = html; villagePopup.style.display = "flex"; loadVillageList();  
+    let html = `
+    <div id="villagePopupBox" style="background:white;padding:20px;border-radius:12px;width:90%;max-width:400px;">
+        <h5 class="text-center mb-3">🏡 गाँव प्रबंधन</h5>
+        <input id="newVillage" class="form-control mb-2" placeholder="नया गाँव जोड़ें">
+        <button class="btn btn-success w-100 mb-3" onclick="addVillage()">✔ जोड़ें</button>
+        <div id="villageList" style="max-height:300px;overflow-y:auto;"></div>
+        <button onclick="closeVillagePopup()" class="btn btn-danger w-100 mt-3">❌ बंद</button>
+    </div>`;  
+    villagePopup.innerHTML = html; 
+    villagePopup.style.display = "flex"; 
+    loadVillageList();  
 }  
+
 function closeVillagePopup() { villagePopup.style.display = "none"; }  
+
 function addVillage() {  
-    let v = document.getElementById("newVillage").value.trim(); if (!v) return alert("गाँव का name लिखें!");  
-    db.ref("settings/villages").push(v); document.getElementById("newVillage").value = ""; loadVillageList(); loadVillageDropdown(); loadFasalDropdown();  
+    let v = document.getElementById("newVillage").value.trim(); 
+    if (!v) return alert("गाँव का name लिखें!");  
+    db.ref("settings/villages").push(v); 
+    document.getElementById("newVillage").value = ""; 
+    loadVillageList(); 
+    loadVillageDropdown(); 
 }  
+
 function loadVillageList() {  
-    const box = document.getElementById("villageList"); box.innerHTML = "";  
+    const box = document.getElementById("villageList"); 
+    box.innerHTML = "";  
     db.ref("settings/villages").once("value").then(snap => {  
-        snap.forEach(v => { let name = v.val(); let id = v.key; if(!name) return; box.insertAdjacentHTML("beforeend", `<div class="d-flex justify-content-between p-2 border mb-1">${name}<button class="btn btn-sm btn-danger" onclick="deleteVillage('${id}')">❌</button></div>`); });  
+        snap.forEach(v => { 
+            let name = v.val(); 
+            let id = v.key; 
+            if(!name) return; 
+            box.insertAdjacentHTML("beforeend", `
+                <div class="d-flex justify-content-between align-items-center p-2 border mb-1 rounded bg-white">
+                    <span class="fw-bold text-dark">${name}</span>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-sm btn-primary py-1 px-2" onclick="editVillage('${id}', '${encodeURIComponent(name)}')">✏️ Edit</button>
+                        <button class="btn btn-sm btn-danger py-1 px-2" onclick="deleteVillage('${id}')">❌</button>
+                    </div>
+                </div>
+            `); 
+        });  
     });  
 }  
-function deleteVillage(id) { db.ref("settings/villages/" + id).remove(); loadVillageList(); loadVillageDropdown(); }  
+
+function editVillage(id, encodedOldName) {
+    let oldName = decodeURIComponent(encodedOldName);
+    let newName = prompt("गाँव का नया नाम दर्ज करें:", oldName);
+    if (!newName) return;
+    newName = newName.trim();
+    if (!newName || newName === oldName) return;
+
+    if (!confirm(`क्या आप गाँव "${oldName}" को बदलकर "${newName}" करना चाहते हैं?\n(इससे इस गाँव के सभी ग्राहकों का रिकॉर्ड भी अपने आप अपडेट हो जाएगा)`)) {
+        return;
+    }
+
+    // 1. गाँव लिस्ट में अपडेट
+    db.ref("settings/villages/" + id).set(newName).then(() => {
+        // 2. सभी कस्टमर्स का गाँव अपडेट
+        db.ref("customers").once("value").then(snap => {
+            let updates = {};
+            snap.forEach(child => {
+                let cust = child.val();
+                if (cust && cust.village && cust.village.trim() === oldName) {
+                    updates["customers/" + child.key + "/village"] = newName;
+                }
+            });
+
+            if (Object.keys(updates).length > 0) {
+                db.ref().update(updates).then(() => {
+                    alert(`✔ गाँव बदला गया और ${Object.keys(updates).length} ग्राहकों का गाँव भी अपने आप अपडेट हो गया!`);
+                    loadVillageList();
+                    loadVillageDropdown();
+                    loadCustomers();
+                });
+            } else {
+                alert("✔ गाँव का नाम बदल दिया गया!");
+                loadVillageList();
+                loadVillageDropdown();
+            }
+        });
+    });
+}
+
+function deleteVillage(id) { 
+    if(!confirm("क्या आप वाकई यह गाँव हटाना चाहते हैं?")) return;
+    db.ref("settings/villages/" + id).remove(); 
+    loadVillageList(); 
+    loadVillageDropdown(); 
+}  
   
 function loadVillageDropdown() {  
-    cVillage.innerHTML = `<option value="">गाँव चुनें</option>`; villageFilter.innerHTML = `<option value="">सभी गाँव</option>`;  
+    cVillage.innerHTML = `<option value="">गाँव चुनें</option>`; 
+    villageFilter.innerHTML = `<option value="">सभी गाँव</option>`;  
     db.ref("settings/villages").once("value").then(snap => {  
-        snap.forEach(v => { let name = v.val(); if(!name) return; cVillage.insertAdjacentHTML("beforeend", `<option>${name}</option>`); villageFilter.insertAdjacentHTML("beforeend", `<option>${name}</option>`); });  
+        snap.forEach(v => { 
+            let name = v.val(); 
+            if(!name) return; 
+            cVillage.insertAdjacentHTML("beforeend", `<option value="${name}">${name}</option>`); 
+            villageFilter.insertAdjacentHTML("beforeend", `<option value="${name}">${name}</option>`); 
+        });  
     });  
 }  
 loadVillageDropdown();  
